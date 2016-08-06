@@ -10,8 +10,6 @@ require 'logger'
 require 'json'
 require 'net/http'
 require 'uri'
-#require 'addressable/uri'
-#include Addressable
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -49,10 +47,10 @@ class Icinga2
 
   def initialize( server_name, server_port = 5665, api_user = nil, api_pass = nil )
 
-#    file = File.open( '/tmp/dashing-icinga2.log', File::WRONLY | File::APPEND | File::CREAT )
-#    file.sync = true
-#    @log = Logger.new( file, 'weekly', 1024000 )
-    @log = Logger.new( STDOUT )
+    file = File.open( '/tmp/monitoring-icinga2.log', File::WRONLY | File::APPEND | File::CREAT )
+    file.sync = true
+    @log = Logger.new( file, 'weekly', 1024000 )
+#    @log = Logger.new( STDOUT )
     @log.level = Logger::DEBUG
     @log.datetime_format = "%Y-%m-%d %H:%M:%S"
     @log.formatter = proc do |severity, datetime, progname, msg|
@@ -75,8 +73,12 @@ class Icinga2
 
     checkCert()
 
-    @headers     = { "Content-Type" => "application/json", "Accept" => "application/json" }
+    @headers     = {
+      'Content-Type' => 'application/json',
+      'Accept'       => 'application/json'
+    }
   end
+
 
   def checkCert()
 
@@ -115,6 +117,7 @@ class Icinga2
 
   end
 
+
   def applicationData()
 
     api_url     = sprintf( '%s/v1/status/IcingaApplication', @api_url_base )
@@ -126,6 +129,7 @@ class Icinga2
 
   end
 
+
   def addHost( host, vars = {} )
 
     # build FQDN
@@ -135,19 +139,13 @@ class Icinga2
       "templates" => [ "generic-host" ],
       "attrs" => {
         "address" => fqdn,
-        "display_name" => host,
-        "vars" => {
-          "os" => "CentOS"
-        }
+        "display_name" => host
       }
     }
 
     if( ! vars.empty? )
       payload['attrs']['vars'] = vars
     end
-
-#     @log.debug( host )
-#     @log.debug( payload )
 
     restClient = RestClient::Resource.new(
       URI.encode( sprintf( '%s/v1/objects/hosts/%s', @api_url_base, host ) ),
@@ -190,6 +188,7 @@ class Icinga2
 
   end
 
+
   def deleteHost( host )
 
     result = ''
@@ -230,7 +229,8 @@ class Icinga2
 
   end
 
-  def listHost( host )
+
+  def listHost( host = nil )
 
     code        = nil
     result      = {}
@@ -241,7 +241,26 @@ class Icinga2
     )
 
     begin
-      data     = rest_client.get( @headers ) # JSON.parse( rest_client.get( @headers ).body )
+      data     = rest_client.get( @headers )
+
+      results  =  JSON.parse( data.body )['results']
+
+#      @log.info( sprintf '%d hosts in monitoring', results.count() )
+
+      result[:status] = 200
+
+      results.each do |r|
+
+        attrs = r['attrs'] ?  r['attrs'] : nil
+
+        result[attrs['name']] = {
+          :name         => attrs['name'],
+          :display_name => attrs['display_name'],
+          :type         => attrs['type']
+        }
+
+      end
+
     rescue => e
 
       error = JSON.parse( e.response )
@@ -250,16 +269,6 @@ class Icinga2
         :status      => error['error'].to_i,
         :name        => host,
         :message     => error['status']
-      }
-
-    else
-      result =  JSON.parse( data.body )['results'][0]
-
-      result = {
-        :status       => 200,
-        :name         => result['attrs']['name'],
-        :display_name => result['attrs']['display_name'],
-        :type         => result['attrs']['type']
       }
     end
 

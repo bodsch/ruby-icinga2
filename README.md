@@ -12,9 +12,14 @@ create an instance and get information about the Icinga2 Server
     puts( i.applicationData() )
 
 
+get Information about all monitored hosts
+
+    puts i.listHost()
+
+
 get Information about a monitored host
 
-    i.listHost( 'foo-bar.lan' )
+    puts i.listHost( 'foo-bar.lan' )
 
 
 delete a Host
