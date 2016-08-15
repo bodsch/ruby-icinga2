@@ -17,7 +17,7 @@ require 'uri'
 class Icinga2
 
   attr_reader :version
-  attr_reader :node_name
+  attr_reader :nodeName
   attr_reader :app_starttime
 
   attr_reader :uptime
@@ -45,7 +45,7 @@ class Icinga2
   attr_reader :fullStatsData
   attr_reader :fullApiData
 
-  def initialize( server_name, server_port = 5665, api_user = nil, api_pass = nil )
+  def initialize( serverName, serverPort = 5665, apiUser = nil, apiPass = nil )
 
     file = File.open( '/tmp/monitoring-icinga2.log', File::WRONLY | File::APPEND | File::CREAT )
     file.sync = true
@@ -57,17 +57,17 @@ class Icinga2
       "[#{datetime.strftime(@log.datetime_format)}] #{severity.ljust(5)} : #{msg}\n"
     end
 
-    @api_url_base = sprintf( 'https://%s:%d', server_name, server_port )
-    @api_user     = api_user
-    @api_pass     = api_pass
-    @node_name    = Socket.gethostbyname( Socket.gethostname ).first
+    @apiUrlBase  = sprintf( 'https://%s:%d', serverName, serverPort )
+    @apiUser     = apiUser
+    @apiPass     = apiPass
+    @nodeName    = Socket.gethostbyname( Socket.gethostname ).first
 
-    @log.debug( sprintf( '  server   : %s', server_name ) )
-    @log.debug( sprintf( '  port     : %s', server_port ) )
-    @log.debug( sprintf( '  api url  : %s', @api_url_base ) )
-    @log.debug( sprintf( '  api user : %s', @api_user ) )
-    @log.debug( sprintf( '  api pass : %s', @api_pass ) )
-    @log.debug( sprintf( '  node name: %s', @node_name ) )
+    @log.debug( sprintf( '  server   : %s', serverName ) )
+    @log.debug( sprintf( '  port     : %s', serverPort ) )
+    @log.debug( sprintf( '  api url  : %s', @apiUrlBase ) )
+    @log.debug( sprintf( '  api user : %s', @apiUser ) )
+    @log.debug( sprintf( '  api pass : %s', @apiPass ) )
+    @log.debug( sprintf( '  node name: %s', @nodeName ) )
 
     @hasCert = false
 
@@ -83,12 +83,12 @@ class Icinga2
   def checkCert()
 
     # check whether pki files are there, otherwise use basic auth
-    if File.file?( sprintf( 'pki/%s.crt', @node_name ) )
+    if File.file?( sprintf( 'pki/%s.crt', @nodeName ) )
 
       @log.debug( "PKI found, using client certificates for connection to Icinga 2 API" )
 
-      cert_file = File.read( sprintf( 'pki/%s.crt', @node_name ) )
-      key_file  = File.read( sprintf( 'pki/%s.key', @node_name ) )
+      cert_file = File.read( sprintf( 'pki/%s.crt', @nodeName ) )
+      key_file  = File.read( sprintf( 'pki/%s.key', @nodeName ) )
       ca_file   = File.read( 'pki/ca.crt' )
 
       cert      = OpenSSL::X509::Certificate.new( cert_file )
@@ -107,8 +107,8 @@ class Icinga2
       @log.debug( "PKI not found, using basic auth for connection to Icinga 2 API" )
 
       @options = {
-        :user       => @api_user,
-        :password   => @api_pass,
+        :user       => @apiUser,
+        :password   => @apiPass,
         :verify_ssl => OpenSSL::SSL::VERIFY_NONE
       }
 
@@ -120,10 +120,10 @@ class Icinga2
 
   def applicationData()
 
-    api_url     = sprintf( '%s/v1/status/IcingaApplication', @api_url_base )
-    rest_client = RestClient::Resource.new( URI.encode( api_url ), @options )
-    data        = JSON.parse( rest_client.get( @headers ).body )
-    result      = data['results'][0]['status'] # there's only one row
+    apiUrl     = sprintf( '%s/v1/status/IcingaApplication', @apiUrlBase )
+    restClient = RestClient::Resource.new( URI.encode( apiUrl ), @options )
+    data       = JSON.parse( restClient.get( @headers ).body )
+    result     = data['results'][0]['status'] # there's only one row
 
     return result
 
@@ -138,7 +138,7 @@ class Icinga2
     payload = {
       "templates" => [ "generic-host" ],
       "attrs" => {
-        "address" => fqdn,
+        "address"      => fqdn,
         "display_name" => host
       }
     }
@@ -148,7 +148,7 @@ class Icinga2
     end
 
     restClient = RestClient::Resource.new(
-      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @api_url_base, host ) ),
+      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @apiUrlBase, host ) ),
       @options
     )
 
@@ -195,13 +195,13 @@ class Icinga2
 
     @headers['X-HTTP-Method-Override'] = 'DELETE'
 
-    rest_client = RestClient::Resource.new(
-      URI.encode( sprintf( '%s/v1/objects/hosts/%s?cascade=1', @api_url_base, host ) ),
+    restClient = RestClient::Resource.new(
+      URI.encode( sprintf( '%s/v1/objects/hosts/%s?cascade=1', @apiUrlBase, host ) ),
       @options
     )
 
     begin
-      data   = rest_client.get( @headers )
+      data   = restClient.get( @headers )
       data   = JSON.parse( data )
       result = data['results'][0] ? data['results'][0] : nil
 
@@ -235,13 +235,13 @@ class Icinga2
     code        = nil
     result      = {}
 
-    rest_client = RestClient::Resource.new(
-      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @api_url_base, host ) ),
+    restClient = RestClient::Resource.new(
+      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @apiUrlBase, host ) ),
       @options
     )
 
     begin
-      data     = rest_client.get( @headers )
+      data     = restClient.get( @headers )
 
       results  =  JSON.parse( data.body )['results']
 
@@ -296,7 +296,7 @@ class Icinga2
     fqdn = Socket.gethostbyname( host ).first
 
     restClient = RestClient::Resource.new(
-      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @api_url_base, host ) ),
+      URI.encode( sprintf( '%s/v1/objects/hosts/%s', @apiUrlBase, host ) ),
       @options
     )
 
@@ -306,7 +306,7 @@ class Icinga2
       @log.debug( v.to_json )
 
       restClient = RestClient::Resource.new(
-        URI.encode( sprintf( '%s/v1/objects/services/%s!%s', @api_url_base, host, s ) ),
+        URI.encode( sprintf( '%s/v1/objects/services/%s!%s', @apiUrlBase, host, s ) ),
         @options
       )
 

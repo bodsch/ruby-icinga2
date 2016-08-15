@@ -27,7 +27,7 @@ delete a Host
     i.deleteHost( 'foo-bar.lan' )
 
 
-add a host
+add a host with custom vars
 
     vars= {
       'aws' => false
