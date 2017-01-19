@@ -13,7 +13,7 @@ require 'uri'
 
 require_relative 'logging'
 require_relative 'icinga/network'
-require_relative 'icinga/application'
+require_relative 'icinga/status'
 require_relative 'icinga/host'
 require_relative 'icinga/service'
 require_relative 'icinga/message-queue'
@@ -27,7 +27,7 @@ module Icinga
     include Logging
 
     include Icinga::Network
-    include Icinga::Application
+    include Icinga::Status
     include Icinga::Host
     include Icinga::Service
     include Icinga::MessageQueue
@@ -129,6 +129,7 @@ module Icinga
 #      logger.debug( self.addHost( { :host => 'moebius-ci-01' } ) )
 #      logger.debug( self.addHost( { :host => 'moebius-ci-02' } ) )
 
+      logger.debug( self.application() )
       logger.debug( self.listHost( { :host => 'monitoring-16-01' } ) )
       logger.debug( self.listHost() )
 

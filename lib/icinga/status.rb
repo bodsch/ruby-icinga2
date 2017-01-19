@@ -1,9 +1,9 @@
 
 module Icinga
 
-  module Application
+  module Status
 
-    def applicationData()
+    def application()
 
       result = Network.get( {
         :host     => nil,
