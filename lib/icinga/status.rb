@@ -3,7 +3,7 @@ module Icinga
 
   module Status
 
-    def application()
+    def applicationData()
 
       result = Network.get( {
         :host     => nil,
@@ -12,20 +12,12 @@ module Icinga
         :options  => @options
       })
 
-      logger.debug( result )
-      logger.debug( result.dig('results').first.dig('status') )
+      status = result.dig('status')
 
-      return result
-
-
-#       apiUrl     = sprintf( '%s/v1/status/IcingaApplication', @icingaApiUrlBase )
-#       restClient = RestClient::Resource.new( URI.encode( apiUrl ), @options )
-#       data       = JSON.parse( restClient.get( @headers ).body )
-#       result     = data['results'][0]['status'] # there's only one row
-#
-#       return result
+      return status
 
     end
 
   end
+
 end

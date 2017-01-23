@@ -40,7 +40,7 @@ module Icinga
       @icingaApiPass  = params[:icingaApiPass]  ? params[:icingaApiPass]  : nil
       mqHost          = params[:mqHost]         ? params[:mqHost]         : 'localhost'
       mqPort          = params[:mqPort]         ? params[:mqPort]         : 11300
-      @mqQueue        = params[:mqQueue]        ? params[:mqQueue]        : 'mq-graphite'
+      @mqQueue        = params[:mqQueue]        ? params[:mqQueue]        : 'mq-icinga'
 
       @icingaApiUrlBase = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName         = Socket.gethostbyname( Socket.gethostname ).first
@@ -50,8 +50,8 @@ module Icinga
         :beanstalkPort => mqPort
       }
 
-      version              = '1.3.0-dev'
-      date                 = '2017-01-15'
+      version              = '1.3.3-dev'
+      date                 = '2017-01-23'
 
       logger.info( '-----------------------------------------------------------------' )
       logger.info( ' Icinga2 Management' )
@@ -125,12 +125,8 @@ module Icinga
 
     def run()
 
-#      logger.debug( self.addHost( { :host => 'monitoring-16-01' } ) )
-#      logger.debug( self.addHost( { :host => 'moebius-ci-01' } ) )
-#      logger.debug( self.addHost( { :host => 'moebius-ci-02' } ) )
-
       logger.debug( self.application() )
-      logger.debug( self.listHost( { :host => 'monitoring-16-01' } ) )
+      logger.debug( self.listHost( { :host => 'foo.bar.com' } ) )
       logger.debug( self.listHost() )
 
     end

@@ -10,18 +10,10 @@ module Icinga
     def queue()
 
       c = MessageQueue::Consumer.new( @MQSettings )
-#
-#       threads = Array.new()
 
-#       threads << Thread.new {
-
-        processQueue(
-          c.getJobFromTube( @mqQueue )
-        )
-#       }
-
-#       threads.each { |t| t.join }
-
+      processQueue(
+        c.getJobFromTube( @mqQueue )
+      )
     end
 
 
@@ -59,19 +51,13 @@ module Icinga
           logger.info( sprintf( 'add node %s', node ) )
 
           # TODO
-          # check payload!
-          # e.g. for 'force' ...
-#           result = self.createDashboardForHost( { :host => node, :tags => tags, :overview => overview } )
 
-#           logger.info( result )
         when 'remove'
-          logger.info( sprintf( 'remove dashboards for node %s', node ) )
-#           result = self.deleteDashboards( { :host => node } )
+          logger.info( sprintf( 'remove node %s', node ) )
 
-#           logger.info( result )
         when 'info'
-          logger.info( sprintf( 'give dashboards for %s back', node ) )
-#           result = self.listDashboards( { :host => node } )
+          logger.info( sprintf( 'give informaion for %s back', node ) )
+
         else
           logger.error( sprintf( 'wrong command detected: %s', command ) )
 
@@ -80,12 +66,10 @@ module Icinga
             :message => sprintf( 'wrong command detected: %s', command )
           }
 
-#           logger.info( result )
         end
 
         result[:request]    = data
 
-#         self.sendMessage( result )
       end
 
     end

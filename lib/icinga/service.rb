@@ -24,13 +24,6 @@ module Icinga
         hash
       end
 
-#       fqdn = Socket.gethostbyname( host ).first
-
-#       restClient = RestClient::Resource.new(
-#         URI.encode( sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, host ) ),
-#         @options
-#       )
-
       services.each do |s,v|
 
         payload = {
@@ -52,29 +45,6 @@ module Icinga
         })
 
         logger.debug( result )
-
-#         begin
-#
-#           restClient = RestClient::Resource.new(
-#             URI.encode( sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, host, s ) ),
-#             @options
-#           )
-#
-#
-#
-#
-#
-#           data = restClient.put(
-#             JSON.generate( ( payload ) ),
-#             @headers
-#           )
-#         rescue RestClient::ExceptionWithResponse => e
-#
-#           error  = JSON.parse( e.response )
-#
-#           logger.error( error )
-#
-#         end
 
       end
 

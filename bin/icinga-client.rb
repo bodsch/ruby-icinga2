@@ -1,9 +1,9 @@
 #!/usr/bin/ruby
 #
-# 03.01.2017 - Bodo Schulz
+# 23.01.2017 - Bodo Schulz
 #
 #
-# v0.7.0
+# v0.8.0
 
 # -----------------------------------------------------------------------------
 
@@ -11,6 +11,8 @@ require_relative '../lib/icinga'
 require_relative '../lib/message-queue'
 
 # -----------------------------------------------------------------------------
+
+logDirectory     = '/var/log/monitoring'
 
 icingaHost      = ENV['ICINGA_HOST']         ? ENV['ICINGA_HOST']          : 'localhost'
 icingaApiPort   = ENV['ICINGA_API_PORT']     ? ENV['ICINGA_API_PORT']      : 5665

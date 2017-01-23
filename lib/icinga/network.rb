@@ -35,11 +35,16 @@ module Icinga
 
           attrs = r.dig('attrs')
 
-          result[:data][attrs['name']] = {
-            :name         => attrs['name'],
-            :display_name => attrs['display_name'],
-            :type         => attrs['type']
-          }
+          if( attrs != nil )
+
+            result[:data][attrs['name']] = {
+              :name         => attrs['name'],
+              :display_name => attrs['display_name'],
+              :type         => attrs['type']
+            }
+          else
+            result = r
+          end
 
         end
 
@@ -81,6 +86,8 @@ module Icinga
       options = params.dig(:options) || nil
       payload = params.dig(:payload) || nil
 
+      headers['X-HTTP-Method-Override'] = 'PUT'
+
       result  = {}
 
       print url + "\n"
@@ -98,27 +105,17 @@ module Icinga
         )
 
         data   = JSON.parse( data )
-        result = data.dig('results')
+        results = data.dig('results').first
 
-        puts( result )
+        if( results != nil )
 
-        if( result != nil && result.is_a?( Array ) )
+          result = {
+            :status      => results.dig('code').to_i,
+            :name        => results.dig('name'),
+            :message     => results.dig('status')
+          }
 
-          result = result.first
-
-          if( result != nil )
-
-            status  = 200
-            name    = host
-            message = result.dig('status' )
-          end
-        else
-
-          status  = 400
-          name    = host
-          message = 'no valid result'
         end
-
 
       rescue RestClient::ExceptionWithResponse => e
 
@@ -134,26 +131,22 @@ module Icinga
 
         if( results != nil )
 
-          result  = results.first # error['results'][0] ? error['results'][0] : error
-          status  = result.dig( 'code' ).to_i
-          message = result.dig( 'status' )
+          result = {
+            :status      => results.dig('code').to_i,
+            :name        => results.dig('name'),
+            :message     => results.dig('status')
+          }
+
         else
 
-          status  = error.dig( 'error' ).to_i
-          message = error.dig( 'status' )
+          result = {
+            :status      => error.dig( 'error' ).to_i,
+            :message     => error.dig( 'status' )
+          }
+
         end
 
-        status      = status
-        name        = host
-        message     = message
-
       end
-
-      result = {
-        :status      => status,
-        :name        => name,
-        :message     => message
-      }
 
       return result
 
@@ -181,24 +174,23 @@ module Icinga
         options
       )
 
-
       begin
         data     = restClient.get( headers )
 
-        data  = JSON.parse( data ) #.body )
+        if( data )
 
-        puts data
+          data    = JSON.parse( data ) #.body )
+          results = data.dig('results').first
 
-        results  = data.dig('results')
+          if( results != nil )
 
-        if( result != nil )
+            result = {
+              :status      => results.dig('code').to_i,
+              :name        => results.dig('name'),
+              :message     => results.dig('status')
+            }
 
-          result = {
-            :status       => 200,
-            :name        => host,
-            :message     => result['status']
-          }
-
+          end
         end
 
       rescue RestClient::ExceptionWithResponse => e
@@ -215,26 +207,22 @@ module Icinga
 
         if( results != nil )
 
-          result  = results.first # error['results'][0] ? error['results'][0] : error
-          status  = result.dig( 'code' ).to_i
-          message = result.dig( 'status' )
+          result = {
+            :status      => results.dig('code').to_i,
+            :name        => results.dig('name'),
+            :message     => results.dig('status')
+          }
+
         else
 
-          status  = error.dig( 'error' ).to_i
-          message = error.dig( 'status' )
+          result = {
+            :status      => error.dig( 'error' ).to_i,
+            :message     => error.dig( 'status' )
+          }
+
         end
 
-        status      = status
-        name        = host
-        message     = message
-
       end
-
-      result = {
-        :status      => status,
-        :name        => name,
-        :message     => message
-      }
 
       return result
 
