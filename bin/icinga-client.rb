@@ -3,42 +3,43 @@
 # 23.01.2017 - Bodo Schulz
 #
 #
-# v0.8.0
+# v0.9.0
 
 # -----------------------------------------------------------------------------
+
+require 'rufus-scheduler'
 
 require_relative '../lib/icinga'
-require_relative '../lib/message-queue'
 
 # -----------------------------------------------------------------------------
 
-logDirectory     = '/var/log/monitoring'
+icingaHost         = ENV.fetch( 'ICINGA_HOST'             , 'localhost' )
+icingaApiPort      = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
+icingaApiUser      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
+icingaApiPass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
+icingaCluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
+icingaSatellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
+mqHost             = ENV.fetch( 'MQ_HOST'                 , 'localhost' )
+mqPort             = ENV.fetch( 'MQ_PORT'                 , 11300 )
+mqQueue            = ENV.fetch( 'MQ_QUEUE'                , 'mq-icinga' )
+interval           = 10
 
-icingaHost      = ENV['ICINGA_HOST']         ? ENV['ICINGA_HOST']          : 'localhost'
-icingaApiPort   = ENV['ICINGA_API_PORT']     ? ENV['ICINGA_API_PORT']      : 5665
-icingaApiUser   = ENV['ICINGA_API_USER']     ? ENV['ICINGA_API_USER']      : 'admin'
-icingaApiPass   = ENV['ICINGA_API_PASSWORD'] ? ENV['ICINGA_API_PASSWORD']  : nil
-mqEnabled       = ENV['MQ_ENABLED']          ? ENV['MQ_ENABLED']           : false
-mqHost          = ENV['MQ_HOST']             ? ENV['MQ_HOST']              : 'localhost'
-mqPort          = ENV['MQ_PORT']             ? ENV['MQ_PORT']              : 11300
-mqQueue         = ENV['MQ_QUEUE']            ? ENV['MQ_QUEUE']             : 'mq-icinga'
+# convert string to bool
+icingaCluster   = icingaCluster.to_s.eql?('true') ? true : false
 
 config = {
-  :icingaHost     => icingaHost,
-  :icingaApiPort  => icingaApiPort,
-  :icingaApiUser  => icingaApiUser,
-  :icingaApiPass  => icingaApiPass,
-  :mqHost         => mqHost,
-  :mqPort         => mqPort,
-  :mqQueue        => mqQueue
+  :icingaHost      => icingaHost,
+  :icingaApiPort   => icingaApiPort,
+  :icingaApiUser   => icingaApiUser,
+  :icingaApiPass   => icingaApiPass,
+  :icingaCluster   => icingaCluster,
+  :icingaSatellite => icingaSatellite,
+  :mqHost          => mqHost,
+  :mqPort          => mqPort,
+  :mqQueue         => mqQueue
 }
 
 # ---------------------------------------------------------------------------------------
-
-i = Icinga::Client.new( config )
-
-# ---------------------------------------------------------------------------------------
-
 # NEVER FORK THE PROCESS!
 # the used supervisord will control all
 stop = false
@@ -48,21 +49,39 @@ Signal.trap('HUP')  { stop = true }
 Signal.trap('TERM') { stop = true }
 Signal.trap('QUIT') { stop = true }
 
+# ---------------------------------------------------------------------------------------
+
+i = Icinga::Client.new( config )
+
 if( i != nil )
   i.run()
 end
 
-# until stop
-#   # do your thing
-#   if( mqEnabled == true )
+
+# for periotic work ..
+
+# scheduler = Rufus::Scheduler.new
 #
-#     queue()
-#   else
+# scheduler.every( interval, :first_in => 5 ) do
 #
-#     i.run()
-#   end
-#   sleep( 15 )
+#   i.queue()
+#
 # end
+#
+#
+# scheduler.every( 5 ) do
+#
+#   if( stop == true )
+#
+#     p 'shutdown scheduler ...'
+#
+#     scheduler.shutdown(:kill)
+#   end
+#
+# end
+#
+#
+# scheduler.join
 
 # -----------------------------------------------------------------------------
 

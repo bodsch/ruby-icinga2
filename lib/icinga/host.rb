@@ -8,8 +8,9 @@ module Icinga
       code        = nil
       result      = {}
 
-      host = params.dig(:host) || nil
-      vars = params.dig(:vars) || {}
+      host     = params.dig(:host) || nil
+      vars     = params.dig(:vars) || {}
+      endpoint = nil
 
       if( host == nil )
 
@@ -25,8 +26,12 @@ module Icinga
       payload = {
         "templates" => [ "generic-host" ],
         "attrs" => {
-          "address"      => fqdn,
-          "display_name" => host
+          "address"              => fqdn,
+          "display_name"         => host,
+          "max_check_attempts"   => 3,
+          "check_interval"       => 60,
+          "retry_interval"       => 45,
+          "enable_notifications" => false
         }
       }
 
@@ -34,7 +39,11 @@ module Icinga
         payload['attrs']['vars'] = vars
       end
 
-      logger.debug( JSON.pretty_generate( payload ) )
+      if( @icingaCluster == true && @icingaSatellite != nil )
+        payload['attrs']['zone'] = @icingaSatellite
+      end
+
+#       logger.debug( JSON.pretty_generate( payload ) )
 
       result = Network.put( {
         :host    => host,

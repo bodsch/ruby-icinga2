@@ -12,11 +12,12 @@ require 'net/http'
 require 'uri'
 
 require_relative 'logging'
+require_relative 'message-queue'
 require_relative 'icinga/network'
 require_relative 'icinga/status'
 require_relative 'icinga/host'
 require_relative 'icinga/service'
-require_relative 'icinga/message-queue'
+require_relative 'icinga/queue'
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -30,17 +31,19 @@ module Icinga
     include Icinga::Status
     include Icinga::Host
     include Icinga::Service
-    include Icinga::MessageQueue
+    include Icinga::Queue
 
     def initialize( params = {} )
 
-      @icingaHost     = params[:icingaHost]     ? params[:icingaHost]     : 'localhost'
-      @icingaApiPort  = params[:icingaApiPort]  ? params[:icingaApiPort]  : 5665
-      @icingaApiUser  = params[:icingaApiUser]  ? params[:icingaApiUser]  : nil
-      @icingaApiPass  = params[:icingaApiPass]  ? params[:icingaApiPass]  : nil
-      mqHost          = params[:mqHost]         ? params[:mqHost]         : 'localhost'
-      mqPort          = params[:mqPort]         ? params[:mqPort]         : 11300
-      @mqQueue        = params[:mqQueue]        ? params[:mqQueue]        : 'mq-icinga'
+      @icingaHost       = params.dig(:icingaHost)    || 'localhost'
+      @icingaApiPort    = params.dig(:icingaApiPort) || 5665
+      @icingaApiUser    = params.dig(:icingaApiUser)
+      @icingaApiPass    = params.dig(:icingaApiPass)
+      @icingaCluster    = params.dig(:icingaCluster) || false
+      @icingaSatellite  = params.dig(:icingaSatellite)
+      mqHost            = params.dig(:mqHost)        || 'localhost'
+      mqPort            = params.dig(:mqPort)        || 11300
+      @mqQueue          = params.dig(:mqQueue)       || 'mq-icinga'
 
       @icingaApiUrlBase = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName         = Socket.gethostbyname( Socket.gethostname ).first
@@ -50,16 +53,19 @@ module Icinga
         :beanstalkPort => mqPort
       }
 
-      version              = '1.3.3-dev'
-      date                 = '2017-01-23'
+      version              = '1.4.0'
+      date                 = '2017-03-25'
 
       logger.info( '-----------------------------------------------------------------' )
       logger.info( ' Icinga2 Management' )
       logger.info( "  Version #{version} (#{date})" )
       logger.info( '  Copyright 2016-2017 Bodo Schulz' )
       logger.info( "  Backendsystem #{@icingaApiUrlBase}" )
+      logger.info( sprintf( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
+      if( @icingaCluster )
+        logger.info( sprintf( '    satellite endpoint: %s', @icingaSatellite ) )
+      end
       logger.info( '  used Services:' )
-#       logger.info( "    - graphite     : #{@graphiteURI}" )
       logger.info( "    - message Queue: #{mqHost}:#{mqPort}/#{@mqQueue}" )
       logger.info( '-----------------------------------------------------------------' )
       logger.info( '' )
@@ -81,10 +87,10 @@ module Icinga
 
     def checkCert( params = {} )
 
-      nodeName     = params[:nodeName]       ? params[:nodeName]       : 'localhost'
+      nodeName     = params.dig(:nodeName) || 'localhost'
 
-      user         = params[:user]           ? params[:user]           : 'admin'
-      password     = params[:password]       ? params[:password]       : ''
+      user         = params.dig(:user)     || 'admin'
+      password     = params.dig(:password) || ''
 
       # check whether pki files are there, otherwise use basic auth
       if File.file?( sprintf( 'pki/%s.crt', nodeName ) )
@@ -122,7 +128,6 @@ module Icinga
     end
 
 
-
     def run()
 
       logger.debug( self.application() )
@@ -133,4 +138,5 @@ module Icinga
 
   end
 end
+
 # EOF
