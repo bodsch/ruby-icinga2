@@ -13,13 +13,13 @@ require_relative '../lib/icinga'
 
 # -----------------------------------------------------------------------------
 
-icingaHost         = ENV.fetch( 'ICINGA_HOST'             , 'localhost' )
+icingaHost         = ENV.fetch( 'ICINGA_HOST'             , 'icinga2' )
 icingaApiPort      = ENV.fetch( 'ICINGA_API_PORT'         , 5665 )
 icingaApiUser      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
 icingaApiPass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
 icingaCluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
 icingaSatellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
-mqHost             = ENV.fetch( 'MQ_HOST'                 , 'localhost' )
+mqHost             = ENV.fetch( 'MQ_HOST'                 , 'beanstalkd' )
 mqPort             = ENV.fetch( 'MQ_PORT'                 , 11300 )
 mqQueue            = ENV.fetch( 'MQ_QUEUE'                , 'mq-icinga' )
 interval           = 10
@@ -28,15 +28,21 @@ interval           = 10
 icingaCluster   = icingaCluster.to_s.eql?('true') ? true : false
 
 config = {
-  :icingaHost      => icingaHost,
-  :icingaApiPort   => icingaApiPort,
-  :icingaApiUser   => icingaApiUser,
-  :icingaApiPass   => icingaApiPass,
-  :icingaCluster   => icingaCluster,
-  :icingaSatellite => icingaSatellite,
-  :mqHost          => mqHost,
-  :mqPort          => mqPort,
-  :mqQueue         => mqQueue
+  :icinga => {
+    :host      => icingaHost,
+    :api       => {
+      :port => icingaApiPort,
+      :user => icingaApiUser,
+      :pass => icingaApiPass
+    },
+    :cluster   => icingaCluster,
+    :satellite => icingaSatellite,
+  },
+  :mq => {
+    :host  => mqHost,
+    :port  => mqPort,
+    :queue => mqQueue
+  }
 }
 
 # ---------------------------------------------------------------------------------------

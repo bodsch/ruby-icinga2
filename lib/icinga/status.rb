@@ -14,7 +14,7 @@ module Icinga
 
       status = result.dig('status')
 
-      return status
+      return JSON.pretty_generate( status )
 
     end
 

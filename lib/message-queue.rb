@@ -20,16 +20,21 @@ module MessageQueue
 
     include Logging
 
-    def initialize( params = {} )
+    def initialize( settings = {} )
 
-      beanstalkHost       = params[:beanstalkHost] ? params[:beanstalkHost] : 'beanstalkd'
-      beanstalkPort       = params[:beanstalkPort] ? params[:beanstalkPort] : 11300
+      beanstalkHost       = settings.dig(:beanstalk, :host) || 'beanstalkd'
+      beanstalkPort       = settings.dig(:beanstalk, :port) || 11300
 
       begin
         @b = Beaneater.new( sprintf( '%s:%s', beanstalkHost, beanstalkPort ) )
       rescue => e
         logger.error( e )
+        raise sprintf( 'ERROR: %s' , e )
       end
+
+      logger.info( '-----------------------------------------------------------------' )
+      logger.info( ' MessageQueue::Producer' )
+      logger.info( '-----------------------------------------------------------------' )
 
     end
 
@@ -76,16 +81,35 @@ module MessageQueue
 
     include Logging
 
-    def initialize( params = {} )
+    def initialize( settings = {} )
 
-      beanstalkHost       = params[:beanstalkHost] ? params[:beanstalkHost] : 'beanstalkd'
-      beanstalkPort       = params[:beanstalkPort] ? params[:beanstalkPort] : 11300
+      beanstalkHost       = settings.dig(:beanstalk, :host) || 'beanstalkd'
+      beanstalkPort       = settings.dig(:beanstalk, :port) || 11300
+      beanstalkQueue      = settings.dig(:beanstalk, :queue)
 
       begin
         @b = Beaneater.new( sprintf( '%s:%s', beanstalkHost, beanstalkPort ) )
+
+        if( beanstalkQueue != nil )
+
+          scheduler = Rufus::Scheduler.new
+
+          scheduler.every( '20s' ) do
+            releaseBuriedJobs( beanstalkQueue )
+          end
+        else
+          logger.info( 'no Queue defined. Skip releaseBuriedJobs() Part' )
+        end
+
       rescue => e
         logger.error( e )
+        raise sprintf( 'ERROR: %s' , e )
       end
+
+      logger.info( '-----------------------------------------------------------------' )
+      logger.info( ' MessageQueue::Consumer' )
+      logger.info( '-----------------------------------------------------------------' )
+
 
     end
 
@@ -126,7 +150,7 @@ module MessageQueue
     end
 
 
-    def getJobFromTube( tube )
+    def getJobFromTube( tube, delete = false )
 
       result = {}
 
@@ -158,7 +182,9 @@ module MessageQueue
               :body  => JSON.parse( job.body )
             }
 
-            job.delete
+            if( delete == true )
+              job.delete
+            end
 
           rescue Exception => e
             job.bury
@@ -180,19 +206,54 @@ module MessageQueue
 
         tube = @b.tubes.find( tube.to_s )
 
-        while( job = tube.peek( :buried ) )
+        buried = tube.peek( :buried )
 
-          logger.debug( job.stats )
+        if( buried )
 
-          response = job.release()
+          logger.debug( sprintf( 'found job: %d, kick them back into the \'ready\' queue', buried.id ) )
 
-          logger.debug( response )
+          tube.kick(1)
         end
 
       end
 
     end
 
+
+    def deleteJob( tube, id )
+
+      logger.debug( sprintf( "deleteJob( #{tube}, #{id} )" ) )
+
+      if( @b )
+
+        job = @b.jobs.find( id )
+
+        if( job != nil )
+
+          response = job.delete
+        end
+
+      end
+
+    end
+
+
+    def buryJob( tube, id )
+
+      logger.debug( sprintf( "buryJob( #{tube}, #{id} )" ) )
+
+      if( @b )
+
+        job = @b.jobs.find( id )
+
+        if( job != nil )
+
+          response = job.bury
+        end
+
+      end
+
+    end
 
   end
 
@@ -202,7 +263,7 @@ end
 # TESTS
 
 # settings = {
-#   :beanstalkHost => 'localhost'
+#   :beanstalk => { :host => 'localhost' }
 # }
 #
 # p = MessageQueue::Producer.new( settings )

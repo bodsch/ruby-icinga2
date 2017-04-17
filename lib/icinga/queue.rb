@@ -1,7 +1,7 @@
 
 module Icinga
 
-  module MessageQueue
+  module Queue
 
     # Message-Queue Integration
     #

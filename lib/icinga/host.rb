@@ -87,7 +87,7 @@ module Icinga
       code        = nil
       result      = {}
 
-      host = params.dig(:host) || nil
+      host = params.dig(:host)
 
       result = Network.get( {
         :host => host,
