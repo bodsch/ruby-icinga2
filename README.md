@@ -1,14 +1,24 @@
 # ruby-icinga2
 
-Small Class for the Icinga2 API
-
+Small Ruby Class for the Icinga2 API
 
 
 ## usage
 
 create an instance and get information about the Icinga2 Server
 
-    i = Icinga2.new( 'localhost', 5665, 'root', 'icinga' )
+    config = {
+      :icinga => {
+        :host => 'icinga2',
+        :api => {
+          :port => 5665,
+          :user => 'icinga',
+          :pass => 'icinga'
+        }
+      }
+    }
+
+    i = Icinga::Client.new( config )
     puts( i.applicationData() )
 
 
@@ -29,7 +39,7 @@ delete a Host
 
 add a host with custom vars
 
-    vars= {
+    vars = {
       'aws' => false
     }
     i.addHost( 'foo-bar.lan', vars )
@@ -39,7 +49,7 @@ add services to one host
 
     services = {
       'service-heap-mem' => {
-        'display_name' => 'Tomcat - Heap Memory',
+        'display_name'  => 'Tomcat - Heap Memory',
         'check_command' => 'tomcat-heap-memory',
       }
     }
@@ -51,6 +61,6 @@ add services to one host
 # requirements
 
     gem install rest-client --no-rdoc --no-ri
-    gem install json  --no-rdoc --no-ri
+    gem install json --no-rdoc --no-ri
 
 
