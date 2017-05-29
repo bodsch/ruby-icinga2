@@ -1,7 +1,7 @@
 
 module Icinga
 
-  module Host
+  module Hosts
 
     def addHost( params = {}, host = nil, vars = {} )
 

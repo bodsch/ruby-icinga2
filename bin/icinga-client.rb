@@ -7,8 +7,6 @@
 
 # -----------------------------------------------------------------------------
 
-require 'rufus-scheduler'
-
 require_relative '../lib/icinga'
 
 # -----------------------------------------------------------------------------
@@ -19,10 +17,7 @@ icingaApiUser      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
 icingaApiPass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
 icingaCluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
 icingaSatellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
-mqHost             = ENV.fetch( 'MQ_HOST'                 , 'beanstalkd' )
-mqPort             = ENV.fetch( 'MQ_PORT'                 , 11300 )
-mqQueue            = ENV.fetch( 'MQ_QUEUE'                , 'mq-icinga' )
-interval           = 10
+
 
 # convert string to bool
 icingaCluster   = icingaCluster.to_s.eql?('true') ? true : false
@@ -37,11 +32,6 @@ config = {
     },
     :cluster   => icingaCluster,
     :satellite => icingaSatellite,
-  },
-  :mq => {
-    :host  => mqHost,
-    :port  => mqPort,
-    :queue => mqQueue
   }
 }
 

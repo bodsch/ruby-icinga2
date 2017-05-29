@@ -12,13 +12,13 @@ require 'net/http'
 require 'uri'
 
 require_relative 'logging'
-require_relative 'message-queue'
 require_relative 'icinga/version'
 require_relative 'icinga/network'
 require_relative 'icinga/status'
-require_relative 'icinga/host'
-require_relative 'icinga/service'
-require_relative 'icinga/queue'
+require_relative 'icinga/hosts'
+require_relative 'icinga/hostgroups'
+require_relative 'icinga/services'
+require_relative 'icinga/servicegroups'
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -31,9 +31,11 @@ module Icinga
     include Icinga::Version
     include Icinga::Network
     include Icinga::Status
-    include Icinga::Host
-    include Icinga::Service
-    include Icinga::Queue
+    include Icinga::Hosts
+    include Icinga::Hostgroups
+    include Icinga::Services
+    include Icinga::Servicegroups
+
 
     def initialize( params = {} )
 
@@ -43,22 +45,11 @@ module Icinga
       @icingaApiPass    = params.dig(:icinga, :api, :pass)
       @icingaCluster    = params.dig(:icinga, :cluster)    || false
       @icingaSatellite  = params.dig(:icinga, :satellite)
-      mqHost            = params.dig(:mq, :host)
-      mqPort            = params.dig(:mq, :port)
-      mqQueue           = params.dig(:mq, :queue)
 
       @icingaApiUrlBase = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName         = Socket.gethostbyname( Socket.gethostname ).first
 
-      @MQSettings = {
-        :beanstalk => {
-          :host  => mqHost,
-          :port  => mqPort,
-          :queue => mqQueue
-        }
-      }
-
-      date                 = '2017-04-17'
+      date                 = '2017-05-29'
 
       logger.info( '-----------------------------------------------------------------' )
       logger.info( ' Icinga2 Management' )
@@ -68,10 +59,6 @@ module Icinga
       logger.info( sprintf( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
       if( @icingaCluster )
         logger.info( sprintf( '    satellite endpoint: %s', @icingaSatellite ) )
-      end
-      if( mqHost != nil && mqPort != nil )
-        logger.info( '  used Services:' )
-        logger.info( "    - message Queue: #{mqHost}:#{mqPort}/#{mqQueue}" )
       end
       logger.info( '-----------------------------------------------------------------' )
       logger.info( '' )
@@ -137,8 +124,16 @@ module Icinga
     def run()
 
       logger.debug( self.applicationData() )
-      logger.debug( self.listHost( { :host => 'foo-bar.com' } ) )
-      logger.debug( self.listHost() )
+#       logger.debug( self.listHost( { :host => 'foo-bar.com' } ) )
+#       logger.debug( self.listHost() )
+      logger.debug( self.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false' )
+      logger.debug( self.addHostgroup( { :name => 'sip', :display_name => 'SIP' } ) )
+      logger.debug( self.listHostgroups() )
+      logger.debug( self.deleteHostgroup( { :name => 'sip' } ) )
+
+      logger.debug( self.listServicegroups() )
+
+      logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
 
     end
 

@@ -1,7 +1,7 @@
 
 module Icinga
 
-  module Service
+  module Services
 
     def addServices( host, services = {} )
 
