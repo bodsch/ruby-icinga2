@@ -19,6 +19,8 @@ require_relative 'icinga/hosts'
 require_relative 'icinga/hostgroups'
 require_relative 'icinga/services'
 require_relative 'icinga/servicegroups'
+require_relative 'icinga/users'
+require_relative 'icinga/usergroups'
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -35,6 +37,8 @@ module Icinga
     include Icinga::Hostgroups
     include Icinga::Services
     include Icinga::Servicegroups
+    include Icinga::Users
+    include Icinga::Usergroups
 
 
     def initialize( params = {} )
@@ -126,14 +130,20 @@ module Icinga
       logger.debug( self.applicationData() )
 #       logger.debug( self.listHost( { :host => 'foo-bar.com' } ) )
 #       logger.debug( self.listHost() )
-      logger.debug( self.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false' )
-      logger.debug( self.addHostgroup( { :name => 'sip', :display_name => 'SIP' } ) )
-      logger.debug( self.listHostgroups() )
-      logger.debug( self.deleteHostgroup( { :name => 'sip' } ) )
+#       logger.debug( self.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false' )
+#       logger.debug( self.addHostgroup( { :name => 'sip', :display_name => 'SIP' } ) )
+#       logger.debug( self.listHostgroups() )
+#       logger.debug( self.deleteHostgroup( { :name => 'sip' } ) )
+#       logger.debug( self.listServicegroups() )
+#       logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
 
-      logger.debug( self.listServicegroups() )
 
-      logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
+
+      logger.debug( self.existsUsergroup?( 'xanhaem' ) ? 'true' : 'false' )
+      logger.debug( self.listUsergroups() )
+
+      logger.debug( self.existsUser?( 'bodsch' ) ? 'true' : 'false' )
+      logger.debug( self.listUsers() )
 
     end
 
