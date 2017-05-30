@@ -5,8 +5,10 @@ module Icinga
 
     def addUser( params = {} )
 
-      name     = params.dig(:name) || nil
-      vars     = params.dig(:vars) || {}
+      name     = params.dig(:name)
+      email    = params.dig(:email)
+      pager    = params.dig(:pager)
+      groups   = params.dig(:groups) || []
 
       if( name == nil )
 
@@ -16,12 +18,29 @@ module Icinga
         }
       end
 
+      if( !groups.is_a?( Array ) )
+
+        return {
+          :status  => 404,
+          :message => 'groups must be an array'
+        }
+      end
+
       payload = {
         "attrs" => {
           "display_name"         => name,
+          "email"                => email,
+          "pager"                => pager,
           "enable_notifications" => false
         }
       }
+
+      if( ! groups.empty? )
+        payload['attrs']['groups'] = vars
+      end
+
+      logger.debug( payload )
+
 
       result = Network.delete( {
         :host    => name,

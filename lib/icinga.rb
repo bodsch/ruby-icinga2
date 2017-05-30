@@ -137,8 +137,6 @@ module Icinga
 #       logger.debug( self.listServicegroups() )
 #       logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
 
-
-
       logger.debug( self.existsUsergroup?( 'xanhaem' ) ? 'true' : 'false' )
       logger.debug( self.listUsergroups() )
 
