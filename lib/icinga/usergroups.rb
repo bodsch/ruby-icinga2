@@ -12,14 +12,13 @@ module Icinga
 
         return {
           :status  => 404,
-          :message => 'no name for the usergroup'
+          :message => 'missing usergroup name'
         }
       end
 
       payload = {
         "attrs" => {
-          "display_name"         => name,
-          "enable_notifications" => false
+          "display_name"         => name
         }
       }
 
@@ -44,7 +43,7 @@ module Icinga
 
         return {
           :status  => 404,
-          :message => 'no name for the usergroup'
+          :message => 'missing usergroup name'
         }
       end
 
@@ -76,9 +75,9 @@ module Icinga
     end
 
 
-    def existsUsergroup?( user )
+    def existsUsergroup?( name )
 
-      result = self.listUsergroups( { :name => user } )
+      result = self.listUsergroups( { :name => name } )
 
       if( result.is_a?( String ) )
         result = JSON.parse( result )

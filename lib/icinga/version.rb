@@ -5,7 +5,7 @@ module Icinga
 
     MAJOR = 1
     MINOR = 4
-    TINY  = 4
+    TINY  = 5
 
   end
 

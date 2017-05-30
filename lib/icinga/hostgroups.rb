@@ -5,9 +5,6 @@ module Icinga
 
     def addHostgroup( params = {} )
 
-      code        = nil
-      result      = {}
-
       name        = params.dig(:name)
       displayName = params.dig(:display_name)
 
@@ -63,11 +60,11 @@ module Icinga
 
     def listHostgroups( params = {} )
 
-      host = params.dig(:host)
+      name = params.dig(:name)
 
       result = Network.get( {
-        :host => host,
-        :url  => sprintf( '%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, host ),
+        :host     => name,
+        :url      => sprintf( '%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name ),
         :headers  => @headers,
         :options  => @options
       } )
@@ -77,16 +74,15 @@ module Icinga
     end
 
 
-    def existsHostgroup?( host )
+    def existsHostgroup?( name )
 
-      result = Network.get( {
-        :host => host,
-        :url  => sprintf( '%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, host ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = self.listHostgroups( { :name => name } )
 
-      status = result.dig(:status)
+      if( result.is_a?( String ) )
+        result = JSON.parse( result )
+      end
+
+      status = result.dig('status')
 
       if( status != nil && status == 200 )
         return true

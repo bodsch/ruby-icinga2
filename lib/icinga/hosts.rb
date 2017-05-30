@@ -3,35 +3,45 @@ module Icinga
 
   module Hosts
 
-    def addHost( params = {}, host = nil, vars = {} )
+    def addHost( params = {} )
 
-      code        = nil
-      result      = {}
+      name             = params.dig(:name)
+      fqdn             = params.dig(:fqdn)
+      displayName      = params.dig(:display_name) || name
+      notifications    = params.dig(:enable_notifications) || false
+      maxCheckAttempts = params.dig(:max_check_attempts) || 3
+      checkInterval    = params.dig(:check_interval) || 60
+      retryInterval    = params.dig(:retry_interval) || 45
+      notes            = params.dig(:notes)
+      notesUrl         = params.dig(:notes_url)
+      actionUrl        = params.dig(:action_url)
+      vars             = params.dig(:vars) || {}
 
-      host     = params.dig(:host) || nil
-      vars     = params.dig(:vars) || {}
-      endpoint = nil
-
-      if( host == nil )
+      if( name == nil )
 
         return {
-          :status  => 500,
-          :message => 'internal Server Error'
+          :status  => 404,
+          :message => 'missing host name'
         }
       end
 
-      # build FQDN
-      fqdn = Socket.gethostbyname( host ).first
+      if( fqdn == nil )
+        # build FQDN
+        fqdn = Socket.gethostbyname( name ).first
+      end
 
       payload = {
         "templates" => [ "generic-host" ],
-        "attrs" => {
+        "attrs"     => {
           "address"              => fqdn,
-          "display_name"         => host,
-          "max_check_attempts"   => 3,
-          "check_interval"       => 60,
-          "retry_interval"       => 45,
-          "enable_notifications" => false
+          "display_name"         => displayName,
+          "max_check_attempts"   => maxCheckAttempts.to_i,
+          "check_interval"       => checkInterval.to_i,
+          "retry_interval"       => retryInterval.to_i,
+          "enable_notifications" => notifications,
+          "action_url"           => actionUrl,
+          "notes"                => notes,
+          "notes_url"            => notesUrl
         }
       }
 
@@ -43,11 +53,11 @@ module Icinga
         payload['attrs']['zone'] = @icingaSatellite
       end
 
-#       logger.debug( JSON.pretty_generate( payload ) )
+      logger.debug( JSON.pretty_generate( payload ) )
 
       result = Network.put( {
-        :host    => host,
-        :url     => sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, host ),
+        :host    => name,
+        :url     => sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
         :headers => @headers,
         :options => @options,
         :payload => payload
@@ -60,19 +70,19 @@ module Icinga
 
     def deleteHost( params = {} )
 
-      host = params.dig(:host) || nil
+      name = params.dig(:name)
 
-      if( host == nil )
+      if( name == nil )
 
         return {
-          :status  => 500,
-          :message => 'internal Server Error'
+          :status  => 404,
+          :message => 'missing host name'
         }
       end
 
       result = Network.delete( {
-        :host    => host,
-        :url     => sprintf( '%s/v1/objects/hosts/%s?cascade=1', @icingaApiUrlBase, host ),
+        :host    => name,
+        :url     => sprintf( '%s/v1/objects/hosts/%s?cascade=1', @icingaApiUrlBase, name ),
         :headers => @headers,
         :options => @options
       } )
@@ -82,21 +92,37 @@ module Icinga
     end
 
 
-    def listHost( params = {} )
+    def listHosts( params = {} )
 
-      code        = nil
-      result      = {}
-
-      host = params.dig(:host)
+      name = params.dig(:name)
 
       result = Network.get( {
-        :host => host,
-        :url  => sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, host ),
+        :host => name,
+        :url  => sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
         :headers  => @headers,
         :options  => @options
       } )
 
       return JSON.pretty_generate( result )
+
+    end
+
+
+    def existsHost?( name )
+
+      result = self.listHosts( { :name => name } )
+
+      if( result.is_a?( String ) )
+        result = JSON.parse( result )
+      end
+
+      status = result.dig('status')
+
+      if( status != nil && status == 200 )
+        return true
+      end
+
+      return false
 
     end
 

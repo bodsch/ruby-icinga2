@@ -6,9 +6,6 @@ module Icinga
 
     def addServicegroup( params = {} )
 
-      code        = nil
-      result      = {}
-
       name        = params.dig(:name)
       displayName = params.dig(:display_name)
 
@@ -16,7 +13,7 @@ module Icinga
 
         return {
           :status  => 404,
-          :message => 'no name for the servicegroup'
+          :message => 'missing servicegroup name'
         }
       end
 
@@ -27,6 +24,7 @@ module Icinga
       }
 
       result = Network.put( {
+        :host    => name,
         :url     => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
         :headers => @headers,
         :options => @options,
@@ -46,7 +44,7 @@ module Icinga
 
         return {
           :status  => 404,
-          :message => 'no name for the servicegroup'
+          :message => 'missing servicegroup name'
         }
       end
 
@@ -64,11 +62,11 @@ module Icinga
 
     def listServicegroups( params = {} )
 
-      host = params.dig(:host)
+      name = params.dig(:name)
 
       result = Network.get( {
-        :host => host,
-        :url  => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, host ),
+        :host     => name,
+        :url      => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
         :headers  => @headers,
         :options  => @options
       } )
@@ -78,16 +76,16 @@ module Icinga
     end
 
 
-    def existsServicegroup?( host )
+    def existsServicegroup?( name )
 
-      result = Network.get( {
-        :host => host,
-        :url  => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, host ),
-        :headers  => @headers,
-        :options  => @options
-      } )
 
-      status = result.dig(:status)
+      result = self.listServicegroups( { :name => name } )
+
+      if( result.is_a?( String ) )
+        result = JSON.parse( result )
+      end
+
+      status = result.dig('status')
 
       if( status != nil && status == 200 )
         return true

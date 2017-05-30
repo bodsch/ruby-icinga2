@@ -128,20 +128,29 @@ module Icinga
     def run()
 
       logger.debug( self.applicationData() )
-#       logger.debug( self.listHost( { :host => 'foo-bar.com' } ) )
+#       logger.debug( self.listHost( { :name => 'foo-bar.com' } ) )
 #       logger.debug( self.listHost() )
 #       logger.debug( self.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false' )
 #       logger.debug( self.addHostgroup( { :name => 'sip', :display_name => 'SIP' } ) )
 #       logger.debug( self.listHostgroups() )
 #       logger.debug( self.deleteHostgroup( { :name => 'sip' } ) )
+
+      logger.debug( self.listServices() )
+      logger.debug( self.existsService?( 'users' )  ? 'true' : 'false' )
+
 #       logger.debug( self.listServicegroups() )
 #       logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
 
-      logger.debug( self.existsUsergroup?( 'xanhaem' ) ? 'true' : 'false' )
-      logger.debug( self.listUsergroups() )
+#      logger.debug( self.addUsergroup( { :name => 'test', :display_name => 'test group' } ) )
+#       logger.debug( self.existsUsergroup?( 'icingaadmins' ) ? 'true' : 'false' )
+#       logger.debug( self.listUsergroups() )
+#      logger.debug( self.deleteUsergroup( { :name => 'test' } ) )
 
-      logger.debug( self.existsUser?( 'bodsch' ) ? 'true' : 'false' )
-      logger.debug( self.listUsers() )
+
+#       logger.debug( self.existsUser?( 'bodsch' ) ? 'true' : 'false' )
+#       logger.debug( self.listUsers() )
+#       logger.debug( self.addUser( { :name => 'test', :display_name => 'test user', :email => 'foo@bar.com', :pager => '0000', :groups => ['1st-level', 'coremedia'] } ) )
+#       logger.debug( self.deleteUser( { :name => 'test' } ) )
 
     end
 

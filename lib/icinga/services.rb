@@ -50,6 +50,46 @@ module Icinga
 
     end
 
+
+
+
+
+    def listServices( params = {} )
+
+      name = params.dig(:name)
+
+      result = Network.get( {
+        :host     => name,
+        :url      => sprintf( '%s/v1/objects/services/%s', @icingaApiUrlBase, name ),
+        :headers  => @headers,
+        :options  => @options
+      } )
+
+      return JSON.pretty_generate( result )
+
+    end
+
+
+    def existsService?( name )
+
+      result = self.listServices( { :name => name } )
+
+      if( result.is_a?( String ) )
+        result = JSON.parse( result )
+      end
+
+      logger.debug( result )
+
+      status = result.dig('status')
+
+      if( status != nil && status == 200 )
+        return true
+      end
+
+      return false
+
+    end
+
   end
 
 end

@@ -5,16 +5,18 @@ module Icinga
 
     def addUser( params = {} )
 
-      name     = params.dig(:name)
-      email    = params.dig(:email)
-      pager    = params.dig(:pager)
-      groups   = params.dig(:groups) || []
+      name          = params.dig(:name)
+      displayName   = params.dig(:display_name)
+      email         = params.dig(:email)
+      pager         = params.dig(:pager)
+      notifications = params.dig(:enable_notifications) || false
+      groups        = params.dig(:groups) || []
 
       if( name == nil )
 
         return {
           :status  => 404,
-          :message => 'no name for the user'
+          :message => 'missing user name'
         }
       end
 
@@ -22,31 +24,55 @@ module Icinga
 
         return {
           :status  => 404,
-          :message => 'groups must be an array'
+          :message => 'groups must be an array',
+          :data    => params
         }
       end
 
       payload = {
         "attrs" => {
-          "display_name"         => name,
+          "display_name"         => displayName,
           "email"                => email,
           "pager"                => pager,
-          "enable_notifications" => false
+          "enable_notifications" => notifications
         }
       }
 
       if( ! groups.empty? )
-        payload['attrs']['groups'] = vars
+        payload['attrs']['groups'] = groups
       end
 
       logger.debug( payload )
 
+      groupValidate = Array.new()
 
-      result = Network.delete( {
+      groups.each do |g|
+
+        if( self.existsUsergroup?( g ) == false )
+          groupValidate << g
+        end
+
+      end
+
+      if( groupValidate.count != 0 )
+
+        groups = groupValidate.join(', ')
+
+        return {
+
+          :status  => 404,
+          :message => "these groups are not exists: #{groups}",
+          :data    => params
+        }
+
+      end
+
+      result = Network.put( {
         :host    => name,
         :url     => sprintf( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
         :headers => @headers,
-        :options => @options
+        :options => @options,
+        :payload => payload
       } )
 
       return JSON.pretty_generate( result )
@@ -56,13 +82,13 @@ module Icinga
 
     def deleteUser( params = {} )
 
-      name = params.dig(:name) || nil
+      name = params.dig(:name)
 
       if( name == nil )
 
         return {
-          :status  => 500,
-          :message => 'internal Server Error'
+          :status  => 404,
+          :message => 'missing user name'
         }
       end
 
@@ -94,9 +120,9 @@ module Icinga
     end
 
 
-    def existsUser?( user )
+    def existsUser?( name )
 
-      result = self.listUsers( { :name => user } )
+      result = self.listUsers( { :name => name } )
 
       if( result.is_a?( String ) )
         result = JSON.parse( result )
