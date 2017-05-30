@@ -67,6 +67,8 @@ module Icinga
     end
 
 
+    # PRIVATE SECTION
+    #
     def hostNotification( params = {} )
 
       name          = params.dig(:name)

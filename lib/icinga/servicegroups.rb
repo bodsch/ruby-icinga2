@@ -99,7 +99,3 @@ module Icinga
   end
 
 end
-
-
-#curl -k -s -u icingaadmin:icinga 'https://localhost:5665/v1/objects/servicegroups/testgrp' \
-#    -X PUT -d '{ "attrs": { "name" : "testgrp" ,"display_name" : "testgrp" , "state_loaded" :true }}'
