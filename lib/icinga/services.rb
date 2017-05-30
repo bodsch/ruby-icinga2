@@ -52,7 +52,13 @@ module Icinga
 
 
 
+    def unhandledServices( params = {} )
 
+      # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
+      # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
+      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST 'https://127.0.0.1:5665/v1/objects/services' -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
+
+    end
 
     def listServices( params = {} )
 
