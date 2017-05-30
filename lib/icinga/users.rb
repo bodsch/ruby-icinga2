@@ -42,8 +42,6 @@ module Icinga
         payload['attrs']['groups'] = groups
       end
 
-      logger.debug( payload )
-
       groupValidate = Array.new()
 
       groups.each do |g|

@@ -68,13 +68,101 @@ module Icinga
     end
 
 
+
+    def self.post( params = {} )
+
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload)
+
+      headers['X-HTTP-Method-Override'] = 'POST'
+
+      result  = {}
+
+      restClient = RestClient::Resource.new(
+        URI.encode( url ),
+        options
+      )
+
+      begin
+
+        data = restClient.post(
+          JSON.generate( payload ),
+          headers
+        )
+
+        data    = JSON.parse( data )
+        results = data.dig('results').first
+
+        if( results != nil )
+
+          result = {
+            :status      => results.dig('code').to_i,
+            :name        => results.dig('name'),
+            :message     => results.dig('status')
+          }
+
+        end
+
+      rescue RestClient::ExceptionWithResponse => e
+
+        error  = e.response ? e.response : nil
+
+        if( error.is_a?( String ) )
+          error = JSON.parse( error )
+        end
+
+        $stderr.puts( JSON.pretty_generate( error ) )
+
+        results = error.dig( 'results' )
+
+        if( results != nil )
+
+          result = result.first
+
+          result = {
+            :status      => results.dig('code').to_i,
+            :name        => results.dig('name'),
+            :message     => results.dig('status'),
+            :error       => results.dig('errors')
+          }
+
+        else
+
+          result = {
+            :status      => error.dig( 'error' ).to_i,
+            :message     => error.dig( 'status' )
+          }
+
+        end
+
+      rescue Errno::ECONNREFUSED => e
+
+        $stderr.puts "Server refusing connection; retrying in 5s..."
+
+      rescue => e
+
+        $stderr.puts e
+
+      end
+
+      return result
+
+
+
+    end
+
+
+
     def self.put( params = {} )
 
-      host    = params.dig(:host)    || nil
-      url     = params.dig(:url)     || nil
-      headers = params.dig(:headers) || nil
-      options = params.dig(:options) || nil
-      payload = params.dig(:payload) || nil
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload)
 
       headers['X-HTTP-Method-Override'] = 'PUT'
 
@@ -113,16 +201,29 @@ module Icinga
           error = JSON.parse( error )
         end
 
-        results = error.dig( 'results' ).first
+        results = error.dig( 'results' )
 
         if( results != nil )
 
-          result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status'),
-            :error       => results.dig('errors')
-          }
+          if( result.is_a?( Hash ) && result.count() != 0 )
+
+            result = result.first
+
+            result = {
+              :status      => results.dig('code').to_i,
+              :name        => results.dig('name'),
+              :message     => results.dig('status'),
+              :error       => results.dig('errors')
+            }
+
+          else
+
+            result = {
+              :status    => 204,
+              :name      => host,
+              :message   => 'unknown result'
+            }
+          end
 
         else
 
@@ -188,7 +289,7 @@ module Icinga
           error = JSON.parse( error )
         end
 
-        results = error.dig( 'results')
+        results = error.dig('results')
 
         if( results != nil )
 

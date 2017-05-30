@@ -20,6 +20,10 @@ https://localhost:5665/v1/objects/servicegroups
 https://localhost:5665/v1/objects/hosts
 https://localhost:5665/v1/objects/services
 
+# list service from host
+curl -k -u root:icinga -H 'Accept: application/json' -X GET  'https://localhost:5665/v1/objects/services/pandora-17-01!Runlevel-master-live-server'
+
+
 https://localhost:5665/v1/objects/notifications
 
 # get usergroups:
@@ -38,6 +42,25 @@ curl -k -s -u root:icinga -H 'Accept: application/json' -H 'X-HTTP-Method-Overri
 # add user:
 curl -k -s -u root:icinga -H 'Accept: application/json' -X PUT 'https://localhost:5665/v1/objects/users/foo' --data '{ "attrs": {"display_name": "Foo Bar", "email": "foo.bar@coremedia.com","enable_notifications": false, "groups": [ "coreme
 dia" ] } }'
+
+
+
+# add notification
+curl -k -s -u root:icinga -H 'Accept: application/json' \
+  -X PUT 'https://localhost:5665/v1/objects/notifications/debian7.example.com!jabber' -d '{
+ "attrs": {
+ "command":"mail-service-notification",
+ "service_name":"apt",
+ "user_groups": ["icingaadmins"] } }'
+
+
+# delete notification
+curl -k -s -u root:icinga -H 'Accept: application/json' \
+  -H 'X-HTTP-Method-Override: DELETE' \
+  -X POST 'https://localhost:5665/v1/objects/notifications/debian7.example.com!apt!jabber?cascade=1'
+
+
+
 
 
 # enable notification für host:

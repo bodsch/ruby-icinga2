@@ -15,6 +15,8 @@ require_relative 'logging'
 require_relative 'icinga/version'
 require_relative 'icinga/network'
 require_relative 'icinga/status'
+require_relative 'icinga/downtimes'
+require_relative 'icinga/notifications'
 require_relative 'icinga/hosts'
 require_relative 'icinga/hostgroups'
 require_relative 'icinga/services'
@@ -33,6 +35,8 @@ module Icinga
     include Icinga::Version
     include Icinga::Network
     include Icinga::Status
+    include Icinga::Downtimes
+    include Icinga::Notifications
     include Icinga::Hosts
     include Icinga::Hostgroups
     include Icinga::Services
@@ -121,36 +125,6 @@ module Icinga
 
         return false
       end
-
-    end
-
-
-    def run()
-
-      logger.debug( self.applicationData() )
-#       logger.debug( self.listHost( { :name => 'foo-bar.com' } ) )
-#       logger.debug( self.listHost() )
-#       logger.debug( self.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false' )
-#       logger.debug( self.addHostgroup( { :name => 'sip', :display_name => 'SIP' } ) )
-#       logger.debug( self.listHostgroups() )
-#       logger.debug( self.deleteHostgroup( { :name => 'sip' } ) )
-
-      logger.debug( self.listServices() )
-      logger.debug( self.existsService?( 'users' )  ? 'true' : 'false' )
-
-#       logger.debug( self.listServicegroups() )
-#       logger.debug( self.existsServicegroup?( 'disk' ) ? 'true' : 'false' )
-
-#      logger.debug( self.addUsergroup( { :name => 'test', :display_name => 'test group' } ) )
-#       logger.debug( self.existsUsergroup?( 'icingaadmins' ) ? 'true' : 'false' )
-#       logger.debug( self.listUsergroups() )
-#      logger.debug( self.deleteUsergroup( { :name => 'test' } ) )
-
-
-#       logger.debug( self.existsUser?( 'bodsch' ) ? 'true' : 'false' )
-#       logger.debug( self.listUsers() )
-#       logger.debug( self.addUser( { :name => 'test', :display_name => 'test user', :email => 'foo@bar.com', :pager => '0000', :groups => ['1st-level', 'coremedia'] } ) )
-#       logger.debug( self.deleteUser( { :name => 'test' } ) )
 
     end
 

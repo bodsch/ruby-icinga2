@@ -56,11 +56,18 @@ module Icinga
 
     def listServices( params = {} )
 
-      name = params.dig(:name)
+      name    = params.dig(:host)
+      service = params.dig(:service)
+
+      if( service == nil )
+        url = sprintf( '%s/v1/objects/services/%s', @icingaApiUrlBase, name )
+      else
+        url = sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, name, service )
+      end
 
       result = Network.get( {
         :host     => name,
-        :url      => sprintf( '%s/v1/objects/services/%s', @icingaApiUrlBase, name ),
+        :url      => url,
         :headers  => @headers,
         :options  => @options
       } )
@@ -70,15 +77,24 @@ module Icinga
     end
 
 
-    def existsService?( name )
+    def existsService?( params = {} )
 
-      result = self.listServices( { :name => name } )
+      host    = params.dig(:host)
+      service = params.dig(:service)
+
+      if( host == nil )
+
+        return {
+          :status  => 404,
+          :message => 'missing host name'
+        }
+      end
+
+      result = self.listServices( { :host => host, :service => service } )
 
       if( result.is_a?( String ) )
         result = JSON.parse( result )
       end
-
-      logger.debug( result )
 
       status = result.dig('status')
 
