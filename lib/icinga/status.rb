@@ -18,6 +18,22 @@ module Icinga
 
     end
 
+
+    def CIBData()
+
+      result = Network.get( {
+        :host     => nil,
+        :url      => sprintf( '%s/v1/status/CIB', @icingaApiUrlBase ),
+        :headers  => @headers,
+        :options  => @options
+      })
+
+      status = result.dig('status')
+
+    end
+
+
+
   end
 
 end
