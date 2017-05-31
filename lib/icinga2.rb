@@ -51,13 +51,13 @@ module Icinga2
 
     def initialize( settings = {} )
 
-      @icingaHost           = settings.dig(:icinga, :host)       || 'localhost'
-      @icingaApiPort        = settings.dig(:icinga, :api, :port) || 5665
+      @icingaHost           = settings.dig(:icinga, :host)           || 'localhost'
+      @icingaApiPort        = settings.dig(:icinga, :api, :port)     || 5665
       @icingaApiUser        = settings.dig(:icinga, :api, :user)
       @icingaApiPass        = settings.dig(:icinga, :api, :password)
-      @icingaCluster        = settings.dig(:icinga, :cluster)    || false
+      @icingaCluster        = settings.dig(:icinga, :cluster)        || false
       @icingaSatellite      = settings.dig(:icinga, :satellite)
-      @icingaNotifications  = settings.dig(:icinga, :notifications)   || false
+      @icingaNotifications  = settings.dig(:icinga, :notifications)  || false
 
       @icingaApiUrlBase     = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName             = Socket.gethostbyname( Socket.gethostname ).first
