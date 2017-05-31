@@ -141,6 +141,40 @@ module Icinga
 
     end
 
+
+    def hostObjects()
+
+
+
+    end
+
+  def getHostObjects(attrs = nil, filter = nil, joins = nil)
+    apiUrl = sprintf('%s/objects/hosts', @apiUrlBase)
+    restClient = RestClient::Resource.new(URI.encode(apiUrl), @options)
+
+    @headers["X-HTTP-Method-Override"] = "GET"
+    requestBody = {}
+
+    if (attrs)
+      requestBody["attrs"] = attrs
+    end
+
+    if (filter)
+      requestBody["filter"] = filter
+    end
+
+    if (joins)
+      requestBody["joins"] = joins
+    end
+
+    payload = JSON.generate(requestBody)
+    res = restClient.post(payload, @headers)
+    body = res.body
+    data = JSON.parse(body)
+    return data['results']
+  end
+
+
   end
 
 end
