@@ -100,35 +100,25 @@ module Icinga
         )
 
         responseCode = response.code
+        responseBody = response.body
 
-        data    = JSON.parse( response )
+        node         = Hash.new()
+
+        data    = JSON.parse( responseBody )
 
         results = data.dig('results')
 
         if( results != nil )
 
-          results  = results.first
+          results.each do |r|
 
-          name     = results.dig('name')
-          message  = results.dig('status')
-          attrs    = results.dig('attrs')
-          perfdata = results.dig('perfdata')
+            node[r.dig('name')] = r
+          end
 
           result = {
-            :status      => responseCode,
-            :name        => name
+            :status  => responseCode,
+            :nodes   => node
           }
-
-          if( message != nil )
-            result['message'] = message
-          end
-          if( attrs != nil )
-            result['attrs'] = attrs
-          end
-          if( perfdata != nil && perfdata.is_a?( Hash ) && perfdata.count != 0 )
-            result['perfdata'] = perfdata
-          end
-
         end
 
       rescue RestClient::ExceptionWithResponse => e

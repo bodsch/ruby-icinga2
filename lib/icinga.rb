@@ -15,6 +15,8 @@ require_relative 'logging'
 require_relative 'icinga/version'
 require_relative 'icinga/network'
 require_relative 'icinga/status'
+require_relative 'icinga/converts'
+require_relative 'icinga/tools'
 require_relative 'icinga/downtimes'
 require_relative 'icinga/notifications'
 require_relative 'icinga/hosts'
@@ -35,6 +37,8 @@ module Icinga
     include Icinga::Version
     include Icinga::Network
     include Icinga::Status
+    include Icinga::Converts
+    include Icinga::Tools
     include Icinga::Downtimes
     include Icinga::Notifications
     include Icinga::Hosts

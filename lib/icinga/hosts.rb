@@ -142,37 +142,149 @@ module Icinga
     end
 
 
-    def hostObjects()
+    def hostObjects( params = {} )
 
+      attrs   = params.dig(:attrs)
+      filter  = params.dig(:filter)
+      joins   = params.dig(:joins)
+      payload = {}
 
+      if( attrs == nil )
+        attrs = ['name','state','acknowledgement','downtime_depth','last_check']
+      end
+
+      if( attrs != nil )
+        payload['attrs'] = attrs
+      end
+
+      if( filter != nil )
+        payload['filter'] = filter
+      end
+
+      if( joins != nil )
+        payload['joins'] = joins
+      end
+
+      result = Network.get( {
+        :host     => nil,
+        :url      => sprintf( '%s/v1/objects/hosts', @icingaApiUrlBase ),
+        :headers  => @headers,
+        :options  => @options,
+        :payload  => payload
+      } )
+
+      return JSON.pretty_generate( result )
 
     end
 
-  def getHostObjects(attrs = nil, filter = nil, joins = nil)
-    apiUrl = sprintf('%s/objects/hosts', @apiUrlBase)
-    restClient = RestClient::Resource.new(URI.encode(apiUrl), @options)
 
-    @headers["X-HTTP-Method-Override"] = "GET"
-    requestBody = {}
+    def hostProblems()
 
-    if (attrs)
-      requestBody["attrs"] = attrs
+      data     = self.hostObjects()
+      problems = 0
+
+      if( data.is_a?(String) )
+        data = JSON.parse(data)
+      end
+
+      nodes = data.dig('nodes')
+
+      nodes.each do |n|
+
+        attrs           = n.last.dig('attrs')
+
+        state           = attrs.dig('state')           || 0
+        downtimeDepth   = attrs.dig('downtime_depth')  || 0
+        acknowledgement = attrs.dig('acknowledgement') || 0
+
+        if( state != 0 && downtimeDepth == 0 && acknowledgement == 0 )
+          problems += problems
+        end
+
+      end
+
+      return problems
+
     end
 
-    if (filter)
-      requestBody["filter"] = filter
+
+    def problemHosts( max_items = 5 )
+
+      count = 0
+      @serviceProblems = {}
+      @serviceProblemsSeverity = {}
+
+      hostData = self.hostObjects()
+
+      if( hostData.is_a?(String) )
+
+        hostData = JSON.parse( hostData )
+      end
+
+#       logger.debug( hostData )
+
+      hostData = hostData.dig('nodes')
+
+      hostData.each do |host,v|
+
+        name  = v.dig('name')
+        state = v.dig('attrs','state')
+
+        if( state == 0 )
+          next
+        end
+
+        @serviceProblems[name] = self.hostSeverity(v)
+      end
+
+      return @serviceProblems
+
     end
 
-    if (joins)
-      requestBody["joins"] = joins
-    end
+    # stolen from Icinga Web 2
+    # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
+    #
+    def hostSeverity( host )
 
-    payload = JSON.generate(requestBody)
-    res = restClient.post(payload, @headers)
-    body = res.body
-    data = JSON.parse(body)
-    return data['results']
-  end
+      attrs = host["attrs"]
+
+      severity = 0
+
+      if (attrs["state"] == 0)
+        if (getObjectHasBeenChecked(host))
+          severity += 16
+        end
+
+        if (attrs["acknowledgement"] != 0)
+          severity += 2
+        elsif (attrs["downtime_depth"] > 0)
+          severity += 1
+        else
+          severity += 4
+        end
+      else
+        if (getObjectHasBeenChecked(host))
+          severity += 16
+        elsif (attrs["state"] == 1)
+          severity += 32
+        elsif (attrs["state"] == 2)
+          severity += 64
+        else
+          severity += 256
+        end
+
+        if (attrs["acknowledgement"] != 0)
+          severity += 2
+        elsif (attrs["downtime_depth"] > 0)
+          severity += 1
+        else
+          severity += 4
+        end
+      end
+
+      return severity
+
+    end
 
 
   end
