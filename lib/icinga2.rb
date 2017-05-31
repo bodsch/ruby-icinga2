@@ -49,17 +49,18 @@ module Icinga2
     include Icinga2::Usergroups
 
 
-    def initialize( params = {} )
+    def initialize( settings = {} )
 
-      @icingaHost       = params.dig(:icinga, :host)       || 'localhost'
-      @icingaApiPort    = params.dig(:icinga, :api, :port) || 5665
-      @icingaApiUser    = params.dig(:icinga, :api, :user)
-      @icingaApiPass    = params.dig(:icinga, :api, :pass)
-      @icingaCluster    = params.dig(:icinga, :cluster)    || false
-      @icingaSatellite  = params.dig(:icinga, :satellite)
+      @icingaHost           = settings.dig(:icinga, :host)       || 'localhost'
+      @icingaApiPort        = settings.dig(:icinga, :api, :port) || 5665
+      @icingaApiUser        = settings.dig(:icinga, :api, :user)
+      @icingaApiPass        = settings.dig(:icinga, :api, :password)
+      @icingaCluster        = settings.dig(:icinga, :cluster)    || false
+      @icingaSatellite      = settings.dig(:icinga, :satellite)
+      @icingaNotifications  = settings.dig(:icinga, :notifications)   || false
 
-      @icingaApiUrlBase = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
-      @nodeName         = Socket.gethostbyname( Socket.gethostname ).first
+      @icingaApiUrlBase     = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
+      @nodeName             = Socket.gethostbyname( Socket.gethostname ).first
 
       date                 = '2017-05-31'
 
@@ -69,6 +70,7 @@ module Icinga2
       logger.info( '  Copyright 2016-2017 Bodo Schulz' )
       logger.info( "  Backendsystem #{@icingaApiUrlBase}" )
       logger.info( sprintf( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
+      logger.info( sprintf( '    notifications enabled: %s', @icingaNotifications ? 'true' : 'false' ) )
       if( @icingaCluster )
         logger.info( sprintf( '    satellite endpoint: %s', @icingaSatellite ) )
       end

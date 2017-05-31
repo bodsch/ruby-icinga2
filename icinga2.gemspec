@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'icinga2'
-  s.version     = '1.4.6'
+  s.version     = '1.4.7'
   s.date        = '2017-05-31'
   s.summary     = "Ruby Class for the Icinga2 API"
   s.description = "Ruby Class for the Icinga2 API"
