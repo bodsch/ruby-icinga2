@@ -12,41 +12,41 @@ require 'net/http'
 require 'uri'
 
 require_relative 'logging'
-require_relative 'icinga/version'
-require_relative 'icinga/network'
-require_relative 'icinga/status'
-require_relative 'icinga/converts'
-require_relative 'icinga/tools'
-require_relative 'icinga/downtimes'
-require_relative 'icinga/notifications'
-require_relative 'icinga/hosts'
-require_relative 'icinga/hostgroups'
-require_relative 'icinga/services'
-require_relative 'icinga/servicegroups'
-require_relative 'icinga/users'
-require_relative 'icinga/usergroups'
+require_relative 'icinga2/version'
+require_relative 'icinga2/network'
+require_relative 'icinga2/status'
+require_relative 'icinga2/converts'
+require_relative 'icinga2/tools'
+require_relative 'icinga2/downtimes'
+require_relative 'icinga2/notifications'
+require_relative 'icinga2/hosts'
+require_relative 'icinga2/hostgroups'
+require_relative 'icinga2/services'
+require_relative 'icinga2/servicegroups'
+require_relative 'icinga2/users'
+require_relative 'icinga2/usergroups'
 
 # -------------------------------------------------------------------------------------------------------------------
 
-module Icinga
+module Icinga2
 
   class Client
 
     include Logging
 
-    include Icinga::Version
-    include Icinga::Network
-    include Icinga::Status
-    include Icinga::Converts
-    include Icinga::Tools
-    include Icinga::Downtimes
-    include Icinga::Notifications
-    include Icinga::Hosts
-    include Icinga::Hostgroups
-    include Icinga::Services
-    include Icinga::Servicegroups
-    include Icinga::Users
-    include Icinga::Usergroups
+    include Icinga2::Version
+    include Icinga2::Network
+    include Icinga2::Status
+    include Icinga2::Converts
+    include Icinga2::Tools
+    include Icinga2::Downtimes
+    include Icinga2::Notifications
+    include Icinga2::Hosts
+    include Icinga2::Hostgroups
+    include Icinga2::Services
+    include Icinga2::Servicegroups
+    include Icinga2::Users
+    include Icinga2::Usergroups
 
 
     def initialize( params = {} )
@@ -61,7 +61,7 @@ module Icinga
       @icingaApiUrlBase = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName         = Socket.gethostbyname( Socket.gethostname ).first
 
-      date                 = '2017-05-29'
+      date                 = '2017-05-31'
 
       logger.info( '-----------------------------------------------------------------' )
       logger.info( ' Icinga2 Management' )

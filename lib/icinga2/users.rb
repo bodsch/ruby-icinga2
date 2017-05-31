@@ -1,5 +1,5 @@
 
-module Icinga
+module Icinga2
 
   module Users
 

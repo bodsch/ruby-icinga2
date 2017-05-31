@@ -1,11 +1,11 @@
 
-module Icinga
+module Icinga2
 
   module Version
 
     MAJOR = 1
     MINOR = 4
-    TINY  = 5
+    TINY  = 6
 
   end
 

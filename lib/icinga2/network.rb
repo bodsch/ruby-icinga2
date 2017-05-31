@@ -1,4 +1,4 @@
-module Icinga
+module Icinga2
 
   module Network
 
