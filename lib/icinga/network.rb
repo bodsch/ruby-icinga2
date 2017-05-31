@@ -4,10 +4,18 @@ module Icinga
 
     def self.get( params = {} )
 
-      host    = params.dig(:host)    || nil
-      url     = params.dig(:url)     || nil
-      headers = params.dig(:headers) || nil
-      options = params.dig(:options) || nil
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload) || {}
+      result  = {}
+
+      if( payload.count >= 1 )
+
+        return self.get2( params )
+      end
+
 
       headers.delete( 'X-HTTP-Method-Override' )
 
@@ -20,7 +28,7 @@ module Icinga
 
       begin
 
-        data  = restClient.get( headers )
+        data     = restClient.get( headers )
         results  = JSON.parse( data.body )
         results  = results.dig('results')
 
@@ -50,6 +58,82 @@ module Icinga
 
         error  = e.response ? e.response : nil
 
+        error  = JSON.parse( error )
+
+        result = {
+          :status      => error['error'].to_i,
+          :name        => host,
+          :message     => error['status']
+        }
+      rescue Errno::ECONNREFUSED => e
+
+        $stderr.puts "Server refusing connection; retrying in 5s..."
+
+      end
+
+      return result
+
+    end
+
+
+    def self.get2( params = {} )
+
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload) || {}
+      result  = {}
+
+      headers['X-HTTP-Method-Override'] = 'GET'
+
+      restClient = RestClient::Resource.new(
+        URI.encode( url ),
+        options
+      )
+
+      begin
+
+        response = restClient.post(
+          JSON.generate( payload ),
+          headers
+        )
+
+        responseCode = response.code
+
+        data    = JSON.parse( response )
+
+        results = data.dig('results')
+
+        if( results != nil )
+
+          results  = results.first
+
+          name     = results.dig('name')
+          message  = results.dig('status')
+          attrs    = results.dig('attrs')
+          perfdata = results.dig('perfdata')
+
+          result = {
+            :status      => responseCode,
+            :name        => name
+          }
+
+          if( message != nil )
+            result['message'] = message
+          end
+          if( attrs != nil )
+            result['attrs'] = attrs
+          end
+          if( perfdata != nil && perfdata.is_a?( Hash ) && perfdata.count != 0 )
+            result['perfdata'] = perfdata
+          end
+
+        end
+
+      rescue RestClient::ExceptionWithResponse => e
+
+        error  = e.response ? e.response : nil
         error  = JSON.parse( error )
 
         result = {
@@ -153,7 +237,6 @@ module Icinga
 
 
     end
-
 
 
     def self.put( params = {} )

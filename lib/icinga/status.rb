@@ -12,9 +12,9 @@ module Icinga
         :options  => @options
       })
 
-      status = result.dig('status')
+#       status = result.dig('status')
 
-      return JSON.pretty_generate( status )
+      return JSON.pretty_generate( result )
 
     end
 
@@ -28,9 +28,9 @@ module Icinga
         :options  => @options
       })
 
-      status = result.dig('status')
+#       status = result.dig('status')
 
-      return JSON.pretty_generate( status )
+      return JSON.pretty_generate( result )
     end
 
     def apiListener()
@@ -42,9 +42,9 @@ module Icinga
         :options  => @options
       })
 
-      status = result.dig('status')
+#       status = result.dig('status')
 
-      return JSON.pretty_generate( status )
+      return JSON.pretty_generate( result )
     end
 
   end

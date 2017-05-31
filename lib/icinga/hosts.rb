@@ -94,7 +94,22 @@ module Icinga
 
     def listHosts( params = {} )
 
-      name = params.dig(:name)
+      name   = params.dig(:name)
+      attrs  = params.dig(:attrs)
+      filter = params.dig(:filter)
+      joins  = params.dig(:joins)
+
+      if( attrs != nil )
+        payload['attrs'] = attrs
+      end
+
+      if( filter != nil )
+        payload['filter'] = filter
+      end
+
+      if( joins != nil )
+        payload['joins'] = joins
+      end
 
       result = Network.get( {
         :host => name,
