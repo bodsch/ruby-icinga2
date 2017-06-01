@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #
 # 23.01.2017 - Bodo Schulz
 #
@@ -7,7 +7,7 @@
 
 # -----------------------------------------------------------------------------
 
-require_relative '../lib/icinga'
+require_relative '../lib/icinga2'
 
 # -----------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ Signal.trap('QUIT') { stop = true }
 
 # ---------------------------------------------------------------------------------------
 
-i = Icinga::Client.new( config )
+i = Icinga2::Client.new( config )
 
 
 if( i != nil )
