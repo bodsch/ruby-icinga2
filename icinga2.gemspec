@@ -1,11 +1,11 @@
 
 Gem::Specification.new do |s|
   s.name        = 'icinga2'
-  s.version     = '1.4.8'
-  s.date        = '2017-05-31'
-  s.summary     = "Ruby Class for the Icinga2 API"
-  s.description = "Ruby Class for the Icinga2 API"
-  s.authors     = ["Bodo Schulz"]
+  s.version     = '1.4.9'
+  s.date        = '2017-06-01'
+  s.summary     = 'Icinga2 API'
+  s.description = 'Ruby Class for the Icinga2 API'
+  s.authors     = ['Bodo Schulz']
   s.email       = 'bodo@boone-schulz.de'
   s.files       = [
     'lib/icinga2.rb',
@@ -36,7 +36,6 @@ Gem::Specification.new do |s|
     'doc/usergroups.md',
     'doc/users.md'
   ]
-  s.homepage    =
-    'https://github.com/bodsch/ruby-icinga2'
-  s.license       = 'GPL-3.0'
+  s.homepage    = 'https://github.com/bodsch/ruby-icinga2'
+  s.license     = 'LGPL-2.1+'
 end
