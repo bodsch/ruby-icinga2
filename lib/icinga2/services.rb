@@ -175,7 +175,7 @@ module Icinga2
 #         puts state
 
         if( state != 0 && downtimeDepth == 0 && acknowledgement == 0 )
-          problems = problems +1
+          problems += 1 #= problems +1
         end
 
       end
@@ -215,16 +215,18 @@ module Icinga2
 
       @serviceProblems.sort_by {|v| v}.reverse!
 
-      @serviceProblems.each do |k,v|
+      @serviceProblems.keys[1..max_items].each { |k,v| @serviceProblemsSeverity[k] = @serviceProblems[k] }
 
-        if( count >= max_items )
-          break
-        end
-
-        @serviceProblemsSeverity[k] = v
-
-        count += 1
-      end
+#       @serviceProblems.each do |k,v|
+#
+#         if( count >= max_items )
+#           break
+#         end
+#
+#         @serviceProblemsSeverity[k] = v
+#
+#         count += 1
+#       end
 
       return @serviceProblemsSeverity
     end

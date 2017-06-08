@@ -198,7 +198,7 @@ module Icinga2
         acknowledgement = attrs.dig('acknowledgement') || 0
 
         if( state != 0 && downtimeDepth == 0 && acknowledgement == 0 )
-          problems += problems
+          problems += 1
         end
 
       end
@@ -211,8 +211,8 @@ module Icinga2
     def problemHosts( max_items = 5 )
 
       count = 0
-      @serviceProblems = {}
-      @serviceProblemsSeverity = {}
+      @hostProblems = {}
+      @hostProblemsSeverity = {}
 
       hostData = self.hostObjects()
 
@@ -234,10 +234,25 @@ module Icinga2
           next
         end
 
-        @serviceProblems[name] = self.hostSeverity(v)
+        @hostProblems[name] = self.hostSeverity(v)
       end
 
-      return @serviceProblems
+      # get the count of problems
+      #
+      @hostProblems.keys[1..max_items].each { |k,v| @hostProblemsSeverity[k] = @hostProblems[k] }
+
+#       @hostProblems.each do |k,v|
+#
+#         if( count >= max_items )
+#           break
+#         end
+#
+#         @hostProblemsSeverity[k] = v
+#
+#         count += 1
+#       end
+
+      return @hostProblemsSeverity
 
     end
 

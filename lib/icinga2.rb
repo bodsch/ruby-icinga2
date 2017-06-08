@@ -62,7 +62,7 @@ module Icinga2
       @icingaApiUrlBase     = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName             = Socket.gethostbyname( Socket.gethostname ).first
 
-      date                 = '2017-05-31'
+      date                 = '2017-06-08'
 
       logger.info( '-----------------------------------------------------------------' )
       logger.info( ' Icinga2 Management' )
