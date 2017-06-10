@@ -3,9 +3,9 @@ module Icinga2
 
   module Version
 
-    MAJOR = 1
-    MINOR = 4
-    TINY  = 10
+    MAJOR = 0
+    MINOR = 5
+    TINY  = 1
 
   end
 

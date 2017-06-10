@@ -3,7 +3,7 @@
 # 23.01.2017 - Bodo Schulz
 #
 #
-# v0.9.0
+# v0.9.2
 
 # -----------------------------------------------------------------------------
 
@@ -18,17 +18,16 @@ icingaApiPass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
 icingaCluster      = ENV.fetch( 'ICINGA_CLUSTER'          , false )
 icingaSatellite    = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
 
-
 # convert string to bool
 icingaCluster   = icingaCluster.to_s.eql?('true') ? true : false
 
 config = {
   :icinga => {
-    :host      => icingaHost,
-    :api       => {
-      :port => icingaApiPort,
-      :user => icingaApiUser,
-      :pass => icingaApiPass
+    :host     => icingaHost,
+    :api      => {
+      :port     => icingaApiPort,
+      :user     => icingaApiUser,
+      :password => icingaApiPass
     },
     :cluster   => icingaCluster,
     :satellite => icingaSatellite,
@@ -36,19 +35,8 @@ config = {
 }
 
 # ---------------------------------------------------------------------------------------
-# NEVER FORK THE PROCESS!
-# the used supervisord will control all
-stop = false
-
-Signal.trap('INT')  { stop = true }
-Signal.trap('HUP')  { stop = true }
-Signal.trap('TERM') { stop = true }
-Signal.trap('QUIT') { stop = true }
-
-# ---------------------------------------------------------------------------------------
 
 i = Icinga2::Client.new( config )
-
 
 if( i != nil )
 
@@ -149,10 +137,10 @@ if( i != nil )
   puts "list all Notifications:"
   puts i.listNotifications()
 
-#   puts i.enableHostNotification( 'pandora-17-01' )
-#   puts i.disableHostNotification( 'pandora-17-01' )
+  puts i.enableHostNotification( 'icinga2-master' )
+  puts i.disableHostNotification( 'icinga2-master' )
 
-#  puts i.disableServiceNotification( 'pandora-17-01' )
+ puts i.disableServiceNotification( 'icinga2-master' )
 
 
 end

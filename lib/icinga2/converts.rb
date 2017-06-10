@@ -4,7 +4,7 @@ module Icinga2
 
   module Converts
 
-    def stateToString( state, is_host = false )
+    def self.stateToString( state, is_host = false )
 
       if( is_host == true )
 
@@ -36,7 +36,7 @@ module Icinga2
 
     end
 
-    def stateToColor( state, is_host = false )
+    def self.stateToColor( state, is_host = false )
 
       if( is_host == true )
 
@@ -67,14 +67,9 @@ module Icinga2
       return state
     end
 
-    def formatService( name )
-
+    def self.formatService( name )
       service_map = name.split('!', 2)
-
       service_map.join( ' - ' )
-#      service_map[0].to_s + " - " + service_map[1].to_s
-
-      return service_map
     end
 
   end
