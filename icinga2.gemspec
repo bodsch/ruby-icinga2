@@ -4,6 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'icinga2/version'
 
 Gem::Specification.new do |s|
+
   s.name        = 'icinga2'
   s.version     = Icinga2::VERSION
   s.date        = '2017-06-10'
@@ -22,6 +23,8 @@ Gem::Specification.new do |s|
 
   s.homepage    = 'https://github.com/bodsch/ruby-icinga2'
   s.license     = 'LGPL-2.1+'
+
+  s.required_ruby_version = '~> 2.3'
 
   s.add_dependency('rest-client', '~> 2.0')
   s.add_dependency('openssl', '~> 2.0')
