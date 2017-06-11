@@ -31,12 +31,12 @@ Gem::Specification.new do |s|
   s.add_dependency('json', '~> 2.1')
 
 
-  s.add_development_dependency( "rspec" )
-  s.add_development_dependency( "rspec-nc" )
-  s.add_development_dependency( "guard" )
-  s.add_development_dependency( "guard-rspec" )
-  s.add_development_dependency( "pry" )
-  s.add_development_dependency( "pry-remote" )
-  s.add_development_dependency( "pry-nav" )
+  s.add_development_dependency('rspec', '~> 0')
+  s.add_development_dependency('rspec-nc', '~> 0')
+  s.add_development_dependency('guard', '~> 0')
+  s.add_development_dependency('guard-rspec', '~> 0')
+  s.add_development_dependency('pry', '~> 0')
+  s.add_development_dependency('pry-remote', '~> 0')
+  s.add_development_dependency('pry-nav', '~> 0')
 
 end

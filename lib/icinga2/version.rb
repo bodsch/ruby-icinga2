@@ -5,7 +5,7 @@ module Icinga2
 
     MAJOR = 0
     MINOR = 5
-    TINY  = 1
+    TINY  = 2
 
   end
 
