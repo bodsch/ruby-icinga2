@@ -1,2 +1,3 @@
-require 'pry'
+
+# require 'pry'
 require 'icinga2'
