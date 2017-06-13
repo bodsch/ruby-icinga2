@@ -1,0 +1,19 @@
+AllCops:
+  TargetRubyVersion: 2.3
+
+Style/Encoding:
+  Enabled: false
+
+Style/IndentHash:
+  Enabled: False
+
+
+# frozen_string_literal: false
+
+Metrics/MethodLength:
+  Exclude:
+    - 'Klass#method_with_large_hash'
+
+Metrics/LineLength:
+  Max: 120
+

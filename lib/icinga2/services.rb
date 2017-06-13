@@ -249,7 +249,7 @@ module Icinga2
 
       if( state == 0 )
 
-        if( self.getObjectHasBeenChecked( service ) )
+        if( self.object_has_been_checked( service ) )
           severity += 16
         end
 
@@ -261,7 +261,7 @@ module Icinga2
           severity += 4
         end
       else
-        if( self.getObjectHasBeenChecked( service ) )
+        if( self.object_has_been_checked( service ) )
           severity += 16
         elsif( state == 1 )
           severity += 32

@@ -266,7 +266,7 @@ module Icinga2
       severity = 0
 
       if (attrs["state"] == 0)
-        if (getObjectHasBeenChecked(host))
+        if (object_has_been_checked(host))
           severity += 16
         end
 
@@ -278,7 +278,7 @@ module Icinga2
           severity += 4
         end
       else
-        if (getObjectHasBeenChecked(host))
+        if (object_has_been_checked(host))
           severity += 16
         elsif (attrs["state"] == 1)
           severity += 32
