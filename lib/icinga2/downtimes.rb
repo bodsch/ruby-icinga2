@@ -1,4 +1,5 @@
 
+# frozen_string_literal: true
 module Icinga2
 
   module Downtimes
@@ -19,89 +20,89 @@ module Icinga2
 
       # sanitychecks
       #
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing downtime name'
+          status: 404,
+          message: 'missing downtime name'
         }
       end
 
-      if( ['host','service'].include?(type.downcase) == false )
+      if( %w[host service].include?(type.downcase) == false )
 
         return {
-          :status  => 404,
-          :message => "wrong downtype type. only 'host' or' service' allowed ('#{type}' giving"
+          status: 404,
+          message: "wrong downtype type. only 'host' or' service' allowed ('#{type}' giving"
         }
       else
         # we need the first char as Uppercase
         type.capitalize!
       end
 
-      if( hostGroup != nil && hostName != nil )
+      if( !hostGroup.nil? && !hostName.nil? )
 
         return {
-          :status  => 404,
-          :message => 'choose host or host_group, not both'
+          status: 404,
+          message: 'choose host or host_group, not both'
         }
 
       end
 
-      if( hostName != nil )
+      if( !hostName.nil? )
 
-        filter = sprintf( 'host.name=="%s"', hostName )
-      elsif( hostGroup != nil )
+        filter = format( 'host.name=="%s"', hostName )
+      elsif( !hostGroup.nil? )
 
         # check if hostgroup available ?
         #
-        filter = sprintf( '"%s" in host.groups', hostGroup )
+        filter = format( '"%s" in host.groups', hostGroup )
       else
 
         return {
-          :status  => 404,
-          :message => 'missing host or host_group for downtime'
+          status: 404,
+          message: 'missing host or host_group for downtime'
         }
       end
 
-      if( comment == nil )
+      if( comment.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing downtime comment'
+          status: 404,
+          message: 'missing downtime comment'
         }
       end
 
-      if( author == nil )
+      if( author.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing downtime author'
+          status: 404,
+          message: 'missing downtime author'
         }
       else
 
-        if( self.existsUser?( author ) == false )
+        if( existsUser?( author ) == false )
 
           return {
-            :status  => 404,
-            :message => "these author ar not exists: #{author}"
+            status: 404,
+            message: "these author ar not exists: #{author}"
           }
         end
       end
 
 
-      if( endTime == nil )
+      if( endTime.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing end_time'
+          status: 404,
+          message: 'missing end_time'
         }
       else
 
         if( endTime.to_i <= startTime )
 
           return {
-            :status  => 404,
-            :message => 'end_time are equal or smaller then start_time'
+            status: 404,
+            message: 'end_time are equal or smaller then start_time'
           }
         end
       end
@@ -110,29 +111,27 @@ module Icinga2
 #       logger.debug( Time.at( endTime ).strftime( '%Y-%m-%d %H:%M:%S' ) )
 
       payload = {
-        "type"        => type,
-        "start_time"  => startTime,
-        "end_time"    => endTime,
-        "author"      => author,
-        "comment"     => comment,
-        "fixed"       => true,
-        "duration"    => 30,
-        "filter"      => filter
+        'type'        => type,
+        'start_time'  => startTime,
+        'end_time'    => endTime,
+        'author'      => author,
+        'comment'     => comment,
+        'fixed'       => true,
+        'duration'    => 30,
+        'filter'      => filter
       }
 
 #       logger.debug( JSON.pretty_generate( payload ) )
 
-      result = Network.post( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/actions/schedule-downtime', @icingaApiUrlBase ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.post(         host: name,
+        url: format( '%s/v1/actions/schedule-downtime', @icingaApiUrlBase ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
       logger.debug( result.class.to_s )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
 
       # schedule downtime for a host
@@ -155,14 +154,12 @@ module Icinga2
 
       name = params.dig(:name)
 
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/downtimes/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/downtimes/%s', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
 
     end

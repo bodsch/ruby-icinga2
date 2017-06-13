@@ -1,4 +1,5 @@
 
+# frozen_string_literal: true
 module Icinga2
 
   module Usergroups
@@ -8,29 +9,27 @@ module Icinga2
       name     = params.dig(:name)
       vars     = params.dig(:vars) || {}
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing usergroup name'
+          status: 404,
+          message: 'missing usergroup name'
         }
       end
 
       payload = {
-        "attrs" => {
-          "display_name"         => name
+        'attrs' => {
+          'display_name'         => name
         }
       }
 
-      result = Network.put( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/usergroups/%s', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.put(         host: name,
+        url: format( '%s/v1/objects/usergroups/%s', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
@@ -39,22 +38,20 @@ module Icinga2
 
       name = params.dig(:name)
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing usergroup name'
+          status: 404,
+          message: 'missing usergroup name'
         }
       end
 
-      result = Network.delete( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/usergroups/%s?cascade=1', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options
-      } )
+      result = Network.delete(         host: name,
+        url: format( '%s/v1/objects/usergroups/%s?cascade=1', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
@@ -63,33 +60,27 @@ module Icinga2
 
       name = params.dig(:name)
 
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/usergroups/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/usergroups/%s', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
 
     def existsUsergroup?( name )
 
-      result = self.listUsergroups( { :name => name } )
+      result = listUsergroups( name: name )
 
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
-      end
+      result = JSON.parse( result ) if  result.is_a?( String ) 
 
       status = result.dig('status')
 
-      if( status != nil && status == 200 )
-        return true
-      end
+      return true if  !status.nil? && status == 200 
 
-      return false
+      false
 
     end
 

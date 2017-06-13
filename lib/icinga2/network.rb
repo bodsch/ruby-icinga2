@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Icinga2
 
   module Network
@@ -11,10 +12,7 @@ module Icinga2
       payload = params.dig(:payload) || {}
       result  = {}
 
-      if( payload.count >= 1 )
-
-        return self.get2( params )
-      end
+      return get2( params ) if  payload.count >= 1 
 
 
       headers.delete( 'X-HTTP-Method-Override' )
@@ -41,12 +39,12 @@ module Icinga2
 #          name = r.dig('name')
           attrs = r.dig('attrs')
 
-          if( attrs != nil )
+          if( !attrs.nil? )
 
             result[:data][attrs['name']] = {
-              :name         => attrs['name'],
-              :display_name => attrs['display_name'],
-              :type         => attrs['type']
+              name: attrs['name'],
+              display_name: attrs['display_name'],
+              type: attrs['type']
             }
           else
             result = r
@@ -61,17 +59,17 @@ module Icinga2
         error  = JSON.parse( error )
 
         result = {
-          :status      => error['error'].to_i,
-          :name        => host,
-          :message     => error['status']
+          status: error['error'].to_i,
+          name: host,
+          message: error['status']
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        $stderr.puts 'Server refusing connection; retrying in 5s...'
 
       end
 
-      return result
+      result
 
     end
 
@@ -102,13 +100,13 @@ module Icinga2
         responseCode = response.code
         responseBody = response.body
 
-        node         = Hash.new()
+        node         = {}
 
         data    = JSON.parse( responseBody )
 
         results = data.dig('results')
 
-        if( results != nil )
+        unless( results.nil? )
 
           results.each do |r|
 
@@ -116,8 +114,8 @@ module Icinga2
           end
 
           result = {
-            :status  => responseCode,
-            :nodes   => node
+            status: responseCode,
+            nodes: node
           }
         end
 
@@ -127,17 +125,17 @@ module Icinga2
         error  = JSON.parse( error )
 
         result = {
-          :status      => error['error'].to_i,
-          :name        => host,
-          :message     => error['status']
+          status: error['error'].to_i,
+          name: host,
+          message: error['status']
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        $stderr.puts 'Server refusing connection; retrying in 5s...'
 
       end
 
-      return result
+      result
 
     end
 
@@ -170,12 +168,12 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        if( results != nil )
+        unless( results.nil? )
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         end
@@ -184,37 +182,35 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
+        error = JSON.parse( error ) if  error.is_a?( String ) 
 
         $stderr.puts( JSON.pretty_generate( error ) )
 
         results = error.dig( 'results' )
 
-        if( results != nil )
+        if( !results.nil? )
 
           result = result.first
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status'),
-            :error       => results.dig('errors')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status'),
+            error: results.dig('errors')
           }
 
         else
 
           result = {
-            :status      => error.dig( 'error' ).to_i,
-            :message     => error.dig( 'status' )
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
           }
 
         end
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        $stderr.puts 'Server refusing connection; retrying in 5s...'
 
       rescue => e
 
@@ -222,7 +218,7 @@ module Icinga2
 
       end
 
-      return result
+      result
 
 
 
@@ -256,12 +252,12 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        if( results != nil )
+        unless( results.nil? )
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         end
@@ -270,50 +266,48 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
+        error = JSON.parse( error ) if  error.is_a?( String ) 
 
         results = error.dig( 'results' )
 
-        if( results != nil )
+        if( !results.nil? )
 
-          if( result.is_a?( Hash ) && result.count() != 0 )
+          if( result.is_a?( Hash ) && result.count != 0 )
 
             result = result.first
 
             result = {
-              :status      => results.dig('code').to_i,
-              :name        => results.dig('name'),
-              :message     => results.dig('status'),
-              :error       => results.dig('errors')
+              status: results.dig('code').to_i,
+              name: results.dig('name'),
+              message: results.dig('status'),
+              error: results.dig('errors')
             }
 
           else
 
             result = {
-              :status    => 204,
-              :name      => host,
-              :message   => 'unknown result'
+              status: 204,
+              name: host,
+              message: 'unknown result'
             }
           end
 
         else
 
           result = {
-            :status      => error.dig( 'error' ).to_i,
-            :message     => error.dig( 'status' )
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
           }
 
         end
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        $stderr.puts 'Server refusing connection; retrying in 5s...'
 
       end
 
-      return result
+      result
 
     end
 
@@ -343,12 +337,12 @@ module Icinga2
           data    = JSON.parse( data ) #.body )
           results = data.dig('results').first
 
-          if( results != nil )
+          unless( results.nil? )
 
             result = {
-              :status      => results.dig('code').to_i,
-              :name        => results.dig('name'),
-              :message     => results.dig('status')
+              status: results.dig('code').to_i,
+              name: results.dig('name'),
+              message: results.dig('status')
             }
 
           end
@@ -358,36 +352,34 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
+        error = JSON.parse( error ) if  error.is_a?( String ) 
 
         results = error.dig('results')
 
-        if( results != nil )
+        result = if( !results.nil? )
 
-          result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+          {
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         else
 
-          result = {
-            :status      => error.dig( 'error' ).to_i,
+          {
+            status: error.dig( 'error' ).to_i,
 #            :name        => results.dig('name'),
-            :message     => error.dig( 'status' )
+            message: error.dig( 'status' )
           }
 
-        end
+                 end
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        $stderr.puts 'Server refusing connection; retrying in 5s...'
 
       end
 
-      return result
+      result
 
     end
 

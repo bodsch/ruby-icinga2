@@ -4,7 +4,7 @@ AllCops:
 Style/Encoding:
   Enabled: false
 
-Style/IndentHash:
+Layout:
   Enabled: False
 
 
@@ -16,4 +16,5 @@ Metrics/MethodLength:
 
 Metrics/LineLength:
   Max: 120
+
 

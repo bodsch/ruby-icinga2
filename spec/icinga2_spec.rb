@@ -1,4 +1,5 @@
 
+# frozen_string_literal: true
 require 'spec_helper'
 require 'rspec'
 require 'icinga2'
@@ -12,15 +13,15 @@ describe Icinga2 do
   before do
 
     config = {
-      :icinga => {
-        :host     => 'localhost',
-        :api      => {
-          :port     => 5665,
-          :user     => 'root',
-          :password => 'icinga'
+      icinga: {
+        host: 'localhost',
+        api: {
+          port: 5665,
+          user: 'root',
+          password: 'icinga'
         },
-        :cluster   => false,
-        :satellite => nil,
+        cluster: false,
+        satellite: nil
       }
     }
 
@@ -37,7 +38,7 @@ describe Icinga2 do
     # i.applicationData()
     it 'applicationData()' do
 #      pending
-      assert_equal @icinga2.applicationData()
+      assert_equal @icinga2.applicationData
     end
     # i.CIBData()
     it 'CIBData()' do

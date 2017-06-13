@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# frozen_string_literal: true
 #
 #
 #
@@ -59,7 +60,7 @@ module Icinga2
       @icingaSatellite      = settings.dig(:icinga, :satellite)
       @icingaNotifications  = settings.dig(:icinga, :notifications)  || false
 
-      @icingaApiUrlBase     = sprintf( 'https://%s:%d', @icingaHost, @icingaApiPort )
+      @icingaApiUrlBase     = format( 'https://%s:%d', @icingaHost, @icingaApiPort )
       @nodeName             = Socket.gethostbyname( Socket.gethostname ).first
 
       date                 = '2017-06-08'
@@ -69,25 +70,25 @@ module Icinga2
       logger.info( "  Version #{VERSION} (#{date})" )
       logger.info( '  Copyright 2016-2017 Bodo Schulz' )
       logger.info( "  Backendsystem #{@icingaApiUrlBase}" )
-      logger.info( sprintf( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
-      logger.info( sprintf( '    notifications enabled: %s', @icingaNotifications ? 'true' : 'false' ) )
+      logger.info( format( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
+      logger.info( format( '    notifications enabled: %s', @icingaNotifications ? 'true' : 'false' ) )
       if( @icingaCluster )
-        logger.info( sprintf( '    satellite endpoint: %s', @icingaSatellite ) )
+        logger.info( format( '    satellite endpoint: %s', @icingaSatellite ) )
       end
       logger.info( '-----------------------------------------------------------------' )
       logger.info( '' )
 
-      logger.debug( sprintf( '  server   : %s', @icingaHost ) )
-      logger.debug( sprintf( '  port     : %s', @icingaApiPort ) )
-      logger.debug( sprintf( '  api url  : %s', @icingaApiUrlBase ) )
-      logger.debug( sprintf( '  api user : %s', @icingaApiUser ) )
-      logger.debug( sprintf( '  api pass : %s', @icingaApiPass ) )
-      logger.debug( sprintf( '  node name: %s', @nodeName ) )
+      logger.debug( format( '  server   : %s', @icingaHost ) )
+      logger.debug( format( '  port     : %s', @icingaApiPort ) )
+      logger.debug( format( '  api url  : %s', @icingaApiUrlBase ) )
+      logger.debug( format( '  api user : %s', @icingaApiUser ) )
+      logger.debug( format( '  api pass : %s', @icingaApiPass ) )
+      logger.debug( format( '  node name: %s', @nodeName ) )
 
-      @hasCert   = self.checkCert( { :user => @icingaApiUser, :password =>  @icingaApiPass } )
-      @headers   = { "Content-Type" => "application/json", "Accept" => "application/json" }
+      @hasCert   = checkCert( user: @icingaApiUser, password: @icingaApiPass )
+      @headers   = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
 
-      return self
+      self
 
     end
 
@@ -100,33 +101,33 @@ module Icinga2
       password     = params.dig(:password) || ''
 
       # check whether pki files are there, otherwise use basic auth
-      if File.file?( sprintf( 'pki/%s.crt', nodeName ) )
+      if File.file?( format( 'pki/%s.crt', nodeName ) )
 
-        logger.debug( "PKI found, using client certificates for connection to Icinga 2 API" )
+        logger.debug( 'PKI found, using client certificates for connection to Icinga 2 API' )
 
-        sslCertFile = File.read( sprintf( 'pki/%s.crt', nodeName ) )
-        sslKeyFile  = File.read( sprintf( 'pki/%s.key', nodeName ) )
+        sslCertFile = File.read( format( 'pki/%s.crt', nodeName ) )
+        sslKeyFile  = File.read( format( 'pki/%s.key', nodeName ) )
         sslCAFile   = File.read( 'pki/ca.crt' )
 
         cert      = OpenSSL::X509::Certificate.new( sslCertFile )
         key       = OpenSSL::PKey::RSA.new( sslKeyFile )
 
         @options   = {
-          :ssl_client_cert => cert,
-          :ssl_client_key  => key,
-          :ssl_ca_file     => sslCAFile,
-          :verify_ssl      => OpenSSL::SSL::VERIFY_NONE
+          ssl_client_cert: cert,
+          ssl_client_key: key,
+          ssl_ca_file: sslCAFile,
+          verify_ssl: OpenSSL::SSL::VERIFY_NONE
         }
 
         return true
       else
 
-        logger.debug( "PKI not found, using basic auth for connection to Icinga 2 API" )
+        logger.debug( 'PKI not found, using basic auth for connection to Icinga 2 API' )
 
         @options = {
-          :user       => user,
-          :password   => password,
-          :verify_ssl => OpenSSL::SSL::VERIFY_NONE
+          user: user,
+          password: password,
+          verify_ssl: OpenSSL::SSL::VERIFY_NONE
         }
 
         return false

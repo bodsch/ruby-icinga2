@@ -1,50 +1,45 @@
 
+# frozen_string_literal: true
 module Icinga2
 
   module Status
 
-    def applicationData()
+    def applicationData
 
-      result = Network.get( {
-        :host     => nil,
-        :url      => sprintf( '%s/v1/status/IcingaApplication', @icingaApiUrlBase ),
-        :headers  => @headers,
-        :options  => @options
-      })
+      result = Network.get(         host: nil,
+        url: format( '%s/v1/status/IcingaApplication', @icingaApiUrlBase ),
+        headers: @headers,
+        options: @options)
 
 #       status = result.dig('status')
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
 
-    def CIBData()
+    def CIBData
 
-      result = Network.get( {
-        :host     => nil,
-        :url      => sprintf( '%s/v1/status/CIB', @icingaApiUrlBase ),
-        :headers  => @headers,
-        :options  => @options
-      })
+      result = Network.get(         host: nil,
+        url: format( '%s/v1/status/CIB', @icingaApiUrlBase ),
+        headers: @headers,
+        options: @options)
 
 #       status = result.dig('status')
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
     end
 
-    def apiListener()
+    def apiListener
 
-      result = Network.get( {
-        :host     => nil,
-        :url      => sprintf( '%s/v1/status/ApiListener', @icingaApiUrlBase ),
-        :headers  => @headers,
-        :options  => @options
-      })
+      result = Network.get(         host: nil,
+        url: format( '%s/v1/status/ApiListener', @icingaApiUrlBase ),
+        headers: @headers,
+        options: @options)
 
 #       status = result.dig('status')
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
     end
 
   end

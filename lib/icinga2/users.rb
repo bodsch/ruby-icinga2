@@ -1,4 +1,5 @@
 
+# frozen_string_literal: true
 module Icinga2
 
   module Users
@@ -12,43 +13,39 @@ module Icinga2
       notifications = params.dig(:enable_notifications) || false
       groups        = params.dig(:groups) || []
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing user name'
+          status: 404,
+          message: 'missing user name'
         }
       end
 
-      if( !groups.is_a?( Array ) )
+      unless( groups.is_a?( Array ) )
 
         return {
-          :status  => 404,
-          :message => 'groups must be an array',
-          :data    => params
+          status: 404,
+          message: 'groups must be an array',
+          data: params
         }
       end
 
       payload = {
-        "attrs" => {
-          "display_name"         => displayName,
-          "email"                => email,
-          "pager"                => pager,
-          "enable_notifications" => notifications
+        'attrs' => {
+          'display_name'         => displayName,
+          'email'                => email,
+          'pager'                => pager,
+          'enable_notifications' => notifications
         }
       }
 
-      if( ! groups.empty? )
-        payload['attrs']['groups'] = groups
-      end
+      payload['attrs']['groups'] = groups unless  groups.empty? 
 
-      groupValidate = Array.new()
+      groupValidate = []
 
       groups.each do |g|
 
-        if( self.existsUsergroup?( g ) == false )
-          groupValidate << g
-        end
+        groupValidate << g if  existsUsergroup?( g ) == false 
 
       end
 
@@ -58,22 +55,20 @@ module Icinga2
 
         return {
 
-          :status  => 404,
-          :message => "these groups are not exists: #{groups}",
-          :data    => params
+          status: 404,
+          message: "these groups are not exists: #{groups}",
+          data: params
         }
 
       end
 
-      result = Network.put( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.put(         host: name,
+        url: format( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
@@ -82,22 +77,20 @@ module Icinga2
 
       name = params.dig(:name)
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing user name'
+          status: 404,
+          message: 'missing user name'
         }
       end
 
-      result = Network.delete( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/users/%s?cascade=1', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options
-      } )
+      result = Network.delete(         host: name,
+        url: format( '%s/v1/objects/users/%s?cascade=1', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
@@ -106,33 +99,27 @@ module Icinga2
 
       name = params.dig(:name)
 
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
 
     def existsUser?( name )
 
-      result = self.listUsers( { :name => name } )
+      result = listUsers( name: name )
 
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
-      end
+      result = JSON.parse( result ) if  result.is_a?( String ) 
 
       status = result.dig('status')
 
-      if( status != nil && status == 200 )
-        return true
-      end
+      return true if  !status.nil? && status == 200 
 
-      return false
+      false
 
     end
 

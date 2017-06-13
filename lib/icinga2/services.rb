@@ -1,4 +1,5 @@
 
+# frozen_string_literal: true
 module Icinga2
 
   module Services
@@ -9,15 +10,15 @@ module Icinga2
 
         hash.each do |k, v|
 
-          if( k == "host" && v.is_a?( String ) )
+          if( k == 'host' && v.is_a?( String ) )
             v.replace( host )
 
           elsif( v.is_a?( Hash ) )
-            self.updateHost( v, host )
+            updateHost( v, host )
 
           elsif( v.is_a?(Array) )
 
-            v.flatten.each { |x| self.updateHost( x, host ) if x.is_a?( Hash ) }
+            v.flatten.each { |x| updateHost( x, host ) if x.is_a?( Hash ) }
           end
         end
 
@@ -27,8 +28,8 @@ module Icinga2
       services.each do |s,v|
 
         payload = {
-          "templates" => [ "generic-service" ],
-          "attrs"     => updateHost( v, host )
+          'templates' => [ 'generic-service' ],
+          'attrs'     => updateHost( v, host )
         }
 
         logger.debug( s )
@@ -36,13 +37,11 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        result = Network.put( {
-          :host    => host,
-          :url     => sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, host, s ),
-          :headers => @headers,
-          :options => @options,
-          :payload => payload
-        })
+        result = Network.put(           host: host,
+          url: format( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, host, s ),
+          headers: @headers,
+          options: @options,
+          payload: payload)
 
         logger.debug( result )
 
@@ -65,20 +64,18 @@ module Icinga2
       name    = params.dig(:host)
       service = params.dig(:service)
 
-      if( service == nil )
-        url = sprintf( '%s/v1/objects/services/%s', @icingaApiUrlBase, name )
+      url = if( service.nil? )
+        format( '%s/v1/objects/services/%s', @icingaApiUrlBase, name )
       else
-        url = sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, name, service )
-      end
+        format( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, name, service )
+            end
 
-      result = Network.get( {
-        :host     => name,
-        :url      => url,
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: url,
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
@@ -88,27 +85,23 @@ module Icinga2
       host    = params.dig(:host)
       service = params.dig(:service)
 
-      if( host == nil )
+      if( host.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing host name'
+          status: 404,
+          message: 'missing host name'
         }
       end
 
-      result = self.listServices( { :host => host, :service => service } )
+      result = listServices( host: host, service: service )
 
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
-      end
+      result = JSON.parse( result ) if  result.is_a?( String ) 
 
       status = result.dig('status')
 
-      if( status != nil && status == 200 )
-        return true
-      end
+      return true if  !status.nil? && status == 200 
 
-      return false
+      false
 
     end
 
@@ -120,47 +113,37 @@ module Icinga2
       joins   = params.dig(:joins)
       payload = {}
 
-      if( attrs == nil )
-        attrs = ['name','state','acknowledgement','downtime_depth','last_check']
+      if( attrs.nil? )
+        attrs = %w[name state acknowledgement downtime_depth last_check]
       end
 
-      if( joins == nil )
+      if( joins.nil? )
         joins = ['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check']
       end
 
-      if( attrs != nil )
-        payload['attrs'] = attrs
-      end
+      payload['attrs'] = attrs unless  attrs.nil? 
 
-      if( filter != nil )
-        payload['filter'] = filter
-      end
+      payload['filter'] = filter unless  filter.nil? 
 
-      if( joins != nil )
-        payload['joins'] = joins
-      end
+      payload['joins'] = joins unless  joins.nil? 
 
-      result = Network.get( {
-        :host     => nil,
-        :url      => sprintf( '%s/v1/objects/services', @icingaApiUrlBase ),
-        :headers  => @headers,
-        :options  => @options,
-        :payload  => payload
-      } )
+      result = Network.get(         host: nil,
+        url: format( '%s/v1/objects/services', @icingaApiUrlBase ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
 
-    def serviceProblems()
+    def serviceProblems
 
-      data     = self.serviceObjects()
+      data     = serviceObjects
       problems = 0
 
-      if( data.is_a?(String) )
-        data = JSON.parse(data)
-      end
+      data = JSON.parse(data) if  data.is_a?(String) 
 
       nodes = data.dig('nodes')
 
@@ -180,7 +163,7 @@ module Icinga2
 
       end
 
-      return problems
+      problems
 
     end
 
@@ -192,7 +175,7 @@ module Icinga2
       @serviceProblemsSeverity = {}
 
       # only fetch the minimal attribute set required for severity calculation
-      servicesData = self.serviceObjects()
+      servicesData = serviceObjects
 
       if( servicesData.is_a?(String) )
 
@@ -201,21 +184,19 @@ module Icinga2
 
       servicesData = servicesData.dig('nodes')
 
-      servicesData.each do |service,v|
+      servicesData.each do |_service,v|
 
         name  = v.dig('name')
         state = v.dig('attrs','state')
 #         logger.debug( "Severity for #{name}" )
-        if( state == 0 )
-          next
-        end
+        next if  state == 0 
 
-        @serviceProblems[name] = self.serviceSeverity(v)
+        @serviceProblems[name] = serviceSeverity(v)
       end
 
-      @serviceProblems.sort_by {|v| v}.reverse!
+      @serviceProblems.sort.reverse!
 
-      @serviceProblems.keys[1..max_items].each { |k,v| @serviceProblemsSeverity[k] = @serviceProblems[k] }
+      @serviceProblems.keys[1..max_items].each { |k,_v| @serviceProblemsSeverity[k] = @serviceProblems[k] }
 
 #       @serviceProblems.each do |k,v|
 #
@@ -228,7 +209,7 @@ module Icinga2
 #         count += 1
 #       end
 
-      return @serviceProblemsSeverity
+      @serviceProblemsSeverity
     end
 
 
@@ -249,29 +230,27 @@ module Icinga2
 
       if( state == 0 )
 
-        if( self.object_has_been_checked( service ) )
-          severity += 16
-        end
+        severity += 16 if  object_has_been_checked( service ) 
 
-        if( acknowledgement != 0 )
-          severity += 2
+        severity += if( acknowledgement != 0 )
+          2
         elsif( downtimeDepth > 0 )
-          severity += 1
+          1
         else
-          severity += 4
-        end
+          4
+                    end
       else
-        if( self.object_has_been_checked( service ) )
-          severity += 16
+        severity += if( object_has_been_checked( service ) )
+          16
         elsif( state == 1 )
-          severity += 32
+          32
         elsif( state == 2 )
-          severity += 128
+          128
         elsif( state == 3 )
-          severity += 64
+          64
         else
-          severity += 256
-        end
+          256
+                    end
 
         # requires joins
         host_attrs = service.dig('joins','host')
@@ -280,18 +259,18 @@ module Icinga2
         host_acknowledgement = host_attrs.dig('acknowledgement')
         host_downtimeDepth   = host_attrs.dig('downtime_depth')
 
-        if( host_state > 0 )
-          severity += 1024
+        severity += if( host_state > 0 )
+          1024
         elsif( host_acknowledgement )
-          severity += 512
+          512
         elsif( host_downtimeDepth > 0 )
-          severity += 256
+          256
         else
-          severity += 2048
-        end
+          2048
+                    end
       end
 
-      return severity
+      severity
     end
 
 

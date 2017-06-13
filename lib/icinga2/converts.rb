@@ -1,14 +1,15 @@
 
 
+# frozen_string_literal: true
 module Icinga2
 
   module Converts
 
     def self.stateToString( state, is_host = false )
 
-      if( is_host == true )
+      state = if( is_host == true )
 
-        state = case state
+        case state
           when 0
             'Up'
           when 1
@@ -18,7 +19,7 @@ module Icinga2
           end
       else
 
-        state = case state
+        case state
           when 0
             'OK'
           when 1
@@ -30,17 +31,17 @@ module Icinga2
           else
             'Undefined'
           end
-      end
+              end
 
-      return state
+      state
 
     end
 
     def self.stateToColor( state, is_host = false )
 
-      if( is_host == true )
+      state = if( is_host == true )
 
-        state = case state
+        case state
           when 0
             'green'
           when 1
@@ -50,7 +51,7 @@ module Icinga2
           end
       else
 
-        state = case state
+        case state
           when 0
             'green'
           when 1
@@ -62,9 +63,9 @@ module Icinga2
           else
             'blue'
           end
-      end
+              end
 
-      return state
+      state
     end
 
     def self.formatService( name )
