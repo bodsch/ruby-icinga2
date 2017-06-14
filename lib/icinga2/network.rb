@@ -97,6 +97,8 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'GET'
 
@@ -114,11 +116,9 @@ module Icinga2
 
         response_code = response.code
         response_body = response.body
-
         node         = {}
 
         data    = JSON.parse( response_body )
-
         results = data.dig('results')
 
         unless( results.nil? )
@@ -146,8 +146,22 @@ module Icinga2
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts 'Server refusing connection; retrying in 5s...'
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
       result
@@ -162,6 +176,8 @@ module Icinga2
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'POST'
 
@@ -218,18 +234,25 @@ module Icinga2
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts 'Server refusing connection; retrying in 5s...'
+        if( times_retried < max_retries )
 
-      rescue => e
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
 
-        $stderr.puts e
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
 
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
       result
-
-
-
     end
 
 
@@ -240,6 +263,8 @@ module Icinga2
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'PUT'
 
@@ -311,12 +336,25 @@ module Icinga2
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts 'Server refusing connection; retrying in 5s...'
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
       result
-
     end
 
 
@@ -325,6 +363,8 @@ module Icinga2
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'DELETE'
 
@@ -381,12 +421,25 @@ module Icinga2
                  end
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts 'Server refusing connection; retrying in 5s...'
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
       result
-
     end
 
   end
