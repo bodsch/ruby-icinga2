@@ -21,7 +21,7 @@ module Icinga2
           message: 'no name for the hostgroup'
         }
       end
-      result = Network.put(url: format('%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name),
+      result = Network.put(url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, name),
         headers: @headers,
         options: @options,
         payload: { 'attrs' => { 'display_name' => display_name } })
@@ -40,7 +40,7 @@ module Icinga2
         }
       end
       result = Network.delete(host: name,
-        url: format('%s/v1/objects/hostgroups/%s?cascade=1', @icingaApiUrlBase, name),
+        url: format('%s/v1/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, name),
         headers: @headers,
         options: @options)
       JSON.pretty_generate(result)
@@ -52,7 +52,7 @@ module Icinga2
     def hostgroups(params = {})
       name = params.dig(:name) || ''
       result = Network.get(host: name,
-        url: format('%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name),
+        url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, name),
         headers: @headers,
         options: @options)
       result = JSON.pretty_generate(result) unless result.nil?
@@ -62,8 +62,8 @@ module Icinga2
     #
     #
     #
-    def exists_hostgroups?(name)
-      result = list_hostgroups(name: name)
+    def exists_hostgroup?(name)
+      result = hostgroups(name: name)
       result = JSON.parse(result) if result.is_a?(String)
       status = result.dig('status')
       if status.nil? && status == 200

@@ -8,11 +8,10 @@ module Icinga2
     def add_downtime( params = {} )
 
       name            = params.dig(:name)
-      host_name        = params.dig(:host)
-#      serviceName     = params.dig(:service)
-      host_group       = params.dig(:host_group)
-      start_time       = params.dig(:start_time) || Time.now.to_i
-      end_time         = params.dig(:end_time)
+      host_name       = params.dig(:host)
+      host_group      = params.dig(:host_group)
+      start_time      = params.dig(:start_time) || Time.now.to_i
+      end_time        = params.dig(:end_time)
       author          = params.dig(:author)
       comment         = params.dig(:comment)
       type            = params.dig(:type)
@@ -21,7 +20,6 @@ module Icinga2
       # sanitychecks
       #
       if( name.nil? )
-
         return {
           status: 404,
           message: 'missing downtime name'
@@ -29,23 +27,20 @@ module Icinga2
       end
 
       if( %w[host service].include?(type.downcase) == false )
-
         return {
           status: 404,
           message: "wrong downtype type. only 'host' or' service' allowed ('#{type}' giving"
         }
       else
         # we need the first char as Uppercase
-        type.capitalize!
+        type = type.capitalize
       end
 
       if( !host_group.nil? && !host_name.nil? )
-
         return {
           status: 404,
           message: 'choose host or host_group, not both'
         }
-
       end
 
       if( !host_name.nil? )
@@ -65,7 +60,6 @@ module Icinga2
       end
 
       if( comment.nil? )
-
         return {
           status: 404,
           message: 'missing downtime comment'
@@ -114,14 +108,10 @@ module Icinga2
 #       logger.debug( JSON.pretty_generate( payload ) )
 
       result = Network.post(         host: name,
-        url: format( '%s/v1/actions/schedule-downtime', @icingaApiUrlBase ),
+        url: format( '%s/v1/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
-
-      logger.debug( result.class.to_s )
-
-      JSON.pretty_generate( result )
 
 
       # schedule downtime for a host
@@ -135,7 +125,7 @@ module Icinga2
 
       #  --data '{ "type": "Service", "filter": "\"api_dummy_hostgroup\" in host.groups)", ... }'
 
-
+      JSON.pretty_generate( result )
 
     end
 
@@ -145,7 +135,7 @@ module Icinga2
       name = params.dig(:name)
 
       result = Network.get(         host: name,
-        url: format( '%s/v1/objects/downtimes/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 

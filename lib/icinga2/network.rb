@@ -11,22 +11,23 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
+      max_retries   = 3
+      times_retried = 0
 
-      return get2( params ) if  payload.count >= 1 
-
+      return get2( params ) if  payload.count >= 1
 
       headers.delete( 'X-HTTP-Method-Override' )
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data     = restClient.get( headers )
+        data     = rest_client.get( headers )
         results  = JSON.parse( data.body )
         results  = results.dig('results')
 
@@ -65,8 +66,22 @@ module Icinga2
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts 'Server refusing connection; retrying in 5s...'
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
       result
@@ -85,24 +100,24 @@ module Icinga2
 
       headers['X-HTTP-Method-Override'] = 'GET'
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        response = restClient.post(
+        response = rest_client.post(
           JSON.generate( payload ),
           headers
         )
 
-        responseCode = response.code
-        responseBody = response.body
+        response_code = response.code
+        response_body = response.body
 
         node         = {}
 
-        data    = JSON.parse( responseBody )
+        data    = JSON.parse( response_body )
 
         results = data.dig('results')
 
@@ -114,7 +129,7 @@ module Icinga2
           end
 
           result = {
-            status: responseCode,
+            status: response_code,
             nodes: node
           }
         end
@@ -143,7 +158,6 @@ module Icinga2
 
     def self.post( params = {} )
 
-      host    = params.dig(:host)
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
@@ -153,14 +167,14 @@ module Icinga2
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data = restClient.post(
+        data = rest_client.post(
           JSON.generate( payload ),
           headers
         )
@@ -181,10 +195,7 @@ module Icinga2
       rescue RestClient::ExceptionWithResponse => e
 
         error  = e.response ? e.response : nil
-
-        error = JSON.parse( error ) if  error.is_a?( String ) 
-
-        $stderr.puts( JSON.pretty_generate( error ) )
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig( 'results' )
 
@@ -198,14 +209,11 @@ module Icinga2
             message: results.dig('status'),
             error: results.dig('errors')
           }
-
         else
-
           result = {
             status: error.dig( 'error' ).to_i,
             message: error.dig( 'status' )
           }
-
         end
 
       rescue Errno::ECONNREFUSED => e
@@ -237,14 +245,14 @@ module Icinga2
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data = restClient.put(
+        data = rest_client.put(
           JSON.generate( payload ),
           headers
         )
@@ -266,7 +274,7 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        error = JSON.parse( error ) if  error.is_a?( String ) 
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig( 'results' )
 
@@ -314,23 +322,21 @@ module Icinga2
 
     def self.delete( params = {} )
 
-      host    = params.dig(:host)    || nil
-      url     = params.dig(:url)     || nil
-      headers = params.dig(:headers) || nil
-      options = params.dig(:options) || nil
-      payload = params.dig(:payload) || nil
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
 
       headers['X-HTTP-Method-Override'] = 'DELETE'
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
-        data     = restClient.get( headers )
+        data     = rest_client.get( headers )
 
         if( data )
 
@@ -352,7 +358,7 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        error = JSON.parse( error ) if  error.is_a?( String ) 
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig('results')
 

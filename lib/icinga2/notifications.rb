@@ -5,19 +5,19 @@ module Icinga2
   module Notifications
 
 
-    def enableHostNotification( host )
+    def enable_host_notification( host )
 
-      hostNotification( name: host, enable_notifications: true )
+      host_notification( name: host, enable_notifications: true )
     end
 
 
-    def disableHostNotification( host )
+    def disable_host_notification( host )
 
-      hostNotification( name: host, enable_notifications: false )
+      host_notification( name: host, enable_notifications: false )
     end
 
 
-    def enableServiceNotification( params = {} )
+    def enable_service_notification( params = {} )
 
       host    = params.get(:host)
       service = params.get(:service)
@@ -30,34 +30,34 @@ module Icinga2
         }
       end
 
-      serviceNotification( name: host, service: service, enable_notifications: true )
+      service_notification( name: host, service: service, enable_notifications: true )
     end
 
 
-    def disableServiceNotification( host )
+    def disable_service_notification( host )
 
-      serviceNotification( name: host, enable_notifications: false )
+      service_notification( name: host, enable_notifications: false )
     end
 
 
-    def enableHostgroupNotification( group )
+    def enable_hostgroup_notification( group )
 
-      hostgroupNotification( host_group: group, enable_notifications: true )
+      hostgroup_notification( host_group: group, enable_notifications: true )
     end
 
 
-    def disableHostgroupNotification( group )
+    def disable_hostgroup_notification( group )
 
-      hostgroupNotification( host_group: group, enable_notifications: false )
+      hostgroup_notification( host_group: group, enable_notifications: false )
     end
 
 
-    def listNotifications( params = {} )
+    def notifications( params = {} )
 
       name = params.dig(:name)
 
       result = Network.get(         host: name,
-        url: format( '%s/v1/objects/notifications/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/notifications/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -68,7 +68,7 @@ module Icinga2
 
     # PRIVATE SECTION
     #
-    def hostNotification( params = {} )
+    def host_notification( params = {} )
 
       name          = params.dig(:name)
       notifications = params.dig(:enable_notifications) || false
@@ -80,19 +80,17 @@ module Icinga2
       }
 
       result = Network.post(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload )
-
-      logger.debug( result.class.to_s )
 
       JSON.pretty_generate( result )
 
     end
 
 
-    def hostgroupNotification( params = {} )
+    def hostgroup_notification( params = {} )
 
       group         = params.dig(:host_group)
       notifications = params.dig(:enable_notifications) || false
@@ -105,22 +103,19 @@ module Icinga2
       }
 
       result = Network.post(         host: name,
-        url: format( '%s/v1/objects/services', @icingaApiUrlBase ),
+        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
-
-      logger.debug( result.class.to_s )
 
       JSON.pretty_generate( result )
 
     end
 
 
-    def serviceNotification( params = {} )
+    def service_notification( params = {} )
 
       name          = params.dig(:name)
-      service       = params.dig(:service)
       notifications = params.dig(:enable_notifications) || false
 
       payload = {
@@ -130,16 +125,11 @@ module Icinga2
         }
       }
 
-      logger.debug( payload )
-      logger.debug( format( '%s/v1/objects/services', @icingaApiUrlBase ) )
-
       result = Network.post(         host: name,
-        url: format( '%s/v1/objects/services', @icingaApiUrlBase ),
+        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
-
-      logger.debug( result.class.to_s )
 
       JSON.pretty_generate( result )
 

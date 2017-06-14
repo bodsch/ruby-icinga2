@@ -4,18 +4,18 @@ module Icinga2
 
   module Hosts
 
-    def addHost( params = {} )
+    def add_host( params = {} )
 
       name             = params.dig(:name)
       fqdn             = params.dig(:fqdn)
-      displayName      = params.dig(:display_name) || name
+      display_name      = params.dig(:display_name) || name
       notifications    = params.dig(:enable_notifications) || false
-      maxCheckAttempts = params.dig(:max_check_attempts) || 3
-      checkInterval    = params.dig(:check_interval) || 60
-      retryInterval    = params.dig(:retry_interval) || 45
+      max_check_attempts = params.dig(:max_check_attempts) || 3
+      check_interval    = params.dig(:check_interval) || 60
+      retry_interval    = params.dig(:retry_interval) || 45
       notes            = params.dig(:notes)
-      notesUrl         = params.dig(:notes_url)
-      actionUrl        = params.dig(:action_url)
+      notes_url         = params.dig(:notes_url)
+      action_url        = params.dig(:action_url)
       vars             = params.dig(:vars) || {}
 
       if( name.nil? )
@@ -35,27 +35,27 @@ module Icinga2
         'templates' => [ 'generic-host' ],
         'attrs'     => {
           'address'              => fqdn,
-          'display_name'         => displayName,
-          'max_check_attempts'   => maxCheckAttempts.to_i,
-          'check_interval'       => checkInterval.to_i,
-          'retry_interval'       => retryInterval.to_i,
+          'display_name'         => display_name,
+          'max_check_attempts'   => max_check_attempts.to_i,
+          'check_interval'       => check_interval.to_i,
+          'retry_interval'       => retry_interval.to_i,
           'enable_notifications' => notifications,
-          'action_url'           => actionUrl,
+          'action_url'           => action_url,
           'notes'                => notes,
-          'notes_url'            => notesUrl
+          'notes_url'            => notes_url
         }
       }
 
-      payload['attrs']['vars'] = vars unless  vars.empty? 
+      payload['attrs']['vars'] = vars unless  vars.empty?
 
-      if( @icingaCluster == true && !@icingaSatellite.nil? )
-        payload['attrs']['zone'] = @icingaSatellite
+      if( @icinga_cluster == true && !@icinga_satellite.nil? )
+        payload['attrs']['zone'] = @icinga_satellite
       end
 
       logger.debug( JSON.pretty_generate( payload ) )
 
       result = Network.put(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -65,7 +65,7 @@ module Icinga2
     end
 
 
-    def deleteHost( params = {} )
+    def delete_host( params = {} )
 
       name = params.dig(:name)
 
@@ -78,7 +78,7 @@ module Icinga2
       end
 
       result = Network.delete(         host: name,
-        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -87,21 +87,19 @@ module Icinga2
     end
 
 
-    def listHosts( params = {} )
+    def hosts( params = {} )
 
       name   = params.dig(:name)
       attrs  = params.dig(:attrs)
       filter = params.dig(:filter)
       joins  = params.dig(:joins)
 
-      payload['attrs'] = attrs unless  attrs.nil? 
-
-      payload['filter'] = filter unless  filter.nil? 
-
-      payload['joins'] = joins unless  joins.nil? 
+      payload['attrs'] = attrs unless  attrs.nil?
+      payload['filter'] = filter unless  filter.nil?
+      payload['joins'] = joins unless  joins.nil?
 
       result = Network.get(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -110,22 +108,22 @@ module Icinga2
     end
 
 
-    def existsHost?( name )
+    def exists_host?( name )
 
-      result = listHosts( name: name )
+      result = hosts( name: name )
 
-      result = JSON.parse( result ) if  result.is_a?( String ) 
+      result = JSON.parse( result ) if  result.is_a?( String )
 
       status = result.dig('status')
 
-      return true if  !status.nil? && status == 200 
+      return true if  !status.nil? && status == 200
 
       false
 
     end
 
 
-    def hostObjects( params = {} )
+    def host_objects( params = {} )
 
       attrs   = params.dig(:attrs)
       filter  = params.dig(:filter)
@@ -136,14 +134,14 @@ module Icinga2
         attrs = %w[name state acknowledgement downtime_depth last_check]
       end
 
-      payload['attrs'] = attrs unless  attrs.nil? 
+      payload['attrs'] = attrs unless  attrs.nil?
 
-      payload['filter'] = filter unless  filter.nil? 
+      payload['filter'] = filter unless  filter.nil?
 
-      payload['joins'] = joins unless  joins.nil? 
+      payload['joins'] = joins unless  joins.nil?
 
       result = Network.get(         host: nil,
-        url: format( '%s/v1/objects/hosts', @icingaApiUrlBase ),
+        url: format( '%s/v1/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -153,12 +151,12 @@ module Icinga2
     end
 
 
-    def hostProblems
+    def host_problems
 
-      data     = hostObjects
+      data     = host_objects
       problems = 0
 
-      data = JSON.parse(data) if  data.is_a?(String) 
+      data = JSON.parse(data) if  data.is_a?(String)
 
       nodes = data.dig('nodes')
 
@@ -167,10 +165,10 @@ module Icinga2
         attrs           = n.last.dig('attrs')
 
         state           = attrs.dig('state')           || 0
-        downtimeDepth   = attrs.dig('downtime_depth')  || 0
+        downtime_depth   = attrs.dig('downtime_depth')  || 0
         acknowledgement = attrs.dig('acknowledgement') || 0
 
-        if( state != 0 && downtimeDepth == 0 && acknowledgement == 0 )
+        if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
           problems += 1
         end
 
@@ -181,90 +179,73 @@ module Icinga2
     end
 
 
-    def problemHosts( max_items = 5 )
+    def problem_hosts( max_items = 5 )
 
-      count = 0
-      @hostProblems = {}
-      @hostProblemsSeverity = {}
+      @host_problems = {}
+      @host_problems_severity = {}
 
-      hostData = hostObjects
+      host_data = host_objects
 
-      hostData = JSON.parse( hostData ) if  hostData.is_a?(String) 
+      host_data = JSON.parse( host_data ) if  host_data.is_a?(String)
 
-#       logger.debug( hostData )
+#       logger.debug( host_data )
 
-      hostData = hostData.dig('nodes')
+      host_data = host_data.dig('nodes')
 
-      hostData.each do |_host,v|
+      host_data.each do |_host,v|
 
         name  = v.dig('name')
         state = v.dig('attrs','state')
 
-        next if  state == 0 
+        next if  state.zero?
 
-        @hostProblems[name] = hostSeverity(v)
+        @host_problems[name] = host_severity(v)
       end
 
       # get the count of problems
       #
-      @hostProblems.keys[1..max_items].each { |k,_v| @hostProblemsSeverity[k] = @hostProblems[k] }
+      @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
 
-#       @hostProblems.each do |k,v|
-#
-#         if( count >= max_items )
-#           break
-#         end
-#
-#         @hostProblemsSeverity[k] = v
-#
-#         count += 1
-#       end
-
-      @hostProblemsSeverity
+      @host_problems_severity
 
     end
 
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    def hostSeverity( host )
+    def host_severity( host )
 
-      attrs = host['attrs']
+      attrs           = host.dig('attrs')
+      state           = attrs.dig('state')
+      acknowledgement = attrs.dig('acknowledgement') || 0
+      downtime_depth  = attrs.dig('downtime_depth')  || 0
 
       severity = 0
 
-      if attrs['state'] == 0
-        severity += 16 if object_has_been_checked(host)
-
-        severity += if attrs['acknowledgement'] != 0
+      severity +=
+        if acknowledgement != 0
           2
-        elsif attrs['downtime_depth'] > 0
+        elsif downtime_depth > 0
           1
         else
           4
-                    end
-      else
-        severity += if object_has_been_checked(host)
-          16
-        elsif attrs['state'] == 1
-          32
-        elsif attrs['state'] == 2
-          64
-        else
-          256
-                    end
+        end
 
-        severity += if attrs['acknowledgement'] != 0
-          2
-        elsif attrs['downtime_depth'] > 0
-          1
-        else
-          4
-                    end
+      severity += 16 if object_has_been_checked?(host)
+
+      unless state.zero?
+
+        severity +=
+          if state == 1
+            32
+          elsif state == 2
+            64
+          else
+            256
+          end
       end
 
       severity
-
     end
 
 

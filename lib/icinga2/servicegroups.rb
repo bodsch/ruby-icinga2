@@ -18,7 +18,7 @@ module Icinga2
       payload = { 'attrs' => { 'display_name' => display_name } }
 
       result = Network.put(         host: name,
-        url: format( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/servicegroups/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -37,7 +37,7 @@ module Icinga2
       end
 
       result = Network.delete(         host: name,
-        url: format( '%s/v1/objects/servicegroups/%s?cascade=1', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -48,7 +48,7 @@ module Icinga2
     def servicegroups( params = {} )
       name = params.dig(:name)
       result = Network.get(         host: name,
-        url: format( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
+        url: format( '%s/v1/objects/servicegroups/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
