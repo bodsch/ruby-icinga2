@@ -1,19 +1,22 @@
 # Icinga2 - Servicegroups
 
-## check
-    existsServicegroup()
 
 ## add
-    addServicegroup()
+    add_servicegroup()
+
+
+## delete
+    delete_servicegroup()
+
+
+## check
+    exists_servicegroup?
 
 ## list
 
 ### named
-    listServicegroups()
+    servicegroups()
 
 ### all
-    listServicegroups()
-
-## delete
-    deleteServicegroup()
+    servicegroups()
 

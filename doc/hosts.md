@@ -1,8 +1,5 @@
 # Icinga2 - Hosts
 
-## check
-    existsHost()
-
 ## add
     vars = {
       'aws' => false
@@ -10,13 +7,28 @@
 
     addHost( 'foo-bar.lan', vars )
 
+## delete
+    deleteHost( 'foo-bar.lan' )
+
 ## list
 
 ### named
-    listHosts( 'foo-bar.lan' )
+    hosts( 'foo-bar.lan' )
 
 ### all
-    listHosts()
+    hosts()
 
-## delete
-    deleteHost( 'foo-bar.lan' )
+## check
+    existsHost()
+
+##
+    host_objects
+
+##
+    host_problems
+
+##
+    problem_hosts
+
+##
+    host_severity

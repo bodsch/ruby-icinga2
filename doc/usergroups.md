@@ -1,12 +1,16 @@
 # Icinga2 - Usergroups
 
-    existsUsergroup()
 
-    listUsergroups()
+    add_usergroup
 
-    addUsergroup()
 
-    deleteUsergroup()
+    delete_usergroup
+
+
+    usergroups
+
+
+    exists_usergroup?
 
 
 

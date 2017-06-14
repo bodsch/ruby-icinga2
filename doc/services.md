@@ -1,9 +1,6 @@
 # Icinga2 - Services
 
 
-## check
-    existsService()
-
 ## add
     services = {
       'service-heap-mem' => {
@@ -12,15 +9,41 @@
       }
     }
 
-    i.addServices( 'foo-bar.lan', services )
+    i.add_services( 'foo-bar.lan', services )
+
+## -
+
+    unhandled_services
+
 
 ## list
 
 ### named
-    listServices( 'foo-bar.lan' )
+    services( 'foo-bar.lan' )
 
 ### all
-    listServices()
+    services()
 
 ## delete
 **not yet implemented**
+
+
+
+## check
+    exists_service?
+
+##
+    service_objects( params = {} )
+
+
+##
+    service_problems
+
+##
+    problem_services( max_items = 5 )
+
+##
+    update_host( hash, host )
+
+##
+    service_severity( service )
