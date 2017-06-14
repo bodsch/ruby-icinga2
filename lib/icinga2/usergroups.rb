@@ -1,9 +1,16 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Usergroups
 
+    #
+    #
+    #
     def add_usergroup( params = {} )
 
       name     = params.dig(:name)
@@ -30,7 +37,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def delete_usergroup( params = {} )
       name = params.dig(:name)
       if( name.nil? )
@@ -46,7 +55,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-
+    #
+    #
+    #
     def usergroups( params = {} )
       name = params.dig(:name)
       result = Network.get(         host: name,
@@ -56,7 +67,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-
+    #
+    #
+    #
     def exists_usergroup?( name )
 
       result = usergroups( name: name )
@@ -66,9 +79,5 @@ module Icinga2
       false
     end
 
-
   end
-
 end
-
-

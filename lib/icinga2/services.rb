@@ -1,9 +1,16 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Services
 
+    #
+    #
+    #
     def add_services( host, services = {} )
 
       services.each do |s,v|
@@ -30,7 +37,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def unhandled_services( params = {} )
 
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
@@ -39,7 +48,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def services( params = {} )
 
       name    = params.dig(:host)
@@ -60,7 +71,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def exists_service?( params = {} )
 
       host    = params.dig(:host)
@@ -86,7 +99,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def service_objects( params = {} )
 
       attrs   = params.dig(:attrs)
@@ -118,7 +133,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def service_problems
 
       data     = service_objects
@@ -148,7 +165,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def problem_services( max_items = 5 )
 
       @service_problems = {}
@@ -181,8 +200,9 @@ module Icinga2
       @service_problems_severity
     end
 
-
-
+    #
+    #
+    #
     def update_host( hash, host )
 
       hash.each do |k, v|
@@ -201,8 +221,6 @@ module Icinga2
 
       hash
     end
-
-
 
     # private
     # stolen from Icinga Web 2
@@ -260,5 +278,6 @@ module Icinga2
 
       severity
     end
+
   end
 end

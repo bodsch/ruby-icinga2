@@ -1,8 +1,15 @@
+
 # frozen_string_literal: true
 module Icinga2
 
+  #
+  #
+  #
   module Network
 
+    #
+    #
+    #
     def self.get( params = {} )
 
       host    = params.dig(:host)
@@ -14,7 +21,7 @@ module Icinga2
       max_retries   = 3
       times_retried = 0
 
-      return get2( params ) if  payload.count >= 1
+      return get_with_payload( params ) if  payload.count >= 1
 
       headers.delete( 'X-HTTP-Method-Override' )
 
@@ -88,8 +95,10 @@ module Icinga2
 
     end
 
-
-    def self.get2( params = {} )
+    #
+    #
+    #
+    def self.get_with_payload( params = {} )
 
       host    = params.dig(:host)
       url     = params.dig(:url)
@@ -168,8 +177,9 @@ module Icinga2
 
     end
 
-
-
+    #
+    #
+    #
     def self.post( params = {} )
 
       url     = params.dig(:url)
@@ -255,7 +265,9 @@ module Icinga2
       result
     end
 
-
+    #
+    #
+    #
     def self.put( params = {} )
 
       host    = params.dig(:host)
@@ -357,7 +369,9 @@ module Icinga2
       result
     end
 
-
+    #
+    #
+    #
     def self.delete( params = {} )
 
       url     = params.dig(:url)

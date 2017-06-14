@@ -1,14 +1,13 @@
-# encoding: UTF-8
+
 # frozen_string_literal: false
 
-#
-#
-#
 module Icinga2
+
   #
   #
   #
   module Hostgroups
+
     #
     #
     #
@@ -66,11 +65,11 @@ module Icinga2
       result = hostgroups(name: name)
       result = JSON.parse(result) if result.is_a?(String)
       status = result.dig('status')
-      if status.nil? && status == 200
-        return true
-      else
-        return false
-      end
+
+      return true if  !status.nil? && status == 200
+
+      false
     end
+
   end
 end

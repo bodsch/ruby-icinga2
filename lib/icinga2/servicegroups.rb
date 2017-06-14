@@ -1,10 +1,16 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Servicegroups
 
-
+    #
+    #
+    #
     def add_servicegroup( params = {} )
       name = params.dig(:name)
       display_name = params.dig(:display_name)
@@ -26,7 +32,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-
+    #
+    #
+    #
     def delete_servicegroup( params = {} )
       name = params.dig(:name)
       if( name.nil? )
@@ -44,7 +52,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-
+    #
+    #
+    #
     def servicegroups( params = {} )
       name = params.dig(:name)
       result = Network.get(         host: name,
@@ -55,7 +65,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-
+    #
+    #
+    #
     def exists_servicegroup?( name )
       result = servicegroups( name: name )
       result = JSON.parse( result ) if  result.is_a?( String )
@@ -64,7 +76,5 @@ module Icinga2
       false
     end
 
-
   end
-
 end

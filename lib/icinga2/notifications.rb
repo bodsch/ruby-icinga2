@@ -1,22 +1,32 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Notifications
 
-
+    #
+    #
+    #
     def enable_host_notification( host )
 
       host_notification( name: host, enable_notifications: true )
     end
 
-
+    #
+    #
+    #
     def disable_host_notification( host )
 
       host_notification( name: host, enable_notifications: false )
     end
 
-
+    #
+    #
+    #
     def enable_service_notification( params = {} )
 
       host    = params.get(:host)
@@ -33,25 +43,33 @@ module Icinga2
       service_notification( name: host, service: service, enable_notifications: true )
     end
 
-
+    #
+    #
+    #
     def disable_service_notification( host )
 
       service_notification( name: host, enable_notifications: false )
     end
 
-
+    #
+    #
+    #
     def enable_hostgroup_notification( group )
 
       hostgroup_notification( host_group: group, enable_notifications: true )
     end
 
-
+    #
+    #
+    #
     def disable_hostgroup_notification( group )
 
       hostgroup_notification( host_group: group, enable_notifications: false )
     end
 
-
+    #
+    #
+    #
     def notifications( params = {} )
 
       name = params.dig(:name)
@@ -89,7 +107,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def hostgroup_notification( params = {} )
 
       group         = params.dig(:host_group)
@@ -112,7 +132,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def service_notification( params = {} )
 
       name          = params.dig(:name)
@@ -135,7 +157,5 @@ module Icinga2
 
     end
 
-
   end
-
 end

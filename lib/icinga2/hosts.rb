@@ -2,8 +2,14 @@
 # frozen_string_literal: true
 module Icinga2
 
+  #
+  #
+  #
   module Hosts
 
+    #
+    #
+    #
     def add_host( params = {} )
 
       name             = params.dig(:name)
@@ -64,7 +70,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def delete_host( params = {} )
 
       name = params.dig(:name)
@@ -86,7 +94,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def hosts( params = {} )
 
       name   = params.dig(:name)
@@ -107,7 +117,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def exists_host?( name )
 
       result = hosts( name: name )
@@ -122,7 +134,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def host_objects( params = {} )
 
       attrs   = params.dig(:attrs)
@@ -150,7 +164,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def host_problems
 
       data     = host_objects
@@ -178,7 +194,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def problem_hosts( max_items = 5 )
 
       @host_problems = {}
@@ -248,7 +266,5 @@ module Icinga2
       severity
     end
 
-
   end
-
 end

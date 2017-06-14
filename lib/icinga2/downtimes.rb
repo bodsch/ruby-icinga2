@@ -1,10 +1,16 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Downtimes
 
-
+    #
+    #
+    #
     def add_downtime( params = {} )
 
       name            = params.dig(:name)
@@ -129,7 +135,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def downtimes( params = {} )
 
       name = params.dig(:name)
@@ -144,7 +152,5 @@ module Icinga2
 
     end
 
-
   end
-
 end

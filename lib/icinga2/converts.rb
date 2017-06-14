@@ -1,10 +1,16 @@
 
-
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Converts
 
+    #
+    #
+    #
     def self.state_to_string( state, is_host = false )
 
       state =
@@ -34,6 +40,9 @@ module Icinga2
       state
     end
 
+    #
+    #
+    #
     def self.state_to_color( state, is_host = false )
 
       state =
@@ -63,11 +72,13 @@ module Icinga2
       state
     end
 
+    #
+    #
+    #
     def self.format_service( name )
       service_map = name.split('!', 2)
       service_map.join( ' - ' )
     end
 
   end
-
 end

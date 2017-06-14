@@ -49,7 +49,9 @@ module Icinga2
     include Icinga2::Users
     include Icinga2::Usergroups
 
-
+    #
+    #
+    #
     def initialize( settings = {} )
 
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
@@ -69,11 +71,12 @@ module Icinga2
       self
     end
 
-
+    #
+    #
+    #
     def cert?( params = {} )
 
-      node_name     = params.dig(:node_name) || 'localhost'
-
+      node_name    = params.dig(:node_name) || 'localhost'
       user         = params.dig(:user)     || 'admin'
       password     = params.dig(:password) || ''
 
@@ -114,5 +117,3 @@ module Icinga2
 
   end
 end
-
-# EOF

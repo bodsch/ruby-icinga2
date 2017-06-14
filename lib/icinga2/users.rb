@@ -1,9 +1,16 @@
 
 # frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Users
 
+    #
+    #
+    #
     def add_user( params = {} )
 
       name          = params.dig(:name)
@@ -72,7 +79,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def delete_user( params = {} )
 
       name = params.dig(:name)
@@ -94,7 +103,9 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def users( params = {} )
 
       name = params.dig(:name)
@@ -108,13 +119,13 @@ module Icinga2
 
     end
 
-
+    #
+    #
+    #
     def exists_user?( name )
 
       result = users( name: name )
-
       result = JSON.parse( result ) if  result.is_a?( String )
-
       status = result.dig('status')
 
       return true if  !status.nil? && status == 200
@@ -123,8 +134,5 @@ module Icinga2
 
     end
 
-
   end
-
 end
-
