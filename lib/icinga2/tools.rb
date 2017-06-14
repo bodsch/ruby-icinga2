@@ -1,13 +1,19 @@
 
+# frozen_string_literal: false
+
 module Icinga2
 
+  #
+  #
+  #
   module Tools
 
-    def getObjectHasBeenChecked( object )
-
-      return object.dig('attrs','last_check') > 0
+    #
+    #
+    #
+    def object_has_been_checked?(object)
+      object.dig('attrs', 'last_check').positive?
     end
 
   end
-
 end

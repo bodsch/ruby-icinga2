@@ -1,34 +1,23 @@
 
+# frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Services
 
-    def addServices( host, services = {} )
-
-      def updateHost( hash, host )
-
-        hash.each do |k, v|
-
-          if( k == "host" && v.is_a?( String ) )
-            v.replace( host )
-
-          elsif( v.is_a?( Hash ) )
-            self.updateHost( v, host )
-
-          elsif( v.is_a?(Array) )
-
-            v.flatten.each { |x| self.updateHost( x, host ) if x.is_a?( Hash ) }
-          end
-        end
-
-        hash
-      end
+    #
+    #
+    #
+    def add_services( host, services = {} )
 
       services.each do |s,v|
 
         payload = {
-          "templates" => [ "generic-service" ],
-          "attrs"     => updateHost( v, host )
+          'templates' => [ 'generic-service' ],
+          'attrs'     => update_host( v, host )
         }
 
         logger.debug( s )
@@ -36,13 +25,11 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        result = Network.put( {
-          :host    => host,
-          :url     => sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, host, s ),
-          :headers => @headers,
-          :options => @options,
-          :payload => payload
-        })
+        result = Network.put(           host: host,
+          url: format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, host, s ),
+          headers: @headers,
+          options: @options,
+          payload: payload)
 
         logger.debug( result )
 
@@ -50,8 +37,10 @@ module Icinga2
 
     end
 
-
-    def unhandledServices( params = {} )
+    #
+    #
+    #
+    def unhandled_services( params = {} )
 
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
       # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
@@ -59,108 +48,100 @@ module Icinga2
 
     end
 
-
-    def listServices( params = {} )
+    #
+    #
+    #
+    def services( params = {} )
 
       name    = params.dig(:host)
       service = params.dig(:service)
 
-      if( service == nil )
-        url = sprintf( '%s/v1/objects/services/%s', @icingaApiUrlBase, name )
+      url = if( service.nil? )
+        format( '%s/v1/objects/services/%s', @icinga_api_url_base, name )
       else
-        url = sprintf( '%s/v1/objects/services/%s!%s', @icingaApiUrlBase, name, service )
-      end
+        format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, name, service )
+            end
 
-      result = Network.get( {
-        :host     => name,
-        :url      => url,
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: url,
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
-    def existsService?( params = {} )
+    #
+    #
+    #
+    def exists_service?( params = {} )
 
       host    = params.dig(:host)
       service = params.dig(:service)
 
-      if( host == nil )
+      if( host.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing host name'
+          status: 404,
+          message: 'missing host name'
         }
       end
 
-      result = self.listServices( { :host => host, :service => service } )
+      result = services( host: host, service: service )
 
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
-      end
+      result = JSON.parse( result ) if  result.is_a?( String )
 
       status = result.dig('status')
 
-      if( status != nil && status == 200 )
-        return true
-      end
+      return true if  !status.nil? && status == 200
 
-      return false
+      false
 
     end
 
-
-    def serviceObjects( params = {} )
+    #
+    #
+    #
+    def service_objects( params = {} )
 
       attrs   = params.dig(:attrs)
       filter  = params.dig(:filter)
       joins   = params.dig(:joins)
       payload = {}
 
-      if( attrs == nil )
-        attrs = ['name','state','acknowledgement','downtime_depth','last_check']
+      if( attrs.nil? )
+        attrs = %w[name state acknowledgement downtime_depth last_check]
       end
 
-      if( joins == nil )
+      if( joins.nil? )
         joins = ['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check']
       end
 
-      if( attrs != nil )
-        payload['attrs'] = attrs
-      end
+      payload['attrs'] = attrs unless  attrs.nil?
 
-      if( filter != nil )
-        payload['filter'] = filter
-      end
+      payload['filter'] = filter unless  filter.nil?
 
-      if( joins != nil )
-        payload['joins'] = joins
-      end
+      payload['joins'] = joins unless  joins.nil?
 
-      result = Network.get( {
-        :host     => nil,
-        :url      => sprintf( '%s/v1/objects/services', @icingaApiUrlBase ),
-        :headers  => @headers,
-        :options  => @options,
-        :payload  => payload
-      } )
+      result = Network.get(         host: nil,
+        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
+    #
+    #
+    #
+    def service_problems
 
-    def serviceProblems()
-
-      data     = self.serviceObjects()
+      data     = service_objects
       problems = 0
 
-      if( data.is_a?(String) )
-        data = JSON.parse(data)
-      end
+      data = JSON.parse(data) if  data.is_a?(String)
 
       nodes = data.dig('nodes')
 
@@ -169,133 +150,134 @@ module Icinga2
         attrs           = n.last.dig('attrs')
 
         state           = attrs.dig('state')
-        downtimeDepth   = attrs.dig('downtime_depth')
+        downtime_depth   = attrs.dig('downtime_depth')
         acknowledgement = attrs.dig('acknowledgement')
 
 #         puts state
 
-        if( state != 0 && downtimeDepth == 0 && acknowledgement == 0 )
+        if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
           problems += 1 #= problems +1
         end
 
       end
 
-      return problems
+      problems
 
     end
 
+    #
+    #
+    #
+    def problem_services( max_items = 5 )
 
-    def problemServices( max_items = 5 )
-
-      count = 0
-      @serviceProblems = {}
-      @serviceProblemsSeverity = {}
+      @service_problems = {}
+      @service_problems_severity = {}
 
       # only fetch the minimal attribute set required for severity calculation
-      servicesData = self.serviceObjects()
+      services_data = service_objects
 
-      if( servicesData.is_a?(String) )
+      if( services_data.is_a?(String) )
 
-        servicesData = JSON.parse( servicesData )
+        services_data = JSON.parse( services_data )
       end
 
-      servicesData = servicesData.dig('nodes')
+      services_data = services_data.dig('nodes')
 
-      servicesData.each do |service,v|
+      services_data.each do |_service,v|
 
         name  = v.dig('name')
         state = v.dig('attrs','state')
 #         logger.debug( "Severity for #{name}" )
-        if( state == 0 )
-          next
-        end
+        next if  state.zero?
 
-        @serviceProblems[name] = self.serviceSeverity(v)
+        @service_problems[name] = service_severity(v)
       end
 
-      @serviceProblems.sort_by {|v| v}.reverse!
+      @service_problems.sort.reverse!
 
-      @serviceProblems.keys[1..max_items].each { |k,v| @serviceProblemsSeverity[k] = @serviceProblems[k] }
+      @service_problems.keys[1..max_items].each { |k,_v| @service_problems_severity[k] = @service_problems[k] }
 
-#       @serviceProblems.each do |k,v|
-#
-#         if( count >= max_items )
-#           break
-#         end
-#
-#         @serviceProblemsSeverity[k] = v
-#
-#         count += 1
-#       end
-
-      return @serviceProblemsSeverity
+      @service_problems_severity
     end
 
+    #
+    #
+    #
+    def update_host( hash, host )
+
+      hash.each do |k, v|
+
+        if( k == 'host' && v.is_a?( String ) )
+          v.replace( host )
+
+        elsif( v.is_a?( Hash ) )
+          update_host( v, host )
+
+        elsif( v.is_a?(Array) )
+
+          v.flatten.each { |x| update_host( x, host ) if x.is_a?( Hash ) }
+        end
+      end
+
+      hash
+    end
 
     # private
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    def serviceSeverity( service )
+    def service_severity( service )
 
-      attrs = service.dig('attrs')
+      attrs           = service.dig('attrs')
       state           = attrs.dig('state')
-      acknowledgement = attrs.dig('acknowledgement')
-      downtimeDepth   = attrs.dig('downtime_depth')
-
-#       logger.debug( attrs )
+      acknowledgement = attrs.dig('acknowledgement') || 0
+      downtime_depth  = attrs.dig('downtime_depth')  || 0
 
       severity = 0
 
-      if( state == 0 )
-
-        if( self.getObjectHasBeenChecked( service ) )
-          severity += 16
-        end
-
-        if( acknowledgement != 0 )
-          severity += 2
-        elsif( downtimeDepth > 0 )
-          severity += 1
+      severity +=
+        if acknowledgement != 0
+          2
+        elsif downtime_depth > 0
+          1
         else
-          severity += 4
+          4
         end
-      else
-        if( self.getObjectHasBeenChecked( service ) )
-          severity += 16
-        elsif( state == 1 )
-          severity += 32
-        elsif( state == 2 )
-          severity += 128
-        elsif( state == 3 )
-          severity += 64
-        else
-          severity += 256
-        end
+
+      severity += 16 if object_has_been_checked?(host)
+
+      unless state.zero?
+
+        severity +=
+          if state == 1
+            32
+          elsif state == 2
+            64
+          else
+            256
+          end
 
         # requires joins
         host_attrs = service.dig('joins','host')
-
-        host_state = host_attrs.dig('state')
+        host_state           = host_attrs.dig('state')
         host_acknowledgement = host_attrs.dig('acknowledgement')
-        host_downtimeDepth   = host_attrs.dig('downtime_depth')
+        host_downtime_depth  = host_attrs.dig('downtime_depth')
 
-        if( host_state > 0 )
-          severity += 1024
-        elsif( host_acknowledgement )
-          severity += 512
-        elsif( host_downtimeDepth > 0 )
-          severity += 256
-        else
-          severity += 2048
-        end
+        severity +=
+          if host_state > 0
+            1024
+          elsif host_acknowledgement
+            512
+          elsif host_downtime_depth > 0
+            256
+          else
+            2048
+          end
+
       end
 
-      return severity
+      severity
     end
 
-
-
   end
-
 end

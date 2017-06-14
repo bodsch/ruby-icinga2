@@ -1,15 +1,32 @@
 # Icinga2 - Notifications
 
-    enableHostNotification()
 
-    disableHostNotification()
+## -
+    enable_host_notification( host )
 
-    enableServiceNotification()
+## -
+    disable_host_notification( host )
 
-    disableServiceNotification()
+## -
+    enable_service_notification( params = {} )
 
-    enableHostgroupNotification()
+## -
+    disable_service_notification( host )
 
-    disableHostgroupNotification()
+## -
+    enable_hostgroup_notification( group )
 
-    listNotifications()
+## -
+    disable_hostgroup_notification( group )
+
+## -
+    notifications( params = {} )
+
+## -
+    host_notification( params = {} )
+
+## -
+    hostgroup_notification( params = {} )
+
+## -
+    service_notification( params = {} )

@@ -1,7 +1,15 @@
+
+# frozen_string_literal: true
 module Icinga2
 
+  #
+  #
+  #
   module Network
 
+    #
+    #
+    #
     def self.get( params = {} )
 
       host    = params.dig(:host)
@@ -10,25 +18,23 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
+      max_retries   = 3
+      times_retried = 0
 
-      if( payload.count >= 1 )
-
-        return self.get2( params )
-      end
-
+      return get_with_payload( params ) if  payload.count >= 1
 
       headers.delete( 'X-HTTP-Method-Override' )
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data     = restClient.get( headers )
+        data     = rest_client.get( headers )
         results  = JSON.parse( data.body )
         results  = results.dig('results')
 
@@ -41,12 +47,12 @@ module Icinga2
 #          name = r.dig('name')
           attrs = r.dig('attrs')
 
-          if( attrs != nil )
+          if( !attrs.nil? )
 
             result[:data][attrs['name']] = {
-              :name         => attrs['name'],
-              :display_name => attrs['display_name'],
-              :type         => attrs['type']
+              name: attrs['name'],
+              display_name: attrs['display_name'],
+              type: attrs['type']
             }
           else
             result = r
@@ -61,22 +67,38 @@ module Icinga2
         error  = JSON.parse( error )
 
         result = {
-          :status      => error['error'].to_i,
-          :name        => host,
-          :message     => error['status']
+          status: error['error'].to_i,
+          name: host,
+          message: error['status']
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
-      return result
+      result
 
     end
 
-
-    def self.get2( params = {} )
+    #
+    #
+    #
+    def self.get_with_payload( params = {} )
 
       host    = params.dig(:host)
       url     = params.dig(:url)
@@ -84,31 +106,31 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'GET'
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        response = restClient.post(
+        response = rest_client.post(
           JSON.generate( payload ),
           headers
         )
 
-        responseCode = response.code
-        responseBody = response.body
+        response_code = response.code
+        response_body = response.body
+        node         = {}
 
-        node         = Hash.new()
-
-        data    = JSON.parse( responseBody )
-
+        data    = JSON.parse( response_body )
         results = data.dig('results')
 
-        if( results != nil )
+        unless( results.nil? )
 
           results.each do |r|
 
@@ -116,8 +138,8 @@ module Icinga2
           end
 
           result = {
-            :status  => responseCode,
-            :nodes   => node
+            status: response_code,
+            nodes: node
           }
         end
 
@@ -127,42 +149,58 @@ module Icinga2
         error  = JSON.parse( error )
 
         result = {
-          :status      => error['error'].to_i,
-          :name        => host,
-          :message     => error['status']
+          status: error['error'].to_i,
+          name: host,
+          message: error['status']
         }
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
-      return result
+      result
 
     end
 
-
-
+    #
+    #
+    #
     def self.post( params = {} )
 
-      host    = params.dig(:host)
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'POST'
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data = restClient.post(
+        data = rest_client.post(
           JSON.generate( payload ),
           headers
         )
@@ -170,12 +208,12 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        if( results != nil )
+        unless( results.nil? )
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         end
@@ -183,52 +221,53 @@ module Icinga2
       rescue RestClient::ExceptionWithResponse => e
 
         error  = e.response ? e.response : nil
-
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
-
-        $stderr.puts( JSON.pretty_generate( error ) )
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig( 'results' )
 
-        if( results != nil )
+        if( !results.nil? )
 
           result = result.first
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status'),
-            :error       => results.dig('errors')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status'),
+            error: results.dig('errors')
           }
-
         else
-
           result = {
-            :status      => error.dig( 'error' ).to_i,
-            :message     => error.dig( 'status' )
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
           }
-
         end
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        if( times_retried < max_retries )
 
-      rescue => e
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
 
-        $stderr.puts e
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
 
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
-      return result
-
-
-
+      result
     end
 
-
+    #
+    #
+    #
     def self.put( params = {} )
 
       host    = params.dig(:host)
@@ -236,19 +275,21 @@ module Icinga2
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'PUT'
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
 
-        data = restClient.put(
+        data = rest_client.put(
           JSON.generate( payload ),
           headers
         )
@@ -256,12 +297,12 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        if( results != nil )
+        unless( results.nil? )
 
           result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         end
@@ -270,85 +311,98 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig( 'results' )
 
-        if( results != nil )
+        if( !results.nil? )
 
-          if( result.is_a?( Hash ) && result.count() != 0 )
+          if( result.is_a?( Hash ) && result.count != 0 )
 
             result = result.first
 
             result = {
-              :status      => results.dig('code').to_i,
-              :name        => results.dig('name'),
-              :message     => results.dig('status'),
-              :error       => results.dig('errors')
+              status: results.dig('code').to_i,
+              name: results.dig('name'),
+              message: results.dig('status'),
+              error: results.dig('errors')
             }
 
           else
 
             result = {
-              :status    => 204,
-              :name      => host,
-              :message   => 'unknown result'
+              status: 204,
+              name: host,
+              message: 'unknown result'
             }
           end
 
         else
 
           result = {
-            :status      => error.dig( 'error' ).to_i,
-            :message     => error.dig( 'status' )
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
           }
 
         end
 
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
-      return result
-
+      result
     end
 
-
+    #
+    #
+    #
     def self.delete( params = {} )
 
-      host    = params.dig(:host)    || nil
-      url     = params.dig(:url)     || nil
-      headers = params.dig(:headers) || nil
-      options = params.dig(:options) || nil
-      payload = params.dig(:payload) || nil
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      max_retries   = 3
+      times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'DELETE'
 
       result  = {}
 
-      restClient = RestClient::Resource.new(
+      rest_client = RestClient::Resource.new(
         URI.encode( url ),
         options
       )
 
       begin
-        data     = restClient.get( headers )
+        data     = rest_client.get( headers )
 
         if( data )
 
           data    = JSON.parse( data ) #.body )
           results = data.dig('results').first
 
-          if( results != nil )
+          unless( results.nil? )
 
             result = {
-              :status      => results.dig('code').to_i,
-              :name        => results.dig('name'),
-              :message     => results.dig('status')
+              status: results.dig('code').to_i,
+              name: results.dig('name'),
+              message: results.dig('status')
             }
 
           end
@@ -358,37 +412,48 @@ module Icinga2
 
         error  = e.response ? e.response : nil
 
-        if( error.is_a?( String ) )
-          error = JSON.parse( error )
-        end
+        error = JSON.parse( error ) if  error.is_a?( String )
 
         results = error.dig('results')
 
-        if( results != nil )
+        result = if( !results.nil? )
 
-          result = {
-            :status      => results.dig('code').to_i,
-            :name        => results.dig('name'),
-            :message     => results.dig('status')
+          {
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status')
           }
 
         else
 
-          result = {
-            :status      => error.dig( 'error' ).to_i,
+          {
+            status: error.dig( 'error' ).to_i,
 #            :name        => results.dig('name'),
-            :message     => error.dig( 'status' )
+            message: error.dig( 'status' )
           }
 
-        end
+                 end
       rescue Errno::ECONNREFUSED => e
 
-        $stderr.puts "Server refusing connection; retrying in 5s..."
+        if( times_retried < max_retries )
 
+          times_retried += 1
+          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
+          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+
+          sleep( 2 )
+          retry
+        else
+          $stderr.puts( 'Exiting request ...' )
+
+          return {
+            status: 500,
+            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+          }
+        end
       end
 
-      return result
-
+      result
     end
 
   end

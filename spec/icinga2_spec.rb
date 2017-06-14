@@ -1,5 +1,7 @@
 
+# frozen_string_literal: true
 require 'spec_helper'
+require 'rspec'
 require 'icinga2'
 
 RSpec.configure do |config|
@@ -8,19 +10,26 @@ end
 
 describe Icinga2 do
 
-  # subject { Icinga2::Client.new( config ) }
-  config = {
-    :icinga => {
-      :host     => 'localhost',
-      :api      => {
-        :port     => 5665,
-        :user     => 'root',
-        :password => 'icinga'
-      },
-      :cluster   => false,
-      :satellite => nil,
+  before do
+
+    config = {
+      icinga: {
+        host: 'localhost',
+        api: {
+          port: 5665,
+          user: 'root',
+          password: 'icinga'
+        },
+        cluster: false,
+        satellite: nil
+      }
     }
-  }
+
+    @icinga2  = Icinga2::Client.new( config )
+  end
+
+  # subject {  }
+
 
   describe ' Informations' do
 
@@ -28,7 +37,8 @@ describe Icinga2 do
 
     # i.applicationData()
     it 'applicationData()' do
-      pending
+#      pending
+      assert_equal @icinga2.applicationData
     end
     # i.CIBData()
     it 'CIBData()' do

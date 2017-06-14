@@ -1,19 +1,22 @@
 # Icinga2 - Hostgroups
 
-## check
-    existsHostgroup()
 
 ## add
-    addHostgroup()
+    add_hostgroup()
+
+
+## delete
+    delete_hostgroup()
+
 
 ## list
 
 ### named
-    listHostgroups()
+    hostgroups()
 
 ### all
-    listHostgroups()
+    hostgroups()
 
-## delete
-    deleteHostgroup()
 
+## check
+    exists_hostgroup()

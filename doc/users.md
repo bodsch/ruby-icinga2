@@ -1,10 +1,5 @@
 # Icinga2 - Users
 
-## check, if User exists
-
-    existsUser?( $USERNAME )
-
-return `true` or `false`
 
 ## add User
 
@@ -16,7 +11,13 @@ return `true` or `false`
       :groups => ['icingaadmins']
     }
 
-    addUser( var )
+    add_user var
+
+return `Hash`
+
+## delete User
+
+    delete_user { :name => $USERNAME }
 
 return `Hash`
 
@@ -24,18 +25,18 @@ return `Hash`
 
 ### named User
 
-    listUsers( { :name => $USERNAME } )
+    users { :name => $USERNAME }
 
 return `Hash`
 
 ### all Users
 
-    listUsers()
+    users
 
 return `Hash`
 
-## delete User
+## check, if User exists
 
-    deleteUser( { :name => $USERNAME } )
+    exists_user? $USERNAME
 
-return `Hash`
+return `true` or `false`

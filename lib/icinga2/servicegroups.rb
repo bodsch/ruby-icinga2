@@ -1,101 +1,80 @@
 
+# frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Servicegroups
 
-
-    def addServicegroup( params = {} )
-
-      name        = params.dig(:name)
-      displayName = params.dig(:display_name)
-
-      if( name == nil )
-
-        return {
-          :status  => 404,
-          :message => 'missing servicegroup name'
-        }
-      end
-
-      payload = {
-        "attrs" => {
-          "display_name"         => displayName
-        }
-      }
-
-      result = Network.put( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
-
-      return JSON.pretty_generate( result )
-
-    end
-
-
-    def deleteServicegroup( params = {} )
-
+    #
+    #
+    #
+    def add_servicegroup( params = {} )
       name = params.dig(:name)
-
-      if( name == nil )
-
+      display_name = params.dig(:display_name)
+      if( name.nil? )
         return {
-          :status  => 404,
-          :message => 'missing servicegroup name'
+          status: 404,
+          message: 'missing servicegroup name'
         }
       end
 
-      result = Network.delete( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/servicegroups/%s?cascade=1', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options
-      } )
+      payload = { 'attrs' => { 'display_name' => display_name } }
 
-      return JSON.pretty_generate( result )
+      result = Network.put(         host: name,
+        url: format( '%s/v1/objects/servicegroups/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
+      JSON.pretty_generate( result )
     end
 
-
-    def listServicegroups( params = {} )
-
+    #
+    #
+    #
+    def delete_servicegroup( params = {} )
       name = params.dig(:name)
-
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/servicegroups/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
-
-      return JSON.pretty_generate( result )
-
-    end
-
-
-    def existsServicegroup?( name )
-
-
-      result = self.listServicegroups( { :name => name } )
-
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
+      if( name.nil? )
+        return {
+          status: 404,
+          message: 'missing servicegroup name'
+        }
       end
 
+      result = Network.delete(         host: name,
+        url: format( '%s/v1/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options )
+
+      JSON.pretty_generate( result )
+    end
+
+    #
+    #
+    #
+    def servicegroups( params = {} )
+      name = params.dig(:name)
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/servicegroups/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options )
+
+      JSON.pretty_generate( result )
+    end
+
+    #
+    #
+    #
+    def exists_servicegroup?( name )
+      result = servicegroups( name: name )
+      result = JSON.parse( result ) if  result.is_a?( String )
       status = result.dig('status')
-
-      if( status != nil && status == 200 )
-        return true
-      end
-
-      return false
-
+      return true if  !status.nil? && status == 200
+      false
     end
-
 
   end
-
 end

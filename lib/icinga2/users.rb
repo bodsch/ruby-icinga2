@@ -1,143 +1,138 @@
 
+# frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Users
 
-    def addUser( params = {} )
+    #
+    #
+    #
+    def add_user( params = {} )
 
       name          = params.dig(:name)
-      displayName   = params.dig(:display_name)
+      display_name   = params.dig(:display_name)
       email         = params.dig(:email)
       pager         = params.dig(:pager)
       notifications = params.dig(:enable_notifications) || false
       groups        = params.dig(:groups) || []
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing user name'
+          status: 404,
+          message: 'missing user name'
         }
       end
 
-      if( !groups.is_a?( Array ) )
+      unless( groups.is_a?( Array ) )
 
         return {
-          :status  => 404,
-          :message => 'groups must be an array',
-          :data    => params
+          status: 404,
+          message: 'groups must be an array',
+          data: params
         }
       end
 
       payload = {
-        "attrs" => {
-          "display_name"         => displayName,
-          "email"                => email,
-          "pager"                => pager,
-          "enable_notifications" => notifications
+        'attrs' => {
+          'display_name'         => display_name,
+          'email'                => email,
+          'pager'                => pager,
+          'enable_notifications' => notifications
         }
       }
 
-      if( ! groups.empty? )
-        payload['attrs']['groups'] = groups
-      end
+      payload['attrs']['groups'] = groups unless  groups.empty?
 
-      groupValidate = Array.new()
+      group_validate = []
 
       groups.each do |g|
 
-        if( self.existsUsergroup?( g ) == false )
-          groupValidate << g
-        end
+        group_validate << g if  exists_usergroup?( g ) == false
 
       end
 
-      if( groupValidate.count != 0 )
+      if( group_validate.count != 0 )
 
-        groups = groupValidate.join(', ')
+        groups = group_validate.join(', ')
 
         return {
 
-          :status  => 404,
-          :message => "these groups are not exists: #{groups}",
-          :data    => params
+          status: 404,
+          message: "these groups are not exists: #{groups}",
+          data: params
         }
 
       end
 
-      result = Network.put( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.put(         host: name,
+        url: format( '%s/v1/objects/users/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
-    def deleteUser( params = {} )
+    #
+    #
+    #
+    def delete_user( params = {} )
 
       name = params.dig(:name)
 
-      if( name == nil )
+      if( name.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing user name'
+          status: 404,
+          message: 'missing user name'
         }
       end
 
-      result = Network.delete( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/users/%s?cascade=1', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options
-      } )
+      result = Network.delete(         host: name,
+        url: format( '%s/v1/objects/users/%s?cascade=1', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
-    def listUsers( params = {} )
+    #
+    #
+    #
+    def users( params = {} )
 
       name = params.dig(:name)
 
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/users/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/users/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
+    #
+    #
+    #
+    def exists_user?( name )
 
-    def existsUser?( name )
-
-      result = self.listUsers( { :name => name } )
-
-      if( result.is_a?( String ) )
-        result = JSON.parse( result )
-      end
-
+      result = users( name: name )
+      result = JSON.parse( result ) if  result.is_a?( String )
       status = result.dig('status')
 
-      if( status != nil && status == 200 )
-        return true
-      end
+      return true if  !status.nil? && status == 200
 
-      return false
+      false
 
     end
 
-
   end
-
 end
-

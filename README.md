@@ -26,53 +26,78 @@ create an instance and get information about the Icinga2 Server
     }
 
     i = Icinga::Client.new( config )
-    puts i.applicationData()
+    puts i.application_data()
+
 
 ## Status
 
 supports the following API Calls:
 
+  - [Users](doc/status.md)
+    * application_data
+    * cib_data
+    * api_listener
+
   - [Users](doc/users.md)
-    * addUser
-    * deleteUser
-    * listUsers
-    * existsUser
+    * add_user( params = {} )
+    * delete_user( params = {} )
+    * users( params = {} )
+    * exists_user?( name )
+
   - [Usergroups](doc/usergroups.md)
-    * addUsergroup
-    * deleteUsergroup
-    * listUsergroups
-    * existsUsergroup
+    * add_usergroup( params = {} )
+    * delete_usergroup( params = {} )
+    * usergroups( params = {} )
+    * exists_usergroup?( name )
+
   - [Hosts](doc/hosts.md)
-    * addHost
-    * deleteHost
-    * listHosts
-    * existsHost
+    * add_host( params = {} )
+    * delete_host( params = {} )
+    * hosts( params = {} )
+    * exists_host?( name )
+    * host_objects( params = {} )
+    * host_problems
+    * problem_hosts( max_items = 5 )
+    * host_severity( host )
+
   - [Hostgroups](doc/hostgroups.md)
-    * addHostgroup
-    * deleteHostgroup
-    * listHostgroups
-    * existsHostgroup
+    * add_hostgroup(params = {})
+    * delete_hostgroup(params = {})
+    * hostgroups(params = {})
+    * exists_hostgroup?(name)
+
   - [Services](doc/services.md)
-    * addService
-    * deleteService
-    * listServices
-    * existsService
+    * add_services( host, services = {} )
+    * unhandled_services( params = {} )
+    * services( params = {} )
+    * exists_service?( params = {} )
+    * service_objects( params = {} )
+    * service_problems
+    * problem_services( max_items = 5 )
+    * update_host( hash, host )
+    * service_severity( service )
+
   - [Servicegroups](doc/servicegroups.md)
-    * addServicegroup
-    * deleteServicegroup
-    * listServicegroups
-    * existsServicegroup
+    * add_servicegroup( params = {} )
+    * delete_servicegroup( params = {} )
+    * servicegroups( params = {} )
+    * exists_servicegroup?( name )
+
   - [Downtimes](doc/downtimes.md)
-    * addDowntime
-    * listDowntimes
+    * add_downtime( params = {} )
+    * downtimes( params = {} )
+
   - [Notifications](doc/notifications.md)
-    * enableHostNotification
-    * disableHostNotification
-    * enableServiceNotification
-    * disableServiceNotification
-    * enableHostgroupNotification
-    * disableHostgroupNotification
-    * listNotifications
+    * enable_host_notification( host )
+    * disable_host_notification( host )
+    * enable_service_notification( params = {} )
+    * disable_service_notification( host )
+    * enable_hostgroup_notification( group )
+    * disable_hostgroup_notification( group )
+    * notifications( params = {} )
+    * host_notification( params = {} )
+    * hostgroup_notification( params = {} )
+    * service_notification( params = {} )
 
 
 ## create a own gem File
@@ -80,13 +105,13 @@ supports the following API Calls:
     #$ gem build icinga2.gemspec
     Successfully built RubyGem
     Name: icinga2
-    Version: 1.4.9
-    File: icinga2-1.4.9.gem
+    Version: 0.6.0
+    File: icinga2-0.6.0.gem
 
 ## install gem
 
-    #$ gem install ./icinga2-1.4.9.gem
-    Successfully installed icinga2-1.4.9
+    #$ gem install icinga2
+    Successfully installed icinga2-0.6.0
     1 gem installed
 
 ## test via CLI

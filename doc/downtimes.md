@@ -1,7 +1,8 @@
 # Icinga2 - Downtimes
 
-## add
-    addDowntime()
 
-# list
-    listDowntimes()
+## add
+    add_downtime()
+
+## list
+    downtimes()

@@ -1,158 +1,161 @@
 
+# frozen_string_literal: true
+
 module Icinga2
 
+  #
+  #
+  #
   module Notifications
 
+    #
+    #
+    #
+    def enable_host_notification( host )
 
-    def enableHostNotification( host )
-
-      return hostNotification( { :name => host, :enable_notifications => true } )
+      host_notification( name: host, enable_notifications: true )
     end
 
+    #
+    #
+    #
+    def disable_host_notification( host )
 
-    def disableHostNotification( host )
-
-      return self.hostNotification( { :name => host, :enable_notifications => false } )
+      host_notification( name: host, enable_notifications: false )
     end
 
-
-    def enableServiceNotification( params = {} )
+    #
+    #
+    #
+    def enable_service_notification( params = {} )
 
       host    = params.get(:host)
       service = params.get(:service)
 
-      if( host == nil )
+      if( host.nil? )
 
         return {
-          :status  => 404,
-          :message => 'missing host name'
+          status: 404,
+          message: 'missing host name'
         }
       end
 
-      return self.serviceNotification( { :name => host, :service => service, :enable_notifications => true } )
+      service_notification( name: host, service: service, enable_notifications: true )
     end
 
+    #
+    #
+    #
+    def disable_service_notification( host )
 
-    def disableServiceNotification( host )
-
-      return self.serviceNotification( { :name => host, :enable_notifications => false } )
+      service_notification( name: host, enable_notifications: false )
     end
 
+    #
+    #
+    #
+    def enable_hostgroup_notification( group )
 
-    def enableHostgroupNotification( group )
-
-      return self.hostgroupNotification( { :host_group => group, :enable_notifications => true } )
+      hostgroup_notification( host_group: group, enable_notifications: true )
     end
 
+    #
+    #
+    #
+    def disable_hostgroup_notification( group )
 
-    def disableHostgroupNotification( group )
-
-      return self.hostgroupNotification( { :host_group => group, :enable_notifications => false } )
+      hostgroup_notification( host_group: group, enable_notifications: false )
     end
 
-
-    def listNotifications( params = {} )
+    #
+    #
+    #
+    def notifications( params = {} )
 
       name = params.dig(:name)
 
-      result = Network.get( {
-        :host     => name,
-        :url      => sprintf( '%s/v1/objects/notifications/%s', @icingaApiUrlBase, name ),
-        :headers  => @headers,
-        :options  => @options
-      } )
+      result = Network.get(         host: name,
+        url: format( '%s/v1/objects/notifications/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options )
 
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
 
     # PRIVATE SECTION
     #
-    def hostNotification( params = {} )
+    def host_notification( params = {} )
 
       name          = params.dig(:name)
       notifications = params.dig(:enable_notifications) || false
 
       payload = {
-        "attrs"     => {
-          "enable_notifications" => notifications
+        'attrs'     => {
+          'enable_notifications' => notifications
         }
       }
 
-      result = Network.post( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/hosts/%s', @icingaApiUrlBase, name ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.post(         host: name,
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      logger.debug( result.class.to_s )
-
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
-    def hostgroupNotification( params = {} )
+    #
+    #
+    #
+    def hostgroup_notification( params = {} )
 
       group         = params.dig(:host_group)
       notifications = params.dig(:enable_notifications) || false
 
       payload = {
-        "filter"    => sprintf( '"%s" in host.groups', group ),
-        "attrs"     => {
-          "enable_notifications" => notifications
+        'filter'    => format( '"%s" in host.groups', group ),
+        'attrs'     => {
+          'enable_notifications' => notifications
         }
       }
 
-      result = Network.post( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/services', @icingaApiUrlBase ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
+      result = Network.post(         host: name,
+        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      logger.debug( result.class.to_s )
-
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
-    def serviceNotification( params = {} )
+    #
+    #
+    #
+    def service_notification( params = {} )
 
       name          = params.dig(:name)
-      service       = params.dig(:service)
       notifications = params.dig(:enable_notifications) || false
 
       payload = {
-        "filter"    => sprintf( 'host.name=="%s"', name ),
-        "attrs"     => {
-          "enable_notifications" => notifications
+        'filter'    => format( 'host.name=="%s"', name ),
+        'attrs'     => {
+          'enable_notifications' => notifications
         }
       }
 
-      logger.debug( payload )
-      logger.debug( sprintf( '%s/v1/objects/services', @icingaApiUrlBase ) )
+      result = Network.post(         host: name,
+        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload )
 
-      result = Network.post( {
-        :host    => name,
-        :url     => sprintf( '%s/v1/objects/services', @icingaApiUrlBase ),
-        :headers => @headers,
-        :options => @options,
-        :payload => payload
-      } )
-
-      logger.debug( result.class.to_s )
-
-      return JSON.pretty_generate( result )
+      JSON.pretty_generate( result )
 
     end
 
-
   end
-
 end
