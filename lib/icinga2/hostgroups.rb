@@ -21,7 +21,7 @@ module Icinga2
           message: 'no name for the hostgroup'
         }
       end
-      result = Network.put(        url: format('%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name),
+      result = Network.put(url: format('%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name),
         headers: @headers,
         options: @options,
         payload: { 'attrs' => { 'display_name' => display_name } })
@@ -39,7 +39,7 @@ module Icinga2
           message: 'no name for the hostgroup'
         }
       end
-      result = Network.delete(        host: name,
+      result = Network.delete(host: name,
         url: format('%s/v1/objects/hostgroups/%s?cascade=1', @icingaApiUrlBase, name),
         headers: @headers,
         options: @options)
@@ -49,9 +49,9 @@ module Icinga2
     #
     #
     #
-    def list_hostgroups(params = {})
+    def hostgroups(params = {})
       name = params.dig(:name) || ''
-      result = Network.get(        host: name,
+      result = Network.get(host: name,
         url: format('%s/v1/objects/hostgroups/%s', @icingaApiUrlBase, name),
         headers: @headers,
         options: @options)

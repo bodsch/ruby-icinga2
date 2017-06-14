@@ -4,9 +4,9 @@ module Icinga2
 
   module Status
 
-    def applicationData
+    def application_data
 
-      result = Network.get(         host: nil,
+      result = Network.get(host: nil,
         url: format( '%s/v1/status/IcingaApplication', @icingaApiUrlBase ),
         headers: @headers,
         options: @options)
@@ -18,9 +18,9 @@ module Icinga2
     end
 
 
-    def CIBData
+    def cib_data
 
-      result = Network.get(         host: nil,
+      result = Network.get(host: nil,
         url: format( '%s/v1/status/CIB', @icingaApiUrlBase ),
         headers: @headers,
         options: @options)
@@ -30,9 +30,9 @@ module Icinga2
       JSON.pretty_generate( result )
     end
 
-    def apiListener
+    def api_listener
 
-      result = Network.get(         host: nil,
+      result = Network.get(host: nil,
         url: format( '%s/v1/status/ApiListener', @icingaApiUrlBase ),
         headers: @headers,
         options: @options)

@@ -46,36 +46,36 @@ unless( i.nil? )
   #
 
   puts 'Information about Icinga2:'
-  puts i.applicationData
-  puts i.CIBData()
-  puts i.apiListener
+  puts i.application_data
+  puts i.cib_data()
+  puts i.api_listener
   puts ''
 
   puts "check if Host 'icinga2-master' exists:"
-  puts i.existsHost?( 'icinga2-master' ) ? 'true' : 'false'
+  puts i.exists_host?( 'icinga2-master' ) ? 'true' : 'false'
   puts "get host Objects from 'icinga2-master'"
-  puts i.hostObjects
+  puts i.host_objects
   puts 'Host problems:'
-  puts i.hostProblems
+  puts i.host_problems
   puts 'Problem Hosts:'
-  puts i.problemHosts
+  puts i.problem_hosts
 
   puts 'list named Hosts:'
-  puts i.listHosts( name: 'icinga2-master' )
+  puts i.hosts( name: 'icinga2-master' )
   puts 'list all Hosts:'
-  puts i.listHosts
+  puts i.hosts
   puts ''
 
   puts "check if Hostgroup 'linux-servers' exists:"
-  puts i.existsHostgroup?( 'linux-servers' ) ? 'true' : 'false'
+  puts i.exists_hostgroup?( 'linux-servers' ) ? 'true' : 'false'
   puts "add hostgroup 'foo'"
-  puts i.addHostgroup( name: 'foo', display_name: 'FOO' )
+  puts i.add_hostgroup( name: 'foo', display_name: 'FOO' )
   puts "list named Hostgroup 'foo'"
-  puts i.listHostgroups( name: 'foo' )
+  puts i.hostgroups( name: 'foo' )
   puts 'list all Hostgroups:'
-  puts i.listHostgroups
+  puts i.list_hostgroups
   puts "delete Hostgroup 'foo'"
-  puts i.deleteHostgroup( name: 'foo' )
+  puts i.delete_hostgroup( name: 'foo' )
   puts ''
 
   puts "check if service 'users' on host 'icinga2-master' exists:"
@@ -95,15 +95,15 @@ unless( i.nil? )
   puts ''
 
   puts "check if Servicegroup 'disk' exists:"
-  puts i.existsServicegroup?( 'disk' ) ? 'true' : 'false'
+  puts i.exists_servicegroup?( 'disk' ) ? 'true' : 'false'
   puts "add Servicegroup 'foo'"
-  puts i.addServicegroup( name: 'foo', display_name: 'FOO' )
+  puts i.add_servicegroup( name: 'foo', display_name: 'FOO' )
   puts "list named Servicegroup 'foo'"
-  puts i.listServicegroups( name: 'foo' )
+  puts i.servicegroups( name: 'foo' )
   puts 'list all Servicegroup:'
-  puts i.listServicegroups
+  puts i.list_servicegroups
   puts "delete Servicegroup 'foo'"
-  puts i.deleteServicegroup( name: 'foo' )
+  puts i.delete_servicegroup( name: 'foo' )
   puts ''
 
   puts "check if Usergroup 'icingaadmins' exists:"

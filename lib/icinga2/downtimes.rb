@@ -5,14 +5,14 @@ module Icinga2
   module Downtimes
 
 
-    def addDowntime( params = {} )
+    def add_downtime( params = {} )
 
       name            = params.dig(:name)
-      hostName        = params.dig(:host)
+      host_name        = params.dig(:host)
 #      serviceName     = params.dig(:service)
-      hostGroup       = params.dig(:host_group)
-      startTime       = params.dig(:start_time) || Time.now.to_i
-      endTime         = params.dig(:end_time)
+      host_group       = params.dig(:host_group)
+      start_time       = params.dig(:start_time) || Time.now.to_i
+      end_time         = params.dig(:end_time)
       author          = params.dig(:author)
       comment         = params.dig(:comment)
       type            = params.dig(:type)
@@ -39,7 +39,7 @@ module Icinga2
         type.capitalize!
       end
 
-      if( !hostGroup.nil? && !hostName.nil? )
+      if( !host_group.nil? && !host_name.nil? )
 
         return {
           status: 404,
@@ -48,14 +48,14 @@ module Icinga2
 
       end
 
-      if( !hostName.nil? )
+      if( !host_name.nil? )
 
-        filter = format( 'host.name=="%s"', hostName )
-      elsif( !hostGroup.nil? )
+        filter = format( 'host.name=="%s"', host_name )
+      elsif( !host_group.nil? )
 
         # check if hostgroup available ?
         #
-        filter = format( '"%s" in host.groups', hostGroup )
+        filter = format( '"%s" in host.groups', host_group )
       else
 
         return {
@@ -73,47 +73,37 @@ module Icinga2
       end
 
       if( author.nil? )
-
         return {
           status: 404,
           message: 'missing downtime author'
         }
-      else
-
-        if( existsUser?( author ) == false )
-
-          return {
-            status: 404,
-            message: "these author ar not exists: #{author}"
-          }
-        end
+      elsif( exists_user?( author ) == false )
+        return {
+          status: 404,
+          message: "these author ar not exists: #{author}"
+        }
       end
 
 
-      if( endTime.nil? )
-
+      if( end_time.nil? )
         return {
           status: 404,
           message: 'missing end_time'
         }
-      else
-
-        if( endTime.to_i <= startTime )
-
-          return {
-            status: 404,
-            message: 'end_time are equal or smaller then start_time'
-          }
-        end
+      elsif( end_time.to_i <= start_time )
+        return {
+          status: 404,
+          message: 'end_time are equal or smaller then start_time'
+        }
       end
 
-#       logger.debug( Time.at( startTime ).strftime( '%Y-%m-%d %H:%M:%S' ) )
-#       logger.debug( Time.at( endTime ).strftime( '%Y-%m-%d %H:%M:%S' ) )
+#       logger.debug( Time.at( start_time ).strftime( '%Y-%m-%d %H:%M:%S' ) )
+#       logger.debug( Time.at( end_time ).strftime( '%Y-%m-%d %H:%M:%S' ) )
 
       payload = {
         'type'        => type,
-        'start_time'  => startTime,
-        'end_time'    => endTime,
+        'start_time'  => start_time,
+        'end_time'    => end_time,
         'author'      => author,
         'comment'     => comment,
         'fixed'       => true,
@@ -150,7 +140,7 @@ module Icinga2
     end
 
 
-    def listDowntimes( params = {} )
+    def downtimes( params = {} )
 
       name = params.dig(:name)
 

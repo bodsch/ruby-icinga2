@@ -65,25 +65,25 @@ module Icinga2
 
       date                 = '2017-06-08'
 
-      logger.info( '-----------------------------------------------------------------' )
-      logger.info( ' Icinga2 Management' )
-      logger.info( "  Version #{VERSION} (#{date})" )
-      logger.info( '  Copyright 2016-2017 Bodo Schulz' )
-      logger.info( "  Backendsystem #{@icingaApiUrlBase}" )
-      logger.info( format( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
-      logger.info( format( '    notifications enabled: %s', @icingaNotifications ? 'true' : 'false' ) )
-      if( @icingaCluster )
-        logger.info( format( '    satellite endpoint: %s', @icingaSatellite ) )
-      end
-      logger.info( '-----------------------------------------------------------------' )
-      logger.info( '' )
-
-      logger.debug( format( '  server   : %s', @icingaHost ) )
-      logger.debug( format( '  port     : %s', @icingaApiPort ) )
-      logger.debug( format( '  api url  : %s', @icingaApiUrlBase ) )
-      logger.debug( format( '  api user : %s', @icingaApiUser ) )
-      logger.debug( format( '  api pass : %s', @icingaApiPass ) )
-      logger.debug( format( '  node name: %s', @nodeName ) )
+#       logger.info( '-----------------------------------------------------------------' )
+#       logger.info( ' Icinga2 Management' )
+#       logger.info( "  Version #{VERSION} (#{date})" )
+#       logger.info( '  Copyright 2016-2017 Bodo Schulz' )
+#       logger.info( "  Backendsystem #{@icingaApiUrlBase}" )
+#       logger.info( format( '    cluster enabled: %s', @icingaCluster ? 'true' : 'false' ) )
+#       logger.info( format( '    notifications enabled: %s', @icingaNotifications ? 'true' : 'false' ) )
+#       if( @icingaCluster )
+#         logger.info( format( '    satellite endpoint: %s', @icingaSatellite ) )
+#       end
+#       logger.info( '-----------------------------------------------------------------' )
+#       logger.info( '' )
+#
+#       logger.debug( format( '  server   : %s', @icingaHost ) )
+#       logger.debug( format( '  port     : %s', @icingaApiPort ) )
+#       logger.debug( format( '  api url  : %s', @icingaApiUrlBase ) )
+#       logger.debug( format( '  api user : %s', @icingaApiUser ) )
+#       logger.debug( format( '  api pass : %s', @icingaApiPass ) )
+#       logger.debug( format( '  node name: %s', @nodeName ) )
 
       @hasCert   = checkCert( user: @icingaApiUser, password: @icingaApiPass )
       @headers   = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }

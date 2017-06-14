@@ -4,10 +4,10 @@ module Icinga2
 
   module Users
 
-    def addUser( params = {} )
+    def add_user( params = {} )
 
       name          = params.dig(:name)
-      displayName   = params.dig(:display_name)
+      display_name   = params.dig(:display_name)
       email         = params.dig(:email)
       pager         = params.dig(:pager)
       notifications = params.dig(:enable_notifications) || false
@@ -32,26 +32,26 @@ module Icinga2
 
       payload = {
         'attrs' => {
-          'display_name'         => displayName,
+          'display_name'         => display_name,
           'email'                => email,
           'pager'                => pager,
           'enable_notifications' => notifications
         }
       }
 
-      payload['attrs']['groups'] = groups unless  groups.empty? 
+      payload['attrs']['groups'] = groups unless  groups.empty?
 
-      groupValidate = []
+      group_validate = []
 
       groups.each do |g|
 
-        groupValidate << g if  existsUsergroup?( g ) == false 
+        group_validate << g if  exists_usergroup?( g ) == false
 
       end
 
-      if( groupValidate.count != 0 )
+      if( group_validate.count != 0 )
 
-        groups = groupValidate.join(', ')
+        groups = group_validate.join(', ')
 
         return {
 
@@ -73,7 +73,7 @@ module Icinga2
     end
 
 
-    def deleteUser( params = {} )
+    def delete_user( params = {} )
 
       name = params.dig(:name)
 
@@ -95,7 +95,7 @@ module Icinga2
     end
 
 
-    def listUsers( params = {} )
+    def users( params = {} )
 
       name = params.dig(:name)
 
@@ -109,15 +109,15 @@ module Icinga2
     end
 
 
-    def existsUser?( name )
+    def exists_user?( name )
 
-      result = listUsers( name: name )
+      result = users( name: name )
 
-      result = JSON.parse( result ) if  result.is_a?( String ) 
+      result = JSON.parse( result ) if  result.is_a?( String )
 
       status = result.dig('status')
 
-      return true if  !status.nil? && status == 200 
+      return true if  !status.nil? && status == 200
 
       false
 
