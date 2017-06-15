@@ -49,9 +49,32 @@ module Icinga2
     include Icinga2::Users
     include Icinga2::Usergroups
 
+    # Returns a new instance of Client
     #
+    # @param [Hash, #read] settings the settings for Icinga2
+    # @option settings [String] :icinga, :host the Icinga2 Hostname (default: 'localhost')
+    # @option settings [Integer] :icinga, :api, :port the Icinga2 API Port (default: 5665)
+    # @option settings [String] :icinga, :api, :user the Icinga2 API User
+    # @option settings [String] :icinga, :api, :password the Icinga2 API Password
+    # @option settings [Bool] :icinga, :cluster Icinga2 Cluster Mode
+    # @option settings [Bool] :icinga, :notifications enable Icinga2 Host Notifications (default: false)
     #
+    # @example to create an new Instance
+    #    config = {
+    #      icinga: {
+    #        host: '192.168.33.5',
+    #        api: {
+    #          port: 5665,
+    #          user: 'root',
+    #          password: 'icinga'
+    #        },
+    #        cluster: false,
+    #        satellite: true
+    #      }
+    #    }
     #
+    #    i = Icinga2::Client.new config
+    # @return [instance, #read]
     def initialize( settings = {} )
 
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
@@ -71,14 +94,22 @@ module Icinga2
       self
     end
 
+    # @param [Hash, #read] params create a HTTP Header based on a Icinga2 Certificate or an User PAI Login
+    # @option params [String] :node_name the Icinga2 Hostname (default: 'localhost')
+    # @option params [Integer] :user the Icinga2 API User
+    # @option params [Integer] :password the Icinga2 API Password
+    # @example with Certificate
+    #    cert? name_name: 'icinga2-dashing'
     #
+    # @example with User
+    #    cert? user: 'root' password: 'icinga'
     #
-    #
+    # @return [Bool, #read]
     def cert?( params = {} )
 
       node_name    = params.dig(:node_name) || 'localhost'
-      user         = params.dig(:user)     || 'admin'
-      password     = params.dig(:password) || ''
+      user         = params.dig(:user)
+      password     = params.dig(:password)
 
       # check whether pki files are there, otherwise use basic auth
       if File.file?( format( 'pki/%s.crt', node_name ) )
