@@ -226,7 +226,7 @@ module Icinga2
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    def service_severity( service )
+    def service_severity(service)
 
       attrs           = service.dig('attrs')
       state           = attrs.dig('state')
@@ -244,7 +244,7 @@ module Icinga2
           4
         end
 
-      severity += 16 if object_has_been_checked?(host)
+      severity += 16 if object_has_been_checked?(service)
 
       unless state.zero?
 
