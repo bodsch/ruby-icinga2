@@ -275,7 +275,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def service_severity( service )
+    def service_severity(service)
 
       attrs           = service.dig('attrs')
       state           = attrs.dig('state')
