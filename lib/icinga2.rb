@@ -38,6 +38,11 @@ module Icinga2
   #
   class Client
 
+    attr_reader :version, :revision, :node_name, :start_time, :uptime
+    attr_reader :hosts_up, :hosts_down, :hosts_in_downtime, :hosts_acknowledged
+    attr_reader :services_ok, :services_warning, :services_critical, :services_unknown, :services_in_downtime, :services_acknowledged
+    attr_reader :hosts_active_checks_1min, :hosts_passive_checks_1min, :services_active_checks_1min, :services_passive_checks_1min
+
     include Logging
 
     include Icinga2::Version

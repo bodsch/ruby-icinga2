@@ -128,7 +128,7 @@ module Icinga2
         'filter'      => filter
       }
 
-      result = Network.post(         host: name,
+      Network.post(         host: name,
         url: format( '%s/v1/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -162,13 +162,10 @@ module Icinga2
 
       host = params.dig(:host)
 
-      result = Network.get(         host: host,
+      Network.get(         host: host,
         url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
-
-      JSON.pretty_generate( result )
-
 
     end
 
