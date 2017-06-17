@@ -28,9 +28,14 @@ require_relative 'icinga2/users'
 require_relative 'icinga2/usergroups'
 
 # -------------------------------------------------------------------------------------------------------------------
-
+# Namespace for classes and modules that handle all Icinga2 API calls
 module Icinga2
 
+  # Abstract base class for the API calls.
+  # Provides some helper methods
+  #
+  # @author Bodo Schulz
+  #
   class Client
 
     include Logging
@@ -73,8 +78,10 @@ module Icinga2
     #      }
     #    }
     #
-    #    i = Icinga2::Client.new config
+    #    @icinga = Icinga2::Client.new(config)
+    #
     # @return [instance, #read]
+    #
     def initialize( settings = {} )
 
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
@@ -99,12 +106,13 @@ module Icinga2
     # @option params [Integer] :user the Icinga2 API User
     # @option params [Integer] :password the Icinga2 API Password
     # @example with Certificate
-    #    cert? name_name: 'icinga2-dashing'
+    #    @icinga.cert?(name_name: 'icinga2-dashing')
     #
     # @example with User
-    #    cert? user: 'root' password: 'icinga'
+    #    @icinga.cert?(user: 'root', password: 'icinga')
     #
     # @return [Bool, #read]
+    #
     def cert?( params = {} )
 
       node_name    = params.dig(:node_name) || 'localhost'

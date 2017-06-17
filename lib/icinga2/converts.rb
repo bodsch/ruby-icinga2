@@ -10,10 +10,10 @@ module Icinga2
 
     # convert a Icinga2 state into a human readable state
     #
-    # @param [String, #read] state the Icinga2 State
-    # @param [Bool, #read] is_host if this a Host or a Service Check
+    # @param [String] state the Icinga2 State
+    # @param [Bool] is_host if this a Host or a Service Check
     #
-    # @return [String, #read]
+    # @return [String]
     def self.state_to_string( state, is_host = false )
 
       state =
@@ -45,10 +45,10 @@ module Icinga2
 
     # convert a Icinga2 state into a named color
     #
-    # @param [String, #read] state the Icinga2 State
-    # @param [Bool, #read] is_host if this a Host or a Service Check
+    # @param [String] state the Icinga2 State
+    # @param [Bool] is_host if this a Host or a Service Check
     #
-    # @return [String, #read]
+    # @return [String]
     def self.state_to_color( state, is_host = false )
 
       state =
@@ -80,9 +80,9 @@ module Icinga2
 
     # reformat a service check name
     #
-    # @param [String, #read] name
+    # @param [String] name
     #
-    # @return [String, #read]
+    # @return [String]
     def self.format_service( name )
       service_map = name.split('!', 2)
       service_map.join( ' - ' )

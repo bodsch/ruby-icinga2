@@ -41,111 +41,152 @@ i = Icinga2::Client.new( config )
 
 unless( i.nil? )
 
-#  # run tests ...
-#  #
-#  #
+# run tests ...
 #
-puts 'Information about Icinga2:'
+#
+
+puts 'Information about Icinga2'
 puts i.application_data
-#  puts i.cib_data()
-#  puts i.api_listener
-#  puts ''
-#
-#  puts "check if Host 'icinga2-master' exists:"
-#  puts i.exists_host?( 'icinga2-master' ) ? 'true' : 'false'
-#  puts "get host Objects from 'icinga2-master'"
-#  puts i.host_objects
-#  puts 'Host problems:'
-#  puts i.host_problems
-#  puts 'Problem Hosts:'
-#  puts i.problem_hosts
-#
-#  puts 'list named Hosts:'
-#  puts i.hosts( name: 'icinga2-master' )
-#  puts 'list all Hosts:'
-#  puts i.hosts
-#  puts ''
-#
-#  puts "check if Hostgroup 'linux-servers' exists:"
-#  puts i.exists_hostgroup?( 'linux-servers' ) ? 'true' : 'false'
-#  puts "add hostgroup 'foo'"
-#  puts i.add_hostgroup( name: 'foo', display_name: 'FOO' )
-#  puts "list named Hostgroup 'foo'"
-#  puts i.hostgroups( name: 'foo' )
-#  puts 'list all Hostgroups:'
-#  puts i.hostgroups
-#  puts "delete Hostgroup 'foo'"
-#  puts i.delete_hostgroup( name: 'foo' )
-#  puts ''
-#
-#  puts "check if service 'users' on host 'icinga2-master' exists:"
-#  puts i.exists_service?( host: 'icinga2-master', service: 'users' )  ? 'true' : 'false'
-#
-#  puts 'get service Objects'
-#  puts i.service_objects
-#  puts 'Service problems:'
-#  puts i.service_problems
-#  puts 'Problem Services:'
-#  puts i.problem_services
-#
-#  puts "list named Service 'ping4' from Host 'icinga2-master'"
-#  puts i.services( host: 'icinga2-master', service: 'ping4' )
-#  puts 'list all Services:'
-#  puts i.services
-#  puts ''
-#
-#  puts "check if Servicegroup 'disk' exists:"
-#  puts i.exists_servicegroup?( 'disk' ) ? 'true' : 'false'
-#  puts "add Servicegroup 'foo'"
-#  puts i.add_servicegroup( name: 'foo', display_name: 'FOO' )
-#  puts "list named Servicegroup 'foo'"
-#  puts i.servicegroups( name: 'foo' )
-#  puts 'list all Servicegroup:'
-#  puts i.servicegroups
-#  puts "delete Servicegroup 'foo'"
-#  puts i.delete_servicegroup( name: 'foo' )
-#  puts ''
-#
-#  puts "check if Usergroup 'icingaadmins' exists:"
-#  puts i.exists_usergroup?( 'icingaadmins' ) ? 'true' : 'false'
-#  puts "add Usergroup 'foo'"
-#  puts i.add_usergroup( name: 'foo', display_name: 'FOO' )
-#  puts "list named Usergroup 'foo'"
-#  puts i.usergroups( name: 'foo' )
-#  puts 'list all Usergroup:'
-#  puts i.usergroups
-#  puts "delete Usergroup 'foo'"
-#  puts i.delete_usergroup( name: 'foo' )
-#  puts ''
-#
-#  puts "check if User 'icingaadmin' exists:"
-#  puts i.exists_user?( 'icingaadmin' ) ? 'true' : 'false'
-#  puts "add User 'foo'"
-#  puts i.add_user( name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'] )
-#  puts "list named User 'foo'"
-#  puts i.users( name: 'foo' )
-#  puts 'list all User:'
-#  puts i.users
-#  puts "delete User 'foo'"
-#  puts i.delete_user( name: 'foo' )
-#  puts ''
+puts ''
+puts 'CIB'
+puts i.cib_data
+puts ''
+puts 'API Listener'
+puts i.api_listener
+puts ''
 
-  puts "add Downtime 'test':"
-  puts i.add_downtime( name: 'test', type: 'service', host: 'icinga2', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
-  puts 'list all Downtimes:'
-  puts i.downtimes
+puts 'check if Host \'icinga2\' exists'
+puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
+puts ''
+puts 'get host Objects'
+puts i.host_objects
+puts ''
+puts 'Host problems'
+puts i.host_problems
+puts ''
+puts 'Problem Hosts'
+puts i.problem_hosts
+puts ''
+puts 'list named Hosts'
+puts i.hosts( host: 'icinga2' )
+puts i.hosts( host: 'bp-cluster')
+puts ''
+puts 'list all Hosts'
+puts i.hosts
+puts ''
 
-  puts 'list all Notifications:'
-  puts i.notifications
+puts 'check if Hostgroup \'linux-servers\' exists'
+puts i.exists_hostgroup?( 'linux-servers' ) ? 'true' : 'false'
+puts ''
+puts 'add hostgroup \'foo\''
+puts i.add_hostgroup( host_group: 'foo', display_name: 'FOO' )
+puts ''
+puts 'list named Hostgroup \'foo\''
+puts i.hostgroups( host_group: 'foo' )
+puts ''
+puts 'list all Hostgroups'
+puts i.hostgroups
+puts ''
+puts 'delete Hostgroup \'foo\''
+puts i.delete_hostgroup( host_group: 'foo' )
+puts ''
 
-  puts 'enable Notifications for host:'
-  puts i.enable_host_notification( 'icinga2' )
-  puts 'disable Notifications for host:'
-  puts i.disable_host_notification( 'icinga2' )
+puts 'check if service \'users\' on host \'icinga2\' exists'
+puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
+puts ''
+puts 'get service Objects'
+puts i.service_objects
+puts ''
+puts 'Service problems'
+puts i.service_problems
+puts ''
+puts 'Problem Services'
+puts i.problem_services
+puts ''
+puts i.problem_services(10)
+puts ''
+puts 'list named Service \'ping4\' from Host \'icinga2\''
+puts i.services( host: 'icinga2', service: 'ping4' )
+puts ''
+puts 'list all Services'
+puts i.services
+puts ''
 
-  puts 'disable Notifications for host and services:'
-  puts i.disable_service_notification( 'icinga2' )
+puts 'check if Servicegroup \'disk\' exists'
+puts i.exists_servicegroup?( 'disk' ) ? 'true' : 'false'
+puts ''
+puts 'add Servicegroup \'foo\''
+puts i.add_servicegroup( name: 'foo', display_name: 'FOO' )
+puts ''
+puts 'list named Servicegroup \'foo\''
+puts i.servicegroups( name: 'foo' )
+puts ''
+puts 'list all Servicegroup'
+puts i.servicegroups
+puts ''
+puts 'delete Servicegroup \'foo\''
+puts i.delete_servicegroup( name: 'foo' )
+puts ''
 
+puts 'check if Usergroup \'icingaadmins\' exists'
+puts i.exists_usergroup?( 'icingaadmins' ) ? 'true' : 'false'
+puts ''
+puts 'add Usergroup \'foo\''
+puts i.add_usergroup( name: 'foo', display_name: 'FOO' )
+puts ''
+puts 'list named Usergroup \'foo\''
+puts i.usergroups( name: 'foo' )
+puts ''
+puts 'list all Usergroup'
+puts i.usergroups
+puts ''
+puts 'delete Usergroup \'foo\''
+puts i.delete_usergroup( name: 'foo' )
+puts ''
+
+puts 'check if User \'icingaadmin\' exists'
+puts i.exists_user?( 'icingaadmin' ) ? 'true' : 'false'
+puts ''
+puts 'add User \'foo\''
+puts i.add_user( name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'] )
+puts ''
+puts 'list named User \'icingaadmin\''
+puts i.users name: 'icingaadmin'
+puts ''
+puts 'list all User'
+puts i.users
+puts ''
+puts 'delete User \'foo\''
+puts i.delete_user( name: 'foo' )
+puts ''
+
+puts 'add Downtime \'test\''
+puts i.add_downtime( name: 'test', type: 'service', host: 'icinga2', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+puts ''
+puts 'list all Downtimes'
+puts i.downtimes
+puts ''
+puts 'list all Notifications'
+puts i.notifications
+puts ''
+puts 'enable Notifications for host'
+puts i.enable_host_notification( 'icinga2' )
+puts ''
+puts 'disable Notifications for host'
+puts i.disable_host_notification( 'icinga2' )
+puts ''
+puts 'enable Notifications for host and services'
+puts i.enable_service_notification('icinga2')
+puts ''
+puts 'disable Notifications for host and services'
+puts i.disable_service_notification( 'icinga2' )
+puts ''
+puts 'enable Notifications for hostgroup'
+puts i.enable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
+puts ''
+puts 'disable Notifications for hostgroup'
+puts i.disable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
+puts ''
 
 end
 

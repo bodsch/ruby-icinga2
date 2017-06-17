@@ -2,30 +2,51 @@
 # frozen_string_literal: true
 module Icinga2
 
-  #
-  #
-  #
+  # namespace for host handling
   module Hosts
 
+    # add host
     #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :fqdn
+    # @option params [String] :display_name
+    # @option params [Bool] :enable_notifications (false)
+    # @option params [Integer] :max_check_attempts (3)
+    # @option params [Integer] :check_interval (60)
+    # @option params [Integer] :retry_interval (45)
+    # @option params [String] :notes
+    # @option params [String] :notes_url
+    # @option params [String] :action_url
+    # @option params [Hash] :vars ({})
     #
+    # @example
+    #    param = {
+    #      host: 'foo',
+    #      fqdn: 'foo.bar.com',
+    #      display_name: 'test node',
+    #      max_check_attempts: 5,
+    #      notes: 'test node'
+    #    }
+    #    @icinga.add_host(param)
+    #
+    # @return [Hash]
     #
     def add_host( params = {} )
 
-      name             = params.dig(:name)
-      fqdn             = params.dig(:fqdn)
-      display_name      = params.dig(:display_name) || name
-      notifications    = params.dig(:enable_notifications) || false
+      host               = params.dig(:host)
+      fqdn               = params.dig(:fqdn)
+      display_name       = params.dig(:display_name) || host
+      notifications      = params.dig(:enable_notifications) || false
       max_check_attempts = params.dig(:max_check_attempts) || 3
-      check_interval    = params.dig(:check_interval) || 60
-      retry_interval    = params.dig(:retry_interval) || 45
-      notes            = params.dig(:notes)
-      notes_url         = params.dig(:notes_url)
-      action_url        = params.dig(:action_url)
-      vars             = params.dig(:vars) || {}
+      check_interval     = params.dig(:check_interval) || 60
+      retry_interval     = params.dig(:retry_interval) || 45
+      notes              = params.dig(:notes)
+      notes_url          = params.dig(:notes_url)
+      action_url         = params.dig(:action_url)
+      vars               = params.dig(:vars) || {}
 
-      if( name.nil? )
-
+      if( host.nil? )
         return {
           status: 404,
           message: 'missing host name'
@@ -34,7 +55,7 @@ module Icinga2
 
       if( fqdn.nil? )
         # build FQDN
-        fqdn = Socket.gethostbyname( name ).first
+        fqdn = Socket.gethostbyname( host ).first
       end
 
       payload = {
@@ -60,24 +81,29 @@ module Icinga2
 
       logger.debug( JSON.pretty_generate( payload ) )
 
-      result = Network.put(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
+      Network.put(         host: host,
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options,
         payload: payload )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # delete a host
     #
+    # @param [Hash] params
+    # @option params [String] :host host to delete
     #
+    # @example
+    #   @icinga.delete_host(host: 'foo')
+    #
+    # @return [Hash] result
     #
     def delete_host( params = {} )
 
-      name = params.dig(:name)
+      host = params.dig(:host)
 
-      if( name.nil? )
+      if( host.nil? )
 
         return {
           status: 404,
@@ -85,21 +111,32 @@ module Icinga2
         }
       end
 
-      result = Network.delete(         host: name,
-        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icinga_api_url_base, name ),
+      Network.delete(         host: host,
+        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # return hosts
     #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :attrs
+    # @option params [String] :filter
+    # @option params [String] :joins
     #
+    # @example to get all hosts
+    #    @icinga.hosts
+    #
+    # @example to get one host
+    #    @icinga.host(host: 'icinga2')
+    #
+    # @return [Hash]
     #
     def hosts( params = {} )
 
-      name   = params.dig(:name)
+      host   = params.dig(:host)
       attrs  = params.dig(:attrs)
       filter = params.dig(:filter)
       joins  = params.dig(:joins)
@@ -108,34 +145,46 @@ module Icinga2
       payload['filter'] = filter unless  filter.nil?
       payload['joins'] = joins unless  joins.nil?
 
-      result = Network.get(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
+      Network.get(         host: host,
+        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # returns true if the host exists
     #
+    # @param [String] name
     #
+    # @example
+    #    @icinga.exists_host?('icinga2')
+    #
+    # @return [Bool]
     #
     def exists_host?( name )
 
       result = hosts( name: name )
-
       result = JSON.parse( result ) if  result.is_a?( String )
-
-      status = result.dig('status')
+      status = result.dig(:status)
 
       return true if  !status.nil? && status == 200
-
       false
-
     end
 
+    # returns host objects
     #
+    # @param [Hash] params
+    # @option params [Array] :attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
+    # @option params [Array] :filter ([])
+    # @option params [Array] :joins ([])
     #
+    # @example with default attrs and joins
+    #    @icinga.host_objects
+    #
+    # @example
+    #    @icinga.host_objects(attrs: ['name', 'state'])
+    #
+    # @return [Hash]
     #
     def host_objects( params = {} )
 
@@ -149,23 +198,23 @@ module Icinga2
       end
 
       payload['attrs'] = attrs unless  attrs.nil?
-
       payload['filter'] = filter unless  filter.nil?
-
       payload['joins'] = joins unless  joins.nil?
 
-      result = Network.get(         host: nil,
+      Network.get(         host: nil,
         url: format( '%s/v1/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # return count of hosts with problems
     #
+    # @example
+    #    @icinga.host_problems
     #
+    # @return [Integer]
     #
     def host_problems
 
@@ -173,29 +222,34 @@ module Icinga2
       problems = 0
 
       data = JSON.parse(data) if  data.is_a?(String)
+      nodes = data.dig(:nodes)
 
-      nodes = data.dig('nodes')
+      unless !nodes
 
-      nodes.each do |n|
+        nodes.each do |n|
 
-        attrs           = n.last.dig('attrs')
+          attrs           = n.last.dig('attrs')
+          state           = attrs.dig('state')           || 0
+          downtime_depth  = attrs.dig('downtime_depth')  || 0
+          acknowledgement = attrs.dig('acknowledgement') || 0
 
-        state           = attrs.dig('state')           || 0
-        downtime_depth   = attrs.dig('downtime_depth')  || 0
-        acknowledgement = attrs.dig('acknowledgement') || 0
+          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
+            problems += 1
+          end
 
-        if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-          problems += 1
         end
-
       end
-
       problems
-
     end
 
+    # return a list of host with problems
     #
+    # @param [Integer] max_items numbers of list entries
     #
+    # @example
+    #    @icinga.problem_hosts
+    #
+    # @return [Hash]
     #
     def problem_hosts( max_items = 5 )
 
@@ -205,31 +259,38 @@ module Icinga2
       host_data = host_objects
 
       host_data = JSON.parse( host_data ) if  host_data.is_a?(String)
+      host_data = host_data.dig(:nodes)
 
-#       logger.debug( host_data )
+      unless !host_data
 
-      host_data = host_data.dig('nodes')
+        host_data.each do |_host,v|
 
-      host_data.each do |_host,v|
+          name  = v.dig('name')
+          state = v.dig('attrs','state')
 
-        name  = v.dig('name')
-        state = v.dig('attrs','state')
+          next if  state.zero?
 
-        next if  state.zero?
+          @host_problems[name] = host_severity(v)
+        end
 
-        @host_problems[name] = host_severity(v)
+        # get the count of problems
+        #
+        @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
       end
-
-      # get the count of problems
-      #
-      @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
-
       @host_problems_severity
 
     end
 
+    # calculate a host severity
+    #
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
+    #
+    # @param [Hash] host
+    #
+    # @private
+    #
+    # @return [Hash]
     #
     def host_severity( host )
 
