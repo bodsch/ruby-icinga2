@@ -2,13 +2,20 @@
 # frozen_string_literal: true
 module Icinga2
 
-  #
-  #
-  #
+  # namespace for network handling
   module Network
 
+    # static function for GET Requests
+    #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
+    # @option params [Hash] :payload
     #
     #
+    # @return [Hash]
     #
     def self.get( params = {} )
 
@@ -95,8 +102,18 @@ module Icinga2
 
     end
 
+    # static function for GET Requests with payload
+    # internal we use here an POST Request and overwrite a http header
+    #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
+    # @option params [Hash] :payload
     #
     #
+    # @return [Hash]
     #
     def self.get_with_payload( params = {} )
 
@@ -177,8 +194,16 @@ module Icinga2
 
     end
 
+    # static function for POST Requests
+    #
+    # @param [Hash] params
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
+    # @option params [Hash] :payload
     #
     #
+    # @return [Hash]
     #
     def self.post( params = {} )
 
@@ -265,8 +290,17 @@ module Icinga2
       result
     end
 
+    # static function for PUT Requests
+    #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
+    # @option params [Hash] :payload
     #
     #
+    # @return [Hash]
     #
     def self.put( params = {} )
 
@@ -369,8 +403,15 @@ module Icinga2
       result
     end
 
+    # static function for DELETE Requests
+    #
+    # @param [Hash] params
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
     #
     #
+    # @return [Hash]
     #
     def self.delete( params = {} )
 

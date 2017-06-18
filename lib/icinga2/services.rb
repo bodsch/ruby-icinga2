@@ -3,13 +3,16 @@
 
 module Icinga2
 
-  #
-  #
-  #
+  # namespace for service handling
   module Services
 
+    # add services
+    #
+    # @param [String] host
+    # @param [Hash] services
     #
     #
+    # @return [Hash]
     #
     def add_services( host, services = {} )
 
@@ -25,7 +28,7 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        result = Network.put(           host: host,
+        Network.put(           host: host,
           url: format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, host, s ),
           headers: @headers,
           options: @options,
@@ -37,8 +40,15 @@ module Icinga2
 
     end
 
+    # return all unhandled services
     #
+    # @param [Hash] params
     #
+    # @todo
+    #  this function are not operable
+    #  need help, time or beer
+    #
+    # @return [Nil]
     #
     def unhandled_services( params = {} )
 
@@ -48,31 +58,49 @@ module Icinga2
 
     end
 
+    # return services
     #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :service
     #
+    # @example to get all services
+    #    @icinga.services
+    #
+    # @example to get one service for host
+    #    @icinga.services( host: 'icinga2', service: 'ping4' )
+    #
+    # @return [Hash]
     #
     def services( params = {} )
 
       name    = params.dig(:host)
       service = params.dig(:service)
 
-      url = if( service.nil? )
+      url =
+      if( service.nil? )
         format( '%s/v1/objects/services/%s', @icinga_api_url_base, name )
       else
         format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, name, service )
-            end
+      end
 
-      result = Network.get(         host: name,
+      Network.get(         host: name,
         url: url,
         headers: @headers,
         options: @options )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # returns true if the service exists
     #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :service
     #
+    # @example
+    #    @icinga.exists_service?(host: 'icinga2', service: 'users' )
+    #
+    # @return [Bool]
     #
     def exists_service?( params = {} )
 
@@ -80,7 +108,6 @@ module Icinga2
       service = params.dig(:service)
 
       if( host.nil? )
-
         return {
           status: 404,
           message: 'missing host name'
@@ -88,19 +115,27 @@ module Icinga2
       end
 
       result = services( host: host, service: service )
-
       result = JSON.parse( result ) if  result.is_a?( String )
-
-      status = result.dig('status')
+      status = result.dig(:status)
 
       return true if  !status.nil? && status == 200
-
       false
-
     end
 
+    # returns service objects
     #
+    # @param [Hash] params
+    # @option params [Array] :attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
+    # @option params [Array] :filter ([])
+    # @option params [Array] :joins (['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check'])
     #
+    # @example with default attrs and joins
+    #    @icinga.service_objects
+    #
+    # @example
+    #    @icinga.service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
+    #
+    # @return [Hash]
     #
     def service_objects( params = {} )
 
@@ -110,31 +145,31 @@ module Icinga2
       payload = {}
 
       if( attrs.nil? )
-        attrs = %w[name state acknowledgement downtime_depth last_check]
+        attrs = ['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check']
       end
 
       if( joins.nil? )
-        joins = ['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check']
+        joins = ['host.name', 'host.state', 'host.acknowledgement', 'host.downtime_depth', 'host.last_check']
       end
 
       payload['attrs'] = attrs unless  attrs.nil?
-
       payload['filter'] = filter unless  filter.nil?
-
       payload['joins'] = joins unless  joins.nil?
 
-      result = Network.get(         host: nil,
+      Network.get(         host: nil,
         url: format( '%s/v1/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
 
-      JSON.pretty_generate( result )
-
     end
 
+    # return count of services with problems
     #
+    # @example
+    #    @icinga.service_problems
     #
+    # @return [Integer]
     #
     def service_problems
 
@@ -142,31 +177,31 @@ module Icinga2
       problems = 0
 
       data = JSON.parse(data) if  data.is_a?(String)
+      nodes = data.dig(:nodes)
 
-      nodes = data.dig('nodes')
+      unless !nodes
+        nodes.each do |n|
+          attrs           = n.last.dig('attrs')
+          state           = attrs.dig('state')           || 0
+          downtime_depth  = attrs.dig('downtime_depth')  || 0
+          acknowledgement = attrs.dig('acknowledgement') || 0
 
-      nodes.each do |n|
-
-        attrs           = n.last.dig('attrs')
-
-        state           = attrs.dig('state')
-        downtime_depth   = attrs.dig('downtime_depth')
-        acknowledgement = attrs.dig('acknowledgement')
-
-#         puts state
-
-        if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-          problems += 1 #= problems +1
+          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
+            problems += 1
+          end
         end
-
       end
-
       problems
-
     end
 
+    # return a list of services with problems
     #
+    # @param [Integer] max_items numbers of list entries
     #
+    # @example
+    #    @icinga.problem_services
+    #
+    # @return [Hash]
     #
     def problem_services( max_items = 5 )
 
@@ -177,31 +212,38 @@ module Icinga2
       services_data = service_objects
 
       if( services_data.is_a?(String) )
-
         services_data = JSON.parse( services_data )
       end
 
-      services_data = services_data.dig('nodes')
+      services_data = services_data.dig(:nodes)
 
-      services_data.each do |_service,v|
+      unless !services_data
 
-        name  = v.dig('name')
-        state = v.dig('attrs','state')
-#         logger.debug( "Severity for #{name}" )
-        next if  state.zero?
+        services_data.each do |_service,v|
 
-        @service_problems[name] = service_severity(v)
+          name  = v.dig('name')
+          state = v.dig('attrs','state')
+          next if  state.zero?
+
+          @service_problems[name] = service_severity(v)
+        end
+
+        @service_problems.sort.reverse!
+        @service_problems.keys[1..max_items].each { |k,_v| @service_problems_severity[k] = @service_problems[k] }
       end
-
-      @service_problems.sort.reverse!
-
-      @service_problems.keys[1..max_items].each { |k,_v| @service_problems_severity[k] = @service_problems[k] }
-
       @service_problems_severity
     end
 
+    # update host
     #
+    # @param [Hash] hash
+    # @param [String] host
     #
+    # @todo
+    #  this function are not operable
+    #  need help, time or beer
+    #
+    # @return [Hash]
     #
     def update_host( hash, host )
 
@@ -222,11 +264,18 @@ module Icinga2
       hash
     end
 
-    # private
+    # calculate a service severity
+    #
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    def service_severity( service )
+    # @param [Hash] service
+    #
+    # @private
+    #
+    # @return [Hash]
+    #
+    def service_severity(service)
 
       attrs           = service.dig('attrs')
       state           = attrs.dig('state')
@@ -244,7 +293,7 @@ module Icinga2
           4
         end
 
-      severity += 16 if object_has_been_checked?(host)
+      severity += 16 if object_has_been_checked?(service)
 
       unless state.zero?
 

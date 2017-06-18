@@ -3,13 +3,34 @@
 
 module Icinga2
 
-  #
-  #
-  #
+  # namespace for downtimes handling
   module Downtimes
 
+    # add downtime
     #
+    # @param [Hash] params
+    # @option params [String] :name
+    # @option params [String] :host
+    # @option params [String] :host_group
+    # @option params [Integer] :start_time (Time.new.to_i)
+    # @option params [Integer] :end_time
+    # @option params [String] :author
+    # @option params [String] :comment
+    # @option params [String] :type 'host' or 'service' downtime
     #
+    # @example
+    #    param = {
+    #      name: 'test',
+    #      type: 'service',
+    #      host: 'icinga2',
+    #      comment: 'test downtime',
+    #      author: 'icingaadmin',
+    #      start_time: Time.now.to_i,
+    #      end_time: Time.now.to_i + 20
+    #    }
+    #    @icinga.add_downtime(param)
+    #
+    # @return [Hash]
     #
     def add_downtime( params = {} )
 
@@ -84,7 +105,6 @@ module Icinga2
         }
       end
 
-
       if( end_time.nil? )
         return {
           status: 404,
@@ -97,9 +117,6 @@ module Icinga2
         }
       end
 
-#       logger.debug( Time.at( start_time ).strftime( '%Y-%m-%d %H:%M:%S' ) )
-#       logger.debug( Time.at( end_time ).strftime( '%Y-%m-%d %H:%M:%S' ) )
-
       payload = {
         'type'        => type,
         'start_time'  => start_time,
@@ -111,9 +128,7 @@ module Icinga2
         'filter'      => filter
       }
 
-#       logger.debug( JSON.pretty_generate( payload ) )
-
-      result = Network.post(         host: name,
+      Network.post(         host: name,
         url: format( '%s/v1/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -131,24 +146,26 @@ module Icinga2
 
       #  --data '{ "type": "Service", "filter": "\"api_dummy_hostgroup\" in host.groups)", ... }'
 
-      JSON.pretty_generate( result )
-
     end
 
+    # return downtimes
     #
+    # @param [Hash] params
+    # @option params [String] :host
     #
+    # @example
+    #    @icinga.downtimes
+    #
+    # @return [Hash]
     #
     def downtimes( params = {} )
 
-      name = params.dig(:name)
+      host = params.dig(:host)
 
-      result = Network.get(         host: name,
-        url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, name ),
+      Network.get(         host: host,
+        url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
-
-      JSON.pretty_generate( result )
-
 
     end
 
