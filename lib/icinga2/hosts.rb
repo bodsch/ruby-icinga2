@@ -242,41 +242,6 @@ module Icinga2
       problems
     end
 
-
-    # return count of hosts with handled problems
-    #
-    # @param [Integer] status
-    # @example
-    #    @icinga.host_handled_problems
-    #
-    # @return [Integer]
-    #
-    def host_handled_problems(status)
-
-      data     = host_objects
-      problems = 0
-
-      data = JSON.parse(data) if  data.is_a?(String)
-      nodes = data.dig(:nodes)
-
-      unless !nodes
-
-        nodes.each do |n|
-
-          attrs           = n.last.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state == status && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-
-        end
-      end
-      problems
-    end
-
     # return a list of host with problems
     #
     # @param [Integer] max_items numbers of list entries

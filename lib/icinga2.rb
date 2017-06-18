@@ -31,6 +31,13 @@ require_relative 'icinga2/usergroups'
 # Namespace for classes and modules that handle all Icinga2 API calls
 module Icinga2
 
+  # static variables for handled warning
+  HANDLED_WARNING  = 1
+  # static variables for handled critical
+  HANDLED_CRITICAL = 2
+  # static variables for handled unknown
+  HANDLED_UNKNOWN  = 3
+
   # Abstract base class for the API calls.
   # Provides some helper methods
   #
@@ -40,8 +47,15 @@ module Icinga2
 
     attr_reader :version, :revision, :node_name, :start_time, :uptime
     attr_reader :hosts_up, :hosts_down, :hosts_in_downtime, :hosts_acknowledged
+    attr_reader :hosts_all, :hosts_problems, :hosts_handled_warning_problems, :hosts_handled_critical_problems, :hosts_handled_unknown_problems
+    attr_reader :hosts_handled_problems, :hosts_down_adjusted
+
     attr_reader :services_ok, :services_warning, :services_critical, :services_unknown, :services_in_downtime, :services_acknowledged
+    attr_reader :services_all, :services_problems, :services_handled_warning_problems, :services_handled_critical_problems, :services_handled_unknown_problems
+    attr_reader :services_warning_adjusted, :services_critical_adjusted, :services_unknown_adjusted
     attr_reader :hosts_active_checks_1min, :hosts_passive_checks_1min, :services_active_checks_1min, :services_passive_checks_1min
+
+
 
     include Logging
 
@@ -102,6 +116,20 @@ module Icinga2
 
       @has_cert   = cert?( user: @icinga_api_user, password: @icinga_api_pass )
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
+
+
+      @version = @revision = 0
+      @node_name = @start_time = @uptime = ''
+      @avg_latency = @avg_execution_time = 0
+      @hosts_up = @hosts_down = @hosts_in_downtime = @hosts_acknowledged = 0
+      @hosts_all = @hosts_problems = @hosts_handled_warning_problems = @hosts_handled_critical_problems = @hosts_handled_unknown_problems = 0
+      @hosts_handled_problems = @hosts_down_adjusted = 0
+      @services_ok = @services_warning = @services_critical = @services_unknown = @services_in_downtime = @services_acknowledged = 0
+      @services_all = @services_problems = @services_handled_warning_problems = @services_handled_critical_problems = @services_handled_unknown_problems = 0
+      @services_warning_adjusted = @services_critical_adjusted = @services_unknown_adjusted = 0
+      @hosts_active_checks_1min = @hosts_passive_checks_1min = @services_active_checks_1min = @services_passive_checks_1min = 0
+
+      extract_data
 
       self
     end
