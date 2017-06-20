@@ -12,10 +12,12 @@ module Icinga2
     MINOR = 6
     # tiny part of version
     TINY  = 3
+    # patch part
+    PATCH = 1
 
   end
 
   # Current version of gem.
-  VERSION = [Version::MAJOR, Version::MINOR, Version::TINY].compact * '.'
+  VERSION = [Version::MAJOR, Version::MINOR, Version::TINY, Version::PATCH].compact * '.'
 
 end

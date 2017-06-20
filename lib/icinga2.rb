@@ -46,6 +46,7 @@ module Icinga2
   class Client
 
     attr_reader :version, :revision, :node_name, :start_time, :uptime
+    attr_reader :avg_latency, :avg_execution_time
     attr_reader :hosts_up, :hosts_down, :hosts_in_downtime, :hosts_acknowledged
     attr_reader :hosts_all, :hosts_problems, :hosts_handled_warning_problems, :hosts_handled_critical_problems, :hosts_handled_unknown_problems
     attr_reader :hosts_handled_problems, :hosts_down_adjusted
