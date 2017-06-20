@@ -25,7 +25,7 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
-      max_retries   = 3
+      max_retries   = 30
       times_retried = 0
 
       return get_with_payload( params ) if  payload.count >= 1
@@ -78,15 +78,16 @@ module Icinga2
           name: host,
           message: error['status']
         }
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if( times_retried < max_retries )
 
           times_retried += 1
-          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
-          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
 
-          sleep( 2 )
+          sleep( 4 )
           retry
         else
           $stderr.puts( 'Exiting request ...' )
@@ -99,7 +100,6 @@ module Icinga2
       end
 
       result
-
     end
 
     # static function for GET Requests with payload
@@ -123,7 +123,7 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
       result  = {}
-      max_retries   = 3
+      max_retries   = 30
       times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'GET'
@@ -150,7 +150,6 @@ module Icinga2
         unless( results.nil? )
 
           results.each do |r|
-
             node[r.dig('name')] = r
           end
 
@@ -170,15 +169,16 @@ module Icinga2
           name: host,
           message: error['status']
         }
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH  => e
 
         if( times_retried < max_retries )
 
           times_retried += 1
-          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
-          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
 
-          sleep( 2 )
+          sleep( 4 )
           retry
         else
           $stderr.puts( 'Exiting request ...' )
@@ -211,7 +211,7 @@ module Icinga2
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
-      max_retries   = 3
+      max_retries   = 30
       times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'POST'
@@ -267,15 +267,16 @@ module Icinga2
           }
         end
 
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if( times_retried < max_retries )
 
           times_retried += 1
-          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
-          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
 
-          sleep( 2 )
+          sleep( 4 )
           retry
         else
           $stderr.puts( 'Exiting request ...' )
@@ -309,7 +310,7 @@ module Icinga2
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
-      max_retries   = 3
+      max_retries   = 30
       times_retried = 0
 
       headers['X-HTTP-Method-Override'] = 'PUT'
@@ -380,15 +381,16 @@ module Icinga2
 
         end
 
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if( times_retried < max_retries )
 
           times_retried += 1
-          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
-          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
 
-          sleep( 2 )
+          sleep( 4 )
           retry
         else
           $stderr.puts( 'Exiting request ...' )
@@ -474,15 +476,16 @@ module Icinga2
           }
 
                  end
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if( times_retried < max_retries )
 
           times_retried += 1
-          $stderr.puts( format( 'Cannot execute request to %s, cause: %s', url, e ) )
-          $stderr.puts( format( '   retry %d%d', times_retried, max_retries ) )
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
 
-          sleep( 2 )
+          sleep( 4 )
           retry
         else
           $stderr.puts( 'Exiting request ...' )
