@@ -224,7 +224,7 @@ module Icinga2
       data = JSON.parse(data) if  data.is_a?(String)
       nodes = data.dig(:nodes)
 
-      unless !nodes
+      unless( nodes.nil? )
 
         nodes.each do |n|
 
@@ -261,7 +261,7 @@ module Icinga2
       host_data = JSON.parse( host_data ) if  host_data.is_a?(String)
       host_data = host_data.dig(:nodes)
 
-      unless !host_data
+      unless( host_data.nil? )
 
         host_data.each do |_host,v|
 

@@ -53,38 +53,40 @@ unless( i.nil? )
   puts ''
   puts 'API Listener'
   puts i.api_listener
-  puts ''
 
+  puts ''
   puts format( 'version: %s, revision %s', i.version, i.revision )
   puts format( 'start time: %s', i.start_time )
   puts format( 'uptime: %s', i.uptime )
+
   puts ''
-  puts format( 'all hosts: %d', i.hosts_all )
-  puts format( 'host down %d', i.hosts_down )
-  puts format( 'hosts handled warning problems: %d', i.hosts_handled_warning_problems )
-  puts format( 'hosts handled critical problems: %d', i.hosts_handled_critical_problems )
-  puts format( 'hosts handled unknown problems: %d', i.hosts_handled_unknown_problems )
+  puts format( 'count of all hosts: %d', i.hosts_all )
+  puts format( 'host down: %d', i.hosts_down )
+  puts format( 'hosts problems down: %d', i.hosts_problems_down )
+
   puts ''
-  puts format( 'all services: %d', i.services_all )
-  puts format( 'services critical %d', i.services_critical)
-  puts format( 'services warning %d', i.services_warning)
-  puts format( 'services unknown %d', i.services_unknown)
-  puts format( 'services handled warning problems %d', i.services_handled_warning_problems)
-  puts format( 'services handled critical problems %d', i.services_handled_critical_problems)
-  puts format( 'services handled unknown problems %d', i.services_handled_unknown_problems)
-  puts format( 'services adjusted critical %d', i.services_critical_adjusted)
-  puts format( 'services adjusted warning %d',  i.services_warning_adjusted)
-  puts format( 'services adjusted unknown %d',  i.services_unknown_adjusted)
+  puts format( 'count of all services: %d', i.services_all )
+  puts format( 'services critical: %d', i.services_critical)
+  puts format( 'services warning: %d', i.services_warning)
+  puts format( 'services unknown: %d', i.services_unknown)
+  puts ''
+  puts format( 'services handled warning problems: %d', i.services_handled_warning_problems)
+  puts format( 'services handled critical problems: %d', i.services_handled_critical_problems)
+  puts format( 'services handled unknown problems: %d', i.services_handled_unknown_problems)
+  puts ''
+  puts format( 'services adjusted critical: %d', i.services_critical_adjusted)
+  puts format( 'services adjusted warning: %d',  i.services_warning_adjusted)
+  puts format( 'services adjusted unknown: %d',  i.services_unknown_adjusted)
   puts ''
 
   puts 'check if Host \'icinga2\' exists'
   puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
   puts ''
   puts 'get host Objects'
-  puts i.hosts_objects
+  puts i.host_objects
   puts ''
   puts 'Host problems'
-  puts i.hosts_problems
+  puts i.host_problems
   puts ''
   puts 'Problem Hosts'
   puts i.problem_hosts
@@ -117,13 +119,13 @@ unless( i.nil? )
   puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
   puts ''
   puts 'get service Objects'
-  puts i.services_objects
+  puts i.service_objects
   puts ''
   puts 'Service problems'
-  puts i.services_problems
+  puts i.service_problems
   puts ''
   puts 'Problem Services'
-  puts i.problem_services
+  a,b = i.problem_services
   puts ''
   puts i.problem_services(10)
   puts ''
@@ -192,23 +194,26 @@ unless( i.nil? )
   puts i.notifications
   puts ''
   puts 'enable Notifications for host'
-  puts i.enable_hosts_notification( 'icinga2' )
+  puts i.enable_host_notification( 'icinga2' )
   puts ''
   puts 'disable Notifications for host'
-  puts i.disable_hosts_notification( 'icinga2' )
+  puts i.disable_host_notification( 'icinga2' )
   puts ''
   puts 'enable Notifications for host and services'
-  puts i.enable_services_notification('icinga2')
+  puts i.enable_service_notification('icinga2')
   puts ''
   puts 'disable Notifications for host and services'
-  puts i.disable_services_notification( 'icinga2' )
+  puts i.disable_service_notification( 'icinga2' )
   puts ''
   puts 'enable Notifications for hostgroup'
-  puts i.enable_hostgroup_notification( host: 'icinga2', hosts_group: 'linux-servers')
+  puts i.enable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
   puts ''
   puts 'disable Notifications for hostgroup'
-  puts i.disable_hostgroup_notification( host: 'icinga2', hosts_group: 'linux-servers')
+  puts i.disable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
   puts ''
+
+  puts 'work queue statistics'
+  puts i.work_queue_statistics
 
 end
 

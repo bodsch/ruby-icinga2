@@ -50,17 +50,13 @@ module Icinga2
     #
     # @example for host objects
     #    h_objects = @icinga.host_objects
-    #    all_hosts = h_objects.dig(:nodes)
-    #    warning = @icinga.handled_problems(all_hosts, Icinga2::HANDLED_WARNING)
-    #    critical = @icinga.handled_problems(all_hosts, Icinga2::HANDLED_CRITICAL)
-    #    unknown = @icinga.handled_problems(all_hosts, Icinga2::HANDLED_UNKNOWN)
+    #    warning = @icinga.handled_problems(h_objects, Icinga2::HOSTS_DOWN)
     #
     # @example for service objects
     #    s_objects = @icinga.service_objects
-    #    all_services = s_objects.dig(:nodes)
-    #    warning = @icinga.handled_problems(all_services, Icinga2::HANDLED_WARNING)
-    #    critical = @icinga.handled_problems(all_services, Icinga2::HANDLED_CRITICAL)
-    #    unknown = @icinga.handled_problems(all_services, Icinga2::HANDLED_UNKNOWN)
+    #    warning = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+    #    critical = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+    #    unknown = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
     #
     # @return [Integer]
     #
@@ -69,9 +65,9 @@ module Icinga2
       problems = 0
 
       objects = JSON.parse(objects) if  objects.is_a?(String)
-      nodes = objects.dig(:nodes)
+      nodes   = objects.dig(:nodes)
 
-      unless !nodes
+      unless( nodes.nil? )
 
         nodes.each do |n|
 
