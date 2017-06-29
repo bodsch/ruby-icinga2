@@ -125,7 +125,8 @@ unless( i.nil? )
   puts i.service_problems
   puts ''
   puts 'Problem Services'
-  a,b = i.problem_services
+  a,_b = i.problem_services
+  puts a
   puts ''
   puts i.problem_services(10)
   puts ''
