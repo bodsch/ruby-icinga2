@@ -14,7 +14,7 @@ describe Icinga2 do
 
     config = {
       icinga: {
-        host: 'localhost',
+        host: '192.168.33.5',
         api: {
           port: 5665,
           user: 'root',
@@ -30,49 +30,34 @@ describe Icinga2 do
 
   # subject {  }
 
-
   describe ' Informations' do
 
-    pending
-
-    # i.applicationData()
-    it 'applicationData()' do
-#      pending
-      assert_equal @icinga2.applicationData
+    it 'application_data()' do
+      expect(@icinga2.application_data).to be_a(Hash)
     end
-    # i.CIBData()
-    it 'CIBData()' do
-      pending
+    it 'cib_data()' do
+      expect(@icinga2.cib_data).to be_a(Hash)
     end
-    # i.apiListener()
-    it 'apiListener()' do
-    pending
+    it 'api_listener()' do
+      expect(@icinga2.api_listener).to be_a(Hash)
+    end
+    it 'version' do
+      expect(@icinga2.version).to be_a(String)
+    end
+    it 'revision' do
+      expect(@icinga2.revision).to be_a(String)
     end
   end
 
   describe ' Module Host' do
-    pending
-
     # i.existsHost?( 'icinga2-master' ) ? 'true' : 'false'
-    it 'existsHost?()' do
-      pending
+    it 'exists_host?()' do
+      expect(@icinga2.exists_host?('icinga2')).to be_a(TrueClass)
     end
 
-    # i.hostObjects()
-    it 'hostObjects()' do
-      pending
+    it 'count of all hosts' do
+      expect(@icinga2.hosts_all).to be_a(Integer)
     end
-
-    # i.hostProblems()
-    it 'hostProblems()' do
-      pending
-    end
-
-    # i.problemHosts()
-    it 'problemHosts()' do
-      pending
-    end
-
   end
 
 end
