@@ -230,7 +230,7 @@ module Icinga2
         end
 
         service_problems.sort.reverse!
-        service_problems.keys[1..max_items].each { |k,_v| service_problems_severity[k] = service_problems[k] }
+        service_problems = service_problems.keys[1..max_items].each { |k,_v| service_problems_severity[k] = service_problems[k] }
       end
 
       [service_problems, service_problems_severity]
