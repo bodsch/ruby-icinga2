@@ -19,7 +19,6 @@ module Icinga2
         url: format( '%s/v1/status/IcingaApplication', @icinga_api_url_base ),
         headers: @headers,
         options: @options)
-
     end
 
     # return Icinga2 CIB
@@ -35,6 +34,22 @@ module Icinga2
         url: format( '%s/v1/status/CIB', @icinga_api_url_base ),
         headers: @headers,
         options: @options)
+
+    end
+
+    #
+    #
+    #
+    def status_data
+
+      data = Network.get_raw(host: nil,
+        url: format( '%s/v1/status', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options)
+
+      return nil unless data.dig(:status) != 200
+
+      data.dig('results')
 
     end
 
@@ -54,6 +69,47 @@ module Icinga2
 
     end
 
+    # return queue statistics from the api
+    #
+    # @example
+    #    @icinga.work_queue_statistics
+    #
+    # @return [Hash]
+    #
+    def work_queue_statistics
+
+      stats  = {}
+      data   = Network.get_raw(host: nil,
+        url: format( '%s/v1/status', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options)
+
+      return stats if data.nil?
+
+        data = data.dig(:data)
+
+        a = {
+          'json-rpc'  => data.dig('ApiListener', 'api', 'json_rpc'),
+          'graphite'  => data.dig('GraphiteWriter', 'graphitewriter', 'graphite'),
+          'ido-mysql' => data.dig('IdoMysqlConnection', 'idomysqlconnection', 'ido-mysql')
+        }
+
+        key_list = %w[work_queue_item_rate query_queue_item_rate]
+
+        a.each do |k,v|
+          key_list.each do |key|
+            if( v.include?( key ))
+              attr_name = format('%s queue rate', k)
+              stats[attr_name] = v[key].to_f.round(3)
+            end
+          end
+        end
+
+        stats
+
+    end
+
+
     # extract many datas from application_data and cib_data
     # and store them in global variables
     #
@@ -65,7 +121,7 @@ module Icinga2
 
         a_data = a_data.dig('status','icingaapplication','app')
 
-        if( !a_data.nil? )
+        unless( a_data.nil? )
 
           # extract
           #   - version
@@ -85,7 +141,7 @@ module Icinga2
 
         c_data = c_data.dig('status')
 
-        if( !c_data.nil? )
+        unless( c_data.nil? )
 
           # extract
           #   - uptime
@@ -107,14 +163,12 @@ module Icinga2
 
           @hosts_all                       = all_hosts.size
           @hosts_problems                  = host_problems
-          @hosts_handled_warning_problems  = handled_problems(all_hosts, Icinga2::HANDLED_WARNING)
-          @hosts_handled_critical_problems = handled_problems(all_hosts, Icinga2::HANDLED_CRITICAL)
-          @hosts_handled_unknown_problems  = handled_problems(all_hosts, Icinga2::HANDLED_UNKNOWN)
+          @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
 
           # calculate host problems adjusted by handled problems
           # count togther handled host problems
-          @hosts_handled_problems          = @hosts_handled_warning_problems + @hosts_handled_critical_problems + @hosts_handled_unknown_problems
-          @hosts_down_adjusted             = @hosts_down - @hosts_handled_problems
+#           @hosts_handled_problems          = @hosts_handled_warning_problems + @hosts_handled_critical_problems + @hosts_handled_unknown_problems
+#           @hosts_down_adjusted             = @hosts_down - @hosts_handled_problems
 
           #   - services
           @services_ok           = c_data.dig('num_services_ok').to_i
@@ -129,9 +183,9 @@ module Icinga2
 
           @services_all                       = all_services.size
           @services_problems                  = service_problems
-          @services_handled_warning_problems  = handled_problems(all_services, Icinga2::HANDLED_WARNING)
-          @services_handled_critical_problems = handled_problems(all_services, Icinga2::HANDLED_CRITICAL)
-          @services_handled_unknown_problems  = handled_problems(all_services, Icinga2::HANDLED_UNKNOWN)
+          @services_handled_warning_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+          @services_handled_critical_problems = handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+          @services_handled_unknown_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
 
           # calculate service problems adjusted by handled problems
           @services_warning_adjusted  = @services_warning - @services_handled_warning_problems
@@ -144,6 +198,8 @@ module Icinga2
           @hosts_passive_checks_1min    = c_data.dig('passive_host_checks_1min')
           @services_active_checks_1min  = c_data.dig('active_service_checks_1min')
           @services_passive_checks_1min = c_data.dig('passive_service_checks_1min')
+
+          @service_problems, @service_problems_severity = problem_services
         end
       end
     end

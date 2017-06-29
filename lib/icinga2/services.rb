@@ -145,7 +145,7 @@ module Icinga2
       payload = {}
 
       if( attrs.nil? )
-        attrs = ['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check']
+        attrs = %w[name state acknowledgement downtime_depth  last_check]
       end
 
       if( joins.nil? )
@@ -179,7 +179,8 @@ module Icinga2
       data = JSON.parse(data) if  data.is_a?(String)
       nodes = data.dig(:nodes)
 
-      unless !nodes
+      unless( nodes.nil? )
+
         nodes.each do |n|
           attrs           = n.last.dig('attrs')
           state           = attrs.dig('state')           || 0
@@ -205,8 +206,8 @@ module Icinga2
     #
     def problem_services( max_items = 5 )
 
-      @service_problems = {}
-      @service_problems_severity = {}
+      service_problems = {}
+      service_problems_severity = {}
 
       # only fetch the minimal attribute set required for severity calculation
       services_data = service_objects
@@ -217,7 +218,7 @@ module Icinga2
 
       services_data = services_data.dig(:nodes)
 
-      unless !services_data
+      unless( services_data.nil? )
 
         services_data.each do |_service,v|
 
@@ -225,13 +226,14 @@ module Icinga2
           state = v.dig('attrs','state')
           next if  state.zero?
 
-          @service_problems[name] = service_severity(v)
+          service_problems[name] = service_severity(v)
         end
 
-        @service_problems.sort.reverse!
-        @service_problems.keys[1..max_items].each { |k,_v| @service_problems_severity[k] = @service_problems[k] }
+        service_problems.sort.reverse!
+        service_problems = service_problems.keys[1..max_items].each { |k,_v| service_problems_severity[k] = service_problems[k] }
       end
-      @service_problems_severity
+
+      [service_problems, service_problems_severity]
     end
 
     # update host

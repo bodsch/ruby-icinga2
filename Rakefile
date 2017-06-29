@@ -1,5 +1,4 @@
 
-
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'bundler/gem_tasks'
@@ -32,7 +31,7 @@ end
 
 
 Rake::TestTask.new("test:all") do |t|
-      t.libs = ["lib", "spec"]
-      t.warning = true
-      t.test_files = FileList['spec/**/*_spec.rb']
-    end
+  t.libs = ["lib", "spec"]
+  t.warning = true
+  t.test_files = FileList['spec/**/*_spec.rb']
+end

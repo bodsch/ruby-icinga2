@@ -49,13 +49,8 @@ module Icinga2
         result[:data] ||={}
 
         results.each do |r|
-
-#          puts JSON.pretty_generate r
-#          name = r.dig('name')
           attrs = r.dig('attrs')
-
           if( !attrs.nil? )
-
             result[:data][attrs['name']] = {
               name: attrs['name'],
               display_name: attrs['display_name'],
@@ -90,17 +85,101 @@ module Icinga2
           sleep( 4 )
           retry
         else
-          $stderr.puts( 'Exiting request ...' )
+          $stderr.puts(format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url ))
 
           return {
             status: 500,
-            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
           }
         end
       end
 
       result
     end
+
+    # static function for GET Requests without filters
+    #
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :url
+    # @option params [String] :headers
+    # @option params [String] :options
+    # @option params [Hash] :payload
+    #
+    #
+    # @return [Hash]
+    #
+    def self.get_raw( params = {} )
+
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload) || {}
+      result  = {}
+      max_retries   = 30
+      times_retried = 0
+
+      return get_with_payload( params ) if  payload.count >= 1
+
+      headers.delete( 'X-HTTP-Method-Override' )
+
+      result  = {}
+
+      rest_client = RestClient::Resource.new(
+        URI.encode( url ),
+        options
+      )
+
+      begin
+
+        data     = rest_client.get( headers )
+        results  = JSON.parse( data.body )
+        results  = results.dig('results')
+
+        result[:status] = 200
+        result[:data] ||={}
+
+        results.each do |r|
+
+          r.reject! { |x| x == 'perfdata' }
+          result[:data][r.dig('name')] = r.dig('status')
+        end
+
+      rescue RestClient::ExceptionWithResponse => e
+
+        error  = e.response ? e.response : nil
+        error  = JSON.parse( error )
+
+        result = {
+          status: error['error'].to_i,
+          name: host,
+          message: error['status']
+        }
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
+
+        if( times_retried < max_retries )
+
+          times_retried += 1
+          $stderr.puts(format( 'Cannot execute request %s', url ))
+          $stderr.puts(format( '   cause: %s', e ))
+          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
+
+          sleep( 4 )
+          retry
+        else
+          $stderr.puts(format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url ))
+
+          return {
+            status: 500,
+            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          }
+        end
+      end
+
+      result
+    end
+
 
     # static function for GET Requests with payload
     # internal we use here an POST Request and overwrite a http header
