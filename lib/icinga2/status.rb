@@ -97,6 +97,9 @@ module Icinga2
         key_list = %w[work_queue_item_rate query_queue_item_rate]
 
         a.each do |k,v|
+          if(v.nil?)
+            next
+          end
           key_list.each do |key|
             if( v.include?( key ))
               attr_name = format('%s queue rate', k)
