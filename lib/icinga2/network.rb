@@ -39,6 +39,25 @@ module Icinga2
         options
       )
 
+#       if( options.keys.includes?('ssl_client_cert') )
+#
+#         ssl_cert_file = File.read( format( '%s/%s.crt', @icinga_api_pki_path, @icinga_api_node_name ) )
+#         ssl_key_file  = File.read( format( '%s/%s.key', @icinga_api_pki_path, @icinga_api_node_name ) )
+#         ssl_ca_file   = File.read( format( '%s/ca.crt', @icinga_api_pki_path ) )
+#
+#         cert          = OpenSSL::X509::Certificate.new( ssl_cert_file )
+#         key           = OpenSSL::PKey::RSA.new( ssl_key_file )
+#
+#         rest_client.use_ssl = true
+#         rest_client.cert = cert
+#         rest_client.key = key
+#         rest_client.verify_mode = OpenSSL::SSL::VERIFY_NONE
+#       end
+
+      puts rest_client.inspect
+
+      puts '========================================='
+
       begin
 
         data     = rest_client.get( headers )
@@ -61,8 +80,39 @@ module Icinga2
           end
 
         end
+      rescue RestClient::Unauthorized => e
+
+        puts '-----'
+
+        puts( e )
+        puts( e.class.to_s )
+
+        puts e.response
+        puts data.class.to_s
+
+        puts '-----'
+
+        result = {
+          status: 401,
+          name: host,
+          message: 'unauthorized'
+        }
+
+#
+#         error  = e.code
+#
+#         error  = JSON.parse( error )
+#
+#         result = {
+#           status: error['error'].to_i,
+#           name: host,
+#           message: error['status']
+#         }
 
       rescue RestClient::ExceptionWithResponse => e
+
+        puts( e )
+        puts( e.class.to_s )
 
         error  = e.response ? e.response : nil
 

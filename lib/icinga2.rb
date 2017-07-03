@@ -105,18 +105,32 @@ module Icinga2
     #
     def initialize( settings = {} )
 
+      logger.debug( settings )
+
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
       @icinga_api_port       = settings.dig(:icinga, :api, :port)     || 5665
       @icinga_api_user       = settings.dig(:icinga, :api, :user)
       @icinga_api_pass       = settings.dig(:icinga, :api, :password)
+      @icinga_api_pki_path   = settings.dig(:icinga, :api, :pki_path)
+      @icinga_api_node_name  = settings.dig(:icinga, :api, :node_name)
+
       @icinga_cluster        = settings.dig(:icinga, :cluster)        || false
       @icinga_satellite      = settings.dig(:icinga, :satellite)
       @icinga_notifications  = settings.dig(:icinga, :notifications)  || false
 
       @icinga_api_url_base   = format( 'https://%s:%d', @icinga_host, @icinga_api_port )
-      @node_name             = Socket.gethostbyname( Socket.gethostname ).first
 
-      @has_cert   = cert?( user: @icinga_api_user, password: @icinga_api_pass )
+      if( @icinga_api_node_name.nil? )
+        @icinga_api_node_name = Socket.gethostbyname( Socket.gethostname ).first
+      end
+
+      @has_cert, @options = cert?(
+        pki_path: @icinga_api_pki_path,
+        node_name: @icinga_api_node_name,
+        user: @icinga_api_user,
+        password: @icinga_api_pass
+      )
+
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
 
 
@@ -150,44 +164,64 @@ module Icinga2
     #
     def cert?( params = {} )
 
+      logger.debug( params )
+
+      pki_path     = params.dig(:pki_path)
       node_name    = params.dig(:node_name) || 'localhost'
       user         = params.dig(:user)
       password     = params.dig(:password)
 
-      # check whether pki files are there, otherwise use basic auth
-      if File.file?( format( 'pki/%s.crt', node_name ) )
+      logger.debug( format('%s/%s.crt', pki_path, node_name) )
+      logger.debug( format('%s/%s.key', pki_path, node_name ) )
+      logger.debug( format('%s/ca.crt', pki_path ) )
+
+      if( File.file?( format('%s/%s.crt', pki_path, node_name) ) )
 
         logger.debug( 'PKI found, using client certificates for connection to Icinga 2 API' )
 
-        ssl_cert_file = File.read( format( 'pki/%s.crt', node_name ) )
-        ssl_key_file  = File.read( format( 'pki/%s.key', node_name ) )
-        ssl_ca_file   = File.read( 'pki/ca.crt' )
+        ssl_cert_file = File.read( format( '%s/%s.crt', pki_path, node_name ) )
+        ssl_key_file  = File.read( format( '%s/%s.key', pki_path, node_name ) )
+        ssl_ca_file   = File.read( format( '%s/ca.crt', pki_path ) )
 
-        cert      = OpenSSL::X509::Certificate.new( ssl_cert_file )
-        key       = OpenSSL::PKey::RSA.new( ssl_key_file )
+        cert          = OpenSSL::X509::Certificate.new( ssl_cert_file )
+        key           = OpenSSL::PKey::RSA.new( ssl_key_file )
 
-        @options   = {
+        logger.debug( cert.inspect )
+        logger.debug( key.inspect )
+
+#         @options = {
+#           ssl_client_cert: cert,
+#           ssl_client_key: key,
+#           ssl_ca_file: ssl_ca_file,
+#           verify_ssl: OpenSSL::SSL::VERIFY_NONE
+#         }
+
+        [true, {
           ssl_client_cert: cert,
           ssl_client_key: key,
           ssl_ca_file: ssl_ca_file,
           verify_ssl: OpenSSL::SSL::VERIFY_NONE
-        }
+        } ]
 
-        return true
       else
 
         logger.debug( 'PKI not found, using basic auth for connection to Icinga 2 API' )
 
-        @options = {
+#         options = {
+#           user: user,
+#           password: password,
+#           verify_ssl: OpenSSL::SSL::VERIFY_NONE
+#         }
+
+        [false, {
           user: user,
           password: password,
           verify_ssl: OpenSSL::SSL::VERIFY_NONE
-        }
-
-        return false
+        } ]
       end
 
     end
 
   end
 end
+
