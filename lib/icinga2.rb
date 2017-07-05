@@ -155,7 +155,7 @@ module Icinga2
     # @option params [Integer] :user the Icinga2 API User
     # @option params [Integer] :password the Icinga2 API Password
     # @example with Certificate
-    #    @icinga.cert?(name_name: 'icinga2-dashing')
+    #    @icinga.cert?(pki_path: '/etc/icinga2', name_name: 'icinga2-dashing')
     #
     # @example with User
     #    @icinga.cert?(user: 'root', password: 'icinga')
@@ -164,37 +164,25 @@ module Icinga2
     #
     def cert?( params = {} )
 
-      logger.debug( params )
-
       pki_path     = params.dig(:pki_path)
-      node_name    = params.dig(:node_name) || 'localhost'
+      node_name    = params.dig(:node_name)
       user         = params.dig(:user)
       password     = params.dig(:password)
 
-      logger.debug( format('%s/%s.crt', pki_path, node_name) )
-      logger.debug( format('%s/%s.key', pki_path, node_name ) )
-      logger.debug( format('%s/ca.crt', pki_path ) )
+      ssl_cert_file = format( '%s/%s.crt', pki_path, node_name )
+      ssl_key_file  = format( '%s/%s.key', pki_path, node_name )
+      ssl_ca_file   = format( '%s/ca.crt', pki_path )
 
-      if( File.file?( format('%s/%s.crt', pki_path, node_name) ) )
+      if( File.file?( ssl_cert_file ) && File.file?( ssl_key_file ) && File.file?( ssl_ca_file ) )
 
         logger.debug( 'PKI found, using client certificates for connection to Icinga 2 API' )
 
-        ssl_cert_file = File.read( format( '%s/%s.crt', pki_path, node_name ) )
-        ssl_key_file  = File.read( format( '%s/%s.key', pki_path, node_name ) )
-        ssl_ca_file   = File.read( format( '%s/ca.crt', pki_path ) )
+        ssl_cert_file = File.read( ssl_cert_file )
+        ssl_key_file  = File.read( ssl_key_file )
+        ssl_ca_file   = File.read( ssl_ca_file )
 
         cert          = OpenSSL::X509::Certificate.new( ssl_cert_file )
         key           = OpenSSL::PKey::RSA.new( ssl_key_file )
-
-        logger.debug( cert.inspect )
-        logger.debug( key.inspect )
-
-#         @options = {
-#           ssl_client_cert: cert,
-#           ssl_client_key: key,
-#           ssl_ca_file: ssl_ca_file,
-#           verify_ssl: OpenSSL::SSL::VERIFY_NONE
-#         }
 
         [true, {
           ssl_client_cert: cert,
@@ -206,12 +194,6 @@ module Icinga2
       else
 
         logger.debug( 'PKI not found, using basic auth for connection to Icinga 2 API' )
-
-#         options = {
-#           user: user,
-#           password: password,
-#           verify_ssl: OpenSSL::SSL::VERIFY_NONE
-#         }
 
         [false, {
           user: user,

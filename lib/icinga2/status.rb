@@ -86,30 +86,31 @@ module Icinga2
 
       return stats if data.nil?
 
-        data = data.dig(:data)
+      data = data.dig(:data)
 
-        a = {
-          'json-rpc'  => data.dig('ApiListener', 'api', 'json_rpc'),
-          'graphite'  => data.dig('GraphiteWriter', 'graphitewriter', 'graphite'),
-          'ido-mysql' => data.dig('IdoMysqlConnection', 'idomysqlconnection', 'ido-mysql')
-        }
+      json_rpc_data  = data.dig('ApiListener', 'api', 'json_rpc')
+      graphite_data  = data.dig('GraphiteWriter', 'graphitewriter', 'graphite')
+      ido_mysql_data = data.dig('IdoMysqlConnection', 'idomysqlconnection', 'ido-mysql')
 
-        key_list = %w[work_queue_item_rate query_queue_item_rate]
+      a = {}
+      a['json_rpc']  = json_rpc_data  if(json_rpc_data.is_a?(Hash))
+      a['graphite']  = graphite_data  if(graphite_data.is_a?(Hash))
+      a['ido-mysql'] = ido_mysql_data if(ido_mysql_data.is_a?(Hash))
 
-        a.each do |k,v|
-          if(v.nil?)
-            next
-          end
-          key_list.each do |key|
-            if( v.include?( key ))
-              attr_name = format('%s queue rate', k)
-              stats[attr_name] = v[key].to_f.round(3)
-            end
+      key_list = %w[work_queue_item_rate query_queue_item_rate]
+
+      logger.debug(a)
+
+      a.each do |k,v|
+        key_list.each do |key|
+          if( v.include?( key ))
+            attr_name = format('%s queue rate', k)
+            stats[attr_name] = v[key].to_f.round(3)
           end
         end
+      end
 
-        stats
-
+      stats
     end
 
 

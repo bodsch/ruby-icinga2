@@ -275,7 +275,9 @@ module Icinga2
 
         # get the count of problems
         #
-        @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+        if( @host_problems.count != 0 )
+          @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+        end
       end
       @host_problems_severity
 
