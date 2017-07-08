@@ -61,11 +61,17 @@ module Icinga2
           end
 
         end
+      rescue RestClient::Unauthorized => e
+
+        result = {
+          status: 401,
+          name: host,
+          message: 'unauthorized'
+        }
 
       rescue RestClient::ExceptionWithResponse => e
 
         error  = e.response ? e.response : nil
-
         error  = JSON.parse( error )
 
         result = {

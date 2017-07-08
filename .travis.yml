@@ -11,10 +11,6 @@ rvm:
 
 script: bundle exec rspec spec || true
 
-#matrix:
-#  allow_failures:
-#    - rvm: ruby-head
-
 fast_finish: true
 
 gemfile:
