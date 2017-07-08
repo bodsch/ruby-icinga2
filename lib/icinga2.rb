@@ -105,8 +105,6 @@ module Icinga2
     #
     def initialize( settings = {} )
 
-      logger.debug( settings )
-
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
       @icinga_api_port       = settings.dig(:icinga, :api, :port)     || 5665
       @icinga_api_user       = settings.dig(:icinga, :api, :user)

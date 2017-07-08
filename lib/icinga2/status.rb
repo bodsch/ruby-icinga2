@@ -99,8 +99,6 @@ module Icinga2
 
       key_list = %w[work_queue_item_rate query_queue_item_rate]
 
-      logger.debug(a)
-
       a.each do |k,v|
         key_list.each do |key|
           if( v.include?( key ))
@@ -207,5 +205,6 @@ module Icinga2
         end
       end
     end
+
   end
 end
