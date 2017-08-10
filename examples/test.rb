@@ -65,6 +65,42 @@ unless( i.nil? )
   puts format( 'uptime: %s', i.uptime )
 
   puts ''
+
+  # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
+  #
+  # Get display_name, check_command attribute for services applied for filtered hosts matching host.address == 1.2.3.4.
+  # Join the output with the hosts on which these checks run (services are applied to hosts)
+  #
+  puts i.service_objects(
+    attrs: ["display_name", "check_command"],
+    filter: "match(\"1.2.3.4\",host.address)" ,
+    joins: ["host.name", "host.address"]
+  )
+
+  puts ''
+
+  # Get all services in critical state and filter out the ones for which active checks are disabled
+  # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
+  #
+  # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
+  puts i.service_objects(
+    attrs: ["display_name", "check_command", "enable_active_checks"],
+    filter: "service.state==1" ,
+    joins: ["host.name", "host.address"]
+  )
+
+  puts ''
+  # Get host name, address of hosts belonging to a specific hostgroup
+  puts i.host_objects(
+    attrs: ["display_name", "name", "address"],
+    filter: "\"windows-servers\" in host.groups"
+  )
+
+end
+
+def all_others
+
+  puts ''
   puts format( 'count of all hosts: %d', i.hosts_all )
   puts format( 'host down: %d', i.hosts_down )
   puts format( 'hosts problems down: %d', i.hosts_problems_down )
