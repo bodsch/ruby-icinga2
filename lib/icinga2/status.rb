@@ -15,13 +15,7 @@ module Icinga2
     #
     def application_data
 
-#       Network.get(host: nil,
-#         url: format( '%s/status/IcingaApplication', @icinga_api_url_base ),
-#         headers: @headers,
-#         options: @options
-#       )
-
-      data = NetworkNG.application_data(
+      data = Network.application_data(
         url: format( '%s/status/IcingaApplication', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -44,7 +38,6 @@ module Icinga2
 
       end
 
-      return nil
     end
 
     # return Icinga2 CIB
@@ -56,84 +49,47 @@ module Icinga2
     #
     def cib_data
 
-#      Network.get(host: nil,
-#        url: format( '%s/status/CIB', @icinga_api_url_base ),
-#        headers: @headers,
-#        options: @options)
-#
-      data = NetworkNG.application_data(
+      data = Network.application_data(
         url: format( '%s/status/CIB', @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
 
-        c_data = data.clone
+      c_data = data.clone
 
-        unless( c_data.nil? )
+      unless( c_data.nil? )
 
-          # extract
-          #   - uptime
-          uptime   = c_data.dig('uptime').round(2)
-          @uptime  = Time.at(uptime).utc.strftime('%H:%M:%S')
+        # extract
+        #   - uptime
+        uptime   = c_data.dig('uptime').round(2)
+        @uptime  = Time.at(uptime).utc.strftime('%H:%M:%S')
 
-          #   - avg_latency / avg_execution_time
-          @avg_latency        = c_data.dig('avg_latency').round(2)
-          @avg_execution_time = c_data.dig('avg_execution_time').round(2)
+        #   - avg_latency / avg_execution_time
+        @avg_latency        = c_data.dig('avg_latency').round(2)
+        @avg_execution_time = c_data.dig('avg_execution_time').round(2)
 
-          #   - hosts
-          @hosts_up           = c_data.dig('num_hosts_up').to_i
-          @hosts_down         = c_data.dig('num_hosts_down').to_i
-          @hosts_in_downtime  = c_data.dig('num_hosts_in_downtime').to_i
-          @hosts_acknowledged = c_data.dig('num_hosts_acknowledged').to_i
+        #   - hosts
+        @hosts_up           = c_data.dig('num_hosts_up').to_i
+        @hosts_down         = c_data.dig('num_hosts_down').to_i
+        @hosts_in_downtime  = c_data.dig('num_hosts_in_downtime').to_i
+        @hosts_acknowledged = c_data.dig('num_hosts_acknowledged').to_i
 
-#           h_objects = host_objects
-#           all_hosts = h_objects.dig(:nodes)
-#
-#           unless( all_hosts.nil? )
-#
-#             @hosts_all                       = all_hosts.size
-#             @hosts_problems                  = host_problems
-#             @hosts_problems_down             = count_problems(h_objects, Icinga2::HOSTS_DOWN)
-#           end
+        #   - services
+        @services_ok           = c_data.dig('num_services_ok').to_i
+        @services_warning      = c_data.dig('num_services_warning').to_i
+        @services_critical     = c_data.dig('num_services_critical').to_i
+        @services_unknown      = c_data.dig('num_services_unknown').to_i
+        @services_in_downtime  = c_data.dig('num_services_in_downtime').to_i
+        @services_acknowledged = c_data.dig('num_services_acknowledged').to_i
 
-          # calculate host problems adjusted by handled problems
-          # count togther handled host problems
-#           @hosts_handled_problems          = @hosts_handled_warning_problems + @hosts_handled_critical_problems + @hosts_handled_unknown_problems
-#           @hosts_down_adjusted             = @hosts_down - @hosts_handled_problems
+        #   - check stats
+        @hosts_active_checks_1min     = c_data.dig('active_host_checks_1min')
+        @hosts_passive_checks_1min    = c_data.dig('passive_host_checks_1min')
+        @services_active_checks_1min  = c_data.dig('active_service_checks_1min')
+        @services_passive_checks_1min = c_data.dig('passive_service_checks_1min')
 
-          #   - services
-          @services_ok           = c_data.dig('num_services_ok').to_i
-          @services_warning      = c_data.dig('num_services_warning').to_i
-          @services_critical     = c_data.dig('num_services_critical').to_i
-          @services_unknown      = c_data.dig('num_services_unknown').to_i
-          @services_in_downtime  = c_data.dig('num_services_in_downtime').to_i
-          @services_acknowledged = c_data.dig('num_services_acknowledged').to_i
+      end
 
-#           s_objects = service_objects
-#           all_services = s_objects.dig(:nodes)
-#
-#           unless( all_services.nil? )
-#
-#             @services_all                       = all_services.size
-#             @services_problems                  = count_services_with_problems
-#             @services_handled_warning_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
-#             @services_handled_critical_problems = count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
-#             @services_handled_unknown_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
-#
-#             # calculate service problems adjusted by handled problems
-#             @services_warning_adjusted  = @services_warning - @services_handled_warning_problems
-#             @services_critical_adjusted = @services_critical - @services_handled_critical_problems
-#             @services_unknown_adjusted  = @services_unknown - @services_handled_unknown_problems
-#           end
-
-          #   - check stats
-          @hosts_active_checks_1min     = c_data.dig('active_host_checks_1min')
-          @hosts_passive_checks_1min    = c_data.dig('passive_host_checks_1min')
-          @services_active_checks_1min  = c_data.dig('active_service_checks_1min')
-          @services_passive_checks_1min = c_data.dig('passive_service_checks_1min')
-
-#           @count_services_with_problems, @count_services_with_problems_severity = list_services_with_problems
-        end
       data
     end
 
@@ -142,16 +98,7 @@ module Icinga2
     #
     def status_data
 
-#       data = Network.get_raw(host: nil,
-#         url: format( '%s/status', @icinga_api_url_base ),
-#         headers: @headers,
-#         options: @options)
-#
-#       return nil unless data.dig(:status) != 200
-#
-#       data.dig('results')
-
-      NetworkNG.application_data(
+      Network.application_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -167,12 +114,7 @@ module Icinga2
     #
     def api_listener
 
-#       Network.get(host: nil,
-#         url: format( '%s/status/ApiListener', @icinga_api_url_base ),
-#         headers: @headers,
-#         options: @options)
-
-      NetworkNG.application_data(
+      Network.application_data(
         url: format( '%s/status/ApiListener', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -189,31 +131,38 @@ module Icinga2
     def work_queue_statistics
 
       stats  = {}
-      data   = Network.get_raw(host: nil,
+      data   = Network.api_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
-        options: @options)
+        options: @options
+      )
 
       return stats if data.nil?
 
-      data = data.dig(:data)
+      if( data.dig(:status).nil? )
+        results = data.dig('results')
 
-      json_rpc_data  = data.dig('ApiListener', 'api', 'json_rpc')
-      graphite_data  = data.dig('GraphiteWriter', 'graphitewriter', 'graphite')
-      ido_mysql_data = data.dig('IdoMysqlConnection', 'idomysqlconnection', 'ido-mysql')
+        json_rpc_data  = results.find { |k| k['name'] == 'ApiListener' }
+        graphite_data  = results.find { |k| k['name'] == 'GraphiteWriter' }
+        ido_mysql_data = results.find { |k| k['name'] == 'IdoMysqlConnection' }
 
-      a = {}
-      a['json_rpc']  = json_rpc_data  if(json_rpc_data.is_a?(Hash))
-      a['graphite']  = graphite_data  if(graphite_data.is_a?(Hash))
-      a['ido-mysql'] = ido_mysql_data if(ido_mysql_data.is_a?(Hash))
+        json_rpc_data  = json_rpc_data.dig('status', 'api', 'json_rpc')
+        graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')
+        ido_mysql_data = ido_mysql_data.dig('status', 'idomysqlconnection', 'ido-mysql')
 
-      key_list = %w[work_queue_item_rate query_queue_item_rate]
+        a = {}
+        a['json_rpc']  = json_rpc_data  if(json_rpc_data.is_a?(Hash))
+        a['graphite']  = graphite_data  if(graphite_data.is_a?(Hash))
+        a['ido-mysql'] = ido_mysql_data if(ido_mysql_data.is_a?(Hash))
 
-      a.each do |k,v|
-        key_list.each do |key|
-          if( v.include?( key ))
-            attr_name = format('%s queue rate', k)
-            stats[attr_name] = v[key].to_f.round(3)
+        key_list = %w[work_queue_item_rate query_queue_item_rate]
+
+        a.each do |k,v|
+          key_list.each do |key|
+            if( v.include?( key ))
+              attr_name = format('%s queue rate', k)
+              stats[attr_name] = v[key].to_f.round(3)
+            end
           end
         end
       end

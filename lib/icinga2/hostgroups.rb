@@ -19,21 +19,29 @@ module Icinga2
     #
     def add_hostgroup(params = {})
 
-      host_group = params.dig(:host_group)
+      host_group   = params.dig(:host_group)
       display_name = params.dig(:display_name)
 
-      if host_group.nil?
-        return {
+      if( host_group.nil? )
+        {
           status: 404,
           message: 'no name for the hostgroup'
         }
       end
 
-      Network.put(url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
+      if( display_name.nil? )
+        {
+          status: 404,
+          message: 'no display name for the hostgroup'
+        }
+      end
+
+      Network.put(
+        url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options,
-        payload: { 'attrs' => { 'display_name' => display_name } })
-
+        payload: { 'attrs' => { 'display_name' => display_name } }
+      )
     end
 
     # delete a hostgroup
@@ -51,16 +59,17 @@ module Icinga2
       host_group = params.dig(:host_group)
 
       if host_group.nil?
-        return {
+        {
           status: 404,
           message: 'no name for the hostgroup'
         }
       end
 
-      Network.delete(host: host_group,
+      Network.delete(
         url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
         headers: @headers,
-        options: @options)
+        options: @options
+      )
     end
 
     # returns all usersgroups
@@ -72,7 +81,7 @@ module Icinga2
     #    @icinga.hostgroups
     #
     # @example to get one user
-    #    @icinga.hostgroups(name: 'linux-servers')
+    #    @icinga.hostgroups(host_group: 'linux-servers')
     #
     # @return [Hash] returns a hash with all hostgroups
     #
@@ -80,11 +89,22 @@ module Icinga2
 
       host_group = params.dig(:host_group)
 
-      Network.get(host: host_group,
-        url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
-        headers: @headers,
-        options: @options)
+      url =
+      if( host_group.nil? )
+        format( '%s/objects/hostgroups'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/hostgroups/%s', @icinga_api_url_base, host_group )
+      end
 
+      data = Network.api_data(
+        url: url,
+        headers: @headers,
+        options: @options
+      )
+
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the hostgroup exists
@@ -98,10 +118,10 @@ module Icinga2
     #
     def exists_hostgroup?(name)
       result = hostgroups(host_group: name)
-      result = JSON.parse(result) if result.is_a?(String)
-      status = result.dig(:status)
+      result = JSON.parse( result ) if  result.is_a?( String )
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 

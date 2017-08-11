@@ -9,86 +9,104 @@ module Icinga2
     # add a servicegroup
     #
     # @param [Hash] params
-    # @option params [String] :name servicegroup to create
+    # @option params [String] :service_group servicegroup to create
     # @option params [String] :display_name the displayed name
     #
     # @example
-    #   @icinga.add_servicegroup(name: 'foo', display_name: 'FOO')
+    #   @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
     #
     # @return [Hash] result
     #
     def add_servicegroup( params = {} )
 
-      name = params.dig(:name)
+      service_group = params.dig(:service_group)
       display_name = params.dig(:display_name)
 
-      if( name.nil? )
-        return {
+      if( service_group.nil? )
+        {
           status: 404,
-          message: 'missing servicegroup name'
+          message: 'missing service group name'
+        }
+      end
+
+      if( display_name.nil? )
+        {
+          status: 404,
+          message: 'missing display_name for service group'
         }
       end
 
       payload = { 'attrs' => { 'display_name' => display_name } }
 
-      Network.put(         host: name,
-        url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, name ),
+      Network.put(
+        url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # delete a servicegroup
     #
     # @param [Hash] params
-    # @option params [String] :name servicegroup to delete
+    # @option params [String] :service_group servicegroup to delete
     #
     # @example
-    #   @icinga.delete_servicegroup(name: 'foo')
+    #   @icinga.delete_servicegroup(service_group: 'foo')
     #
     # @return [Hash] result
     #
     def delete_servicegroup( params = {} )
 
-      name = params.dig(:name)
+      service_group = params.dig(:service_group)
 
-      if( name.nil? )
+      if( service_group.nil? )
         return {
           status: 404,
           message: 'missing servicegroup name'
         }
       end
 
-      Network.delete(         host: name,
-        url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, name ),
+      Network.delete(
+        url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
         headers: @headers,
-        options: @options )
-
+        options: @options
+      )
     end
 
     # returns all servicegroups
     #
     # @param [Hash] params
-    # @option params [String] :name ('') optional for a single servicegroup
+    # @option params [String] :service_group ('') optional for a single servicegroup
     #
     # @example to get all users
     #    @icinga.servicegroups
     #
     # @example to get one user
-    #    @icinga.servicegroups(name: 'disk')
+    #    @icinga.servicegroups(service_group: 'disk')
     #
     # @return [Hash] returns a hash with all servicegroups
     #
     def servicegroups( params = {} )
 
-      name = params.dig(:name)
+      service_group = params.dig(:service_group)
 
-      Network.get(         host: name,
-        url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, name ),
+      url =
+      if( service_group.nil? )
+        format( '%s/objects/servicegroups'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group )
+      end
+
+      data = Network.api_data(
+        url: url,
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the servicegroup exists
@@ -101,12 +119,11 @@ module Icinga2
     # @return [Bool] returns true if the servicegroup exists
     #
     def exists_servicegroup?( name )
-      result = servicegroups( name: name )
+      result = servicegroups( service_group: name )
       result = JSON.parse( result ) if  result.is_a?( String )
 
-      status = result.dig(:status)
+      return true if  !result.nil? && result.is_a?(Array)
 
-      return true if  !status.nil? && status == 200
       false
     end
 

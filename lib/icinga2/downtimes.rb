@@ -47,14 +47,14 @@ module Icinga2
       # sanitychecks
       #
       if( name.nil? )
-        return {
+        {
           status: 404,
           message: 'missing downtime name'
         }
       end
 
       if( %w[host service].include?(type.downcase) == false )
-        return {
+        {
           status: 404,
           message: "wrong downtype type. only 'host' or' service' allowed ('#{type}' giving"
         }
@@ -64,7 +64,7 @@ module Icinga2
       end
 
       if( !host_group.nil? && !host_name.nil? )
-        return {
+        {
           status: 404,
           message: 'choose host or host_group, not both'
         }
@@ -79,39 +79,38 @@ module Icinga2
         #
         filter = format( '"%s" in host.groups', host_group )
       else
-
-        return {
+        {
           status: 404,
           message: 'missing host or host_group for downtime'
         }
       end
 
       if( comment.nil? )
-        return {
+        {
           status: 404,
           message: 'missing downtime comment'
         }
       end
 
       if( author.nil? )
-        return {
+        {
           status: 404,
           message: 'missing downtime author'
         }
       elsif( exists_user?( author ) == false )
-        return {
+        {
           status: 404,
           message: "these author ar not exists: #{author}"
         }
       end
 
       if( end_time.nil? )
-        return {
+        {
           status: 404,
           message: 'missing end_time'
         }
       elsif( end_time.to_i <= start_time )
-        return {
+        {
           status: 404,
           message: 'end_time are equal or smaller then start_time'
         }
@@ -128,11 +127,12 @@ module Icinga2
         'filter'      => filter
       }
 
-      Network.post(         host: name,
+      Network.post(
         url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
+        payload: payload
+      )
 
 
       # schedule downtime for a host
@@ -150,23 +150,22 @@ module Icinga2
 
     # return downtimes
     #
-    # @param [Hash] params
-    # @option params [String] :host
-    #
     # @example
     #    @icinga.downtimes
     #
     # @return [Hash]
     #
-    def downtimes( params = {} )
+    def downtimes
 
-      host = params.dig(:host)
-
-      Network.get(         host: host,
-        url: format( '%s/objects/downtimes/%s', @icinga_api_url_base, host ),
+      data = Network.api_data(
+        url: format( '%s/objects/downtimes'   , @icinga_api_url_base ),
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
   end

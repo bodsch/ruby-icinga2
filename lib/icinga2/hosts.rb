@@ -47,7 +47,7 @@ module Icinga2
       vars               = params.dig(:vars) || {}
 
       if( host.nil? )
-        return {
+        {
           status: 404,
           message: 'missing host name'
         }
@@ -81,12 +81,12 @@ module Icinga2
 
       logger.debug( JSON.pretty_generate( payload ) )
 
-      Network.put(         host: host,
+      Network.put(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # delete a host
@@ -104,20 +104,17 @@ module Icinga2
       host = params.dig(:host)
 
       if( host.nil? )
-
-        return {
+        {
           status: 404,
           message: 'missing host name'
         }
       end
 
-      puts "TODO"
-
-#       Network.delete(         host: host,
-#         url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
-#         headers: @headers,
-#         options: @options )
-
+      Network.delete(
+        url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
+        headers: @headers,
+        options: @options
+      )
     end
 
     # return hosts
@@ -142,33 +139,20 @@ module Icinga2
       attrs  = params.dig(:attrs)
       filter = params.dig(:filter)
       joins  = params.dig(:joins)
-      results = nil
 
       payload['attrs']  = attrs  unless attrs.nil?
       payload['filter'] = filter unless filter.nil?
       payload['joins']  = joins  unless joins.nil?
 
-#       Network.get(         host: host,
-#         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
-#         headers: @headers,
-#         options: @options )
-
-      data = NetworkNG.api_data(
+      data = Network.api_data(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options
       )
 
-      status  = data.dig(:status)
+      return data.dig('results') if( data.dig(:status).nil? )
 
-      if( status.nil? )
-
-        results = data.dig('results')
-#        data = data.first if data.is_a?(Array)
-#        results = data.dig('attrs')
-      end
-
-      results
+      nil
     end
 
     # returns true if the host exists
@@ -221,15 +205,7 @@ module Icinga2
       payload['filter'] = filter unless filter.nil?
       payload['joins']  = joins  unless joins.nil?
 
-#      data = Network.get(
-#        host: nil,
-#        url: format( '%s/objects/hosts', @icinga_api_url_base ),
-#        headers: @headers,
-#        options: @options,
-#        payload: payload
-#      )
-
-      data = NetworkNG.api_data(
+      data = Network.api_data(
         url: format( '%s/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -256,28 +232,9 @@ module Icinga2
             @hosts_problems_down = count_problems(results, Icinga2::HOSTS_DOWN)
           end
         end
-
-#        return results
       end
 
       results
-
-#      return nil
-
-#       h_objects = data.clone
-#       all_hosts = h_objects.dig('results')
-#
-#       puts all_hosts
-#
-#       unless( all_hosts.nil? )
-#
-#         @hosts_all                       = all_hosts.size
-#         @hosts_problems                  = host_problems
-#         @hosts_problems_down             = count_problems(h_objects, Icinga2::HOSTS_DOWN)
-#       end
-#
-#       data
-
     end
 
     # return count of hosts with problems
@@ -334,8 +291,7 @@ module Icinga2
 
       unless( host_data.nil? )
 
-        host_data.each do |h,v|
-
+        host_data.each do |h,_v|
           name  = h.dig('name')
           state = h.dig('attrs','state')
 

@@ -28,14 +28,12 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        Network.put(           host: host,
+        Network.put(
           url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host, s ),
           headers: @headers,
           options: @options,
-          payload: payload)
-
-        logger.debug( result )
-
+          payload: payload
+        )
       end
 
     end
@@ -76,7 +74,6 @@ module Icinga2
 
       name    = params.dig(:host)
       service = params.dig(:service)
-      results = nil
 
       url =
       if( service.nil? )
@@ -85,25 +82,15 @@ module Icinga2
         format( '%s/objects/services/%s!%s', @icinga_api_url_base, name, service )
       end
 
-#       Network.get(         host: name,
-#         url: url,
-#         headers: @headers,
-#         options: @options )
-
-      data = NetworkNG.api_data(
+      data = Network.api_data(
         url: url,
         headers: @headers,
         options: @options
       )
 
-      status  = data.dig(:status)
+      return data.dig('results') if( data.dig(:status).nil? )
 
-      if( status.nil? )
-
-        results = data.dig('results')
-      end
-
-      results
+      nil
     end
 
     # returns true if the service exists
@@ -135,12 +122,6 @@ module Icinga2
       return true if  !result.nil? && result.is_a?(Array)
 
       false
-
-#       result = JSON.parse( result ) if  result.is_a?( String )
-#       status = result.dig(:status)
-#
-#       return true if  !status.nil? && status == 200
-#       false
     end
 
     # returns service objects
@@ -177,15 +158,7 @@ module Icinga2
       payload['filter'] = filter unless filter.nil?
       payload['joins']  = joins unless  joins.nil?
 
-#      data = Network.get(
-#        host: nil,
-#        url: format( '%s/objects/services', @icinga_api_url_base ),
-#        headers: @headers,
-#        options: @options,
-#        payload: payload
-#      )
-
-      data = NetworkNG.api_data(
+      data = Network.api_data(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -238,7 +211,6 @@ module Icinga2
       problems = 0
 
       service_data = JSON.parse(service_data) if service_data.is_a?(String)
-#       nodes = data.dig(:nodes)
 
       unless( service_data.nil? )
 
@@ -254,6 +226,7 @@ module Icinga2
           end
         end
       end
+
       problems
     end
 
@@ -277,11 +250,9 @@ module Icinga2
       services_data = service_objects
       services_data = JSON.parse( services_data ) if services_data.is_a?(String)
 
-#       services_data = services_data.dig(:nodes)
-
       unless( services_data.nil? )
 
-        services_data.each do |s,v|
+        services_data.each do |s,_v|
 
           name  = s.dig('name')
           state = s.dig('attrs','state')

@@ -9,7 +9,7 @@ module Icinga2
     # add a usergroup
     #
     # @param [Hash] params
-    # @option params [String] :name usergroup to create
+    # @option params [String] :user_group usergroup to create
     # @option params [String] :display_name the displayed name
     #
     # @example
@@ -19,10 +19,10 @@ module Icinga2
     #
     def add_usergroup( params = {} )
 
-      name     = params.dig(:name)
+      user_group     = params.dig(:user_group)
       display_name = params.dig(:display_name)
 
-      if( name.nil? )
+      if( user_group.nil? )
         return {
           status: 404,
           message: 'missing usergroup name'
@@ -35,18 +35,18 @@ module Icinga2
         }
       }
 
-      Network.put(         host: name,
-        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, name ),
+      Network.put(
+        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # delete a usergroup
     #
     # @param [Hash] params
-    # @option params [String] :name usergroup to delete
+    # @option params [String] :user_group usergroup to delete
     #
     # @example
     #   @icinga.delete_usergroup(name: 'foo')
@@ -55,44 +55,55 @@ module Icinga2
     #
     def delete_usergroup( params = {} )
 
-      name = params.dig(:name)
+      user_group = params.dig(:user_group)
 
-      if( name.nil? )
+      if( user_group.nil? )
         return {
           status: 404,
           message: 'missing usergroup name'
         }
       end
 
-      Network.delete(         host: name,
-        url: format( '%s/objects/usergroups/%s?cascade=1', @icinga_api_url_base, name ),
+      Network.delete(
+        url: format( '%s/objects/usergroups/%s?cascade=1', @icinga_api_url_base, user_group ),
         headers: @headers,
-        options: @options )
-
+        options: @options
+      )
     end
 
     # returns all usersgroups
     #
     # @param [Hash] params
-    # @option params [String] :name ('') optional for a single usergroup
+    # @option params [String] :user_group ('') optional for a single usergroup
     #
     # @example to get all users
     #    @icinga.usergroups
     #
     # @example to get one user
-    #    @icinga.usergroups(name: 'icingaadmins')
+    #    @icinga.usergroups(user_group: 'icingaadmins')
     #
     # @return [Hash] returns a hash with all usergroups
     #
     def usergroups( params = {} )
 
-      name = params.dig(:name)
+      user_group = params.dig(:user_group)
 
-      Network.get(         host: name,
-        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, name ),
+      url =
+      if( user_group.nil? )
+        format( '%s/objects/usergroups'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group )
+      end
+
+      data = Network.api_data(
+        url: url,
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the usergroup exists
@@ -108,9 +119,9 @@ module Icinga2
 
       result = usergroups( name: name )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 

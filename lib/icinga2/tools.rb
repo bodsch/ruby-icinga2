@@ -75,44 +75,13 @@ module Icinga2
         compare_states = [1, 2, 3]
       end
 
-      if( state.is_a?(Fixnum) )
-        compare_states.push(state)
-      end
+      compare_states.push(state) if( state.is_a?(Integer) )
 
       objects = JSON.parse(objects) if objects.is_a?(String)
 
-#       puts "state: #{state}"
-#       puts "compare_states: #{compare_states}"
-
-      f = objects.select {
-        |t|
-          t.dig('attrs','state') == state &&
-          t.dig('attrs','downtime_depth').zero? &&
-          t.dig('attrs','acknowledgement').zero?
-      }
+      f = objects.select { |t| t.dig('attrs','state') == state && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
 
       f.size
-
-#       unless( objects.nil? )
-#
-#         objects.each do |n|
-#
-#           attrs = n.dig('attrs')
-#           next if(attrs.nil?)
-#
-#           state = attrs.dig('state')           || 0
-#           next if( state.zero? )
-#
-#           downtime_depth  = attrs.dig('downtime_depth')  || 0
-#           acknowledgement = attrs.dig('acknowledgement') || 0
-#
-#           if( compare_states.include?( state ) && downtime_depth.zero? && acknowledgement.zero? )
-#             problems += 1
-#           end
-#
-#         end
-#       end
-#       problems
     end
 
   end

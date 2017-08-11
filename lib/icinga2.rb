@@ -63,7 +63,6 @@ module Icinga2
 
     include Icinga2::Version
     include Icinga2::Network
-    include Icinga2::NetworkNG
     include Icinga2::Status
     include Icinga2::Converts
     include Icinga2::Tools

@@ -31,14 +31,14 @@ module Icinga2
       groups        = params.dig(:groups) || []
 
       if( name.nil? )
-        return {
+        {
           status: 404,
           message: 'missing user name'
         }
       end
 
       unless( groups.is_a?( Array ) )
-        return {
+        {
           status: 404,
           message: 'groups must be an array',
           data: params
@@ -66,21 +66,19 @@ module Icinga2
 
         groups = group_validate.join(', ')
 
-        return {
+        {
           status: 404,
           message: "these groups are not exists: #{groups}",
           data: params
         }
       end
 
-      Network.put(         host: name,
+      Network.put(
         url: format( '%s/objects/users/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
-      # result:
-      #   {:status=>200, :name=>nil, :message=>"Object was created"}
+        payload: payload
+      )
     end
 
     # delete a user
@@ -104,13 +102,11 @@ module Icinga2
         }
       end
 
-      Network.delete(         host: name,
+      Network.delete(
         url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, name ),
         headers: @headers,
-        options: @options )
-
-      # result:
-      #   {:status=>200, :name=>"foo", :message=>"Object was deleted."}
+        options: @options
+      )
     end
 
     # returns all users
@@ -130,16 +126,22 @@ module Icinga2
 
       name = params.dig(:name)
 
-      Network.get(         host: name,
-        url: format( '%s/objects/users/%s', @icinga_api_url_base, name ),
-        headers: @headers,
-        options: @options )
+      url =
+      if( name.nil? )
+        format( '%s/objects/users'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/users/%s', @icinga_api_url_base, name )
+      end
 
-      # result:
-      #  - named user:
-      #   {:status=>200, :data=>{"icingaadmin"=>{:name=>"icingaadmin", :display_name=>"Icinga 2 Admin", :type=>"User"}}}
-      #  - all users:
-      #   {:status=>200, :data=>{"icingaadmin"=>{:name=>"icingaadmin", :display_name=>"Icinga 2 Admin", :type=>"User"}, "foo"=>{:name=>"foo", :display_name=>"FOO", :type=>"User"}}}
+      data = Network.api_data(
+        url: url,
+        headers: @headers,
+        options: @options
+      )
+
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the user exists
@@ -154,9 +156,9 @@ module Icinga2
 
       result = users( name: name )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 
