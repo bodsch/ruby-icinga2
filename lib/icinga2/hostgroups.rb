@@ -29,7 +29,7 @@ module Icinga2
         }
       end
 
-      Network.put(url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, host_group),
+      Network.put(url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options,
         payload: { 'attrs' => { 'display_name' => display_name } })
@@ -58,7 +58,7 @@ module Icinga2
       end
 
       Network.delete(host: host_group,
-        url: format('%s/v1/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
+        url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options)
     end
@@ -81,7 +81,7 @@ module Icinga2
       host_group = params.dig(:host_group)
 
       Network.get(host: host_group,
-        url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, host_group),
+        url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options)
 

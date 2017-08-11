@@ -129,7 +129,7 @@ module Icinga2
       }
 
       Network.post(         host: name,
-        url: format( '%s/v1/actions/schedule-downtime', @icinga_api_url_base ),
+        url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -163,7 +163,7 @@ module Icinga2
       host = params.dig(:host)
 
       Network.get(         host: host,
-        url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/downtimes/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
 

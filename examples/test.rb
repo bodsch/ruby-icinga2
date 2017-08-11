@@ -50,7 +50,13 @@ unless( i.nil? )
   #
   #
 
-  puts 'Information about Icinga2'
+  puts ''
+  puts ' ============================================================= '
+  puts 'icinga2 status'
+  puts i.status_data
+  puts ''
+
+  puts 'icinga2 application data'
   puts i.application_data
   puts ''
   puts 'CIB'
@@ -58,43 +64,54 @@ unless( i.nil? )
   puts ''
   puts 'API Listener'
   puts i.api_listener
-
   puts ''
+
   puts format( 'version: %s, revision %s', i.version, i.revision )
   puts format( 'start time: %s', i.start_time )
   puts format( 'uptime: %s', i.uptime )
 
   puts ''
 
-  # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
-  #
-  # Get display_name, check_command attribute for services applied for filtered hosts matching host.address == 1.2.3.4.
-  # Join the output with the hosts on which these checks run (services are applied to hosts)
-  #
-  puts i.service_objects(
-    attrs: ["display_name", "check_command"],
-    filter: "match(\"1.2.3.4\",host.address)" ,
-    joins: ["host.name", "host.address"]
-  )
-
   puts ''
+  puts format( 'count of all hosts: %d', i.hosts_all )
+  puts format( 'hosts with problems: %d', i.hosts_problems )
+  puts format( 'hosts problems down: %d', i.hosts_problems_down )
 
-  # Get all services in critical state and filter out the ones for which active checks are disabled
-  # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
-  #
-  # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
-  puts i.service_objects(
-    attrs: ["display_name", "check_command", "enable_active_checks"],
-    filter: "service.state==1" ,
-    joins: ["host.name", "host.address"]
-  )
+#            @hosts_all                       = all_hosts.size
+#            @hosts_problems                  = host_problems
+#            @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
 
-  puts ''
-  # Get host name, address of hosts belonging to a specific hostgroup
-  puts i.host_objects(
-    attrs: ["display_name", "name", "address"],
-    filter: "\"windows-servers\" in host.groups"
-  )
+
+
+#   # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
+#   #
+#   # Get display_name, check_command attribute for services applied for filtered hosts matching host.address == 1.2.3.4.
+#   # Join the output with the hosts on which these checks run (services are applied to hosts)
+#   #
+#   puts i.service_objects(
+#     attrs: ["display_name", "check_command"],
+#     filter: "match(\"1.2.3.4\",host.address)" ,
+#     joins: ["host.name", "host.address"]
+#   )
+#
+#   puts ''
+#
+#   # Get all services in critical state and filter out the ones for which active checks are disabled
+#   # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
+#   #
+#   # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
+#   puts i.service_objects(
+#     attrs: ["display_name", "check_command", "enable_active_checks"],
+#     filter: "service.state==1" ,
+#     joins: ["host.name", "host.address"]
+#   )
+#
+#   puts ''
+#   # Get host name, address of hosts belonging to a specific hostgroup
+#   puts i.host_objects(
+#     attrs: ["display_name", "name", "address"],
+#     filter: "\"windows-servers\" in host.groups"
+#   )
 
 end
 

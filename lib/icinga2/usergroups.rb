@@ -36,7 +36,7 @@ module Icinga2
       }
 
       Network.put(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s', @icinga_api_url_base, name ),
+        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -65,7 +65,7 @@ module Icinga2
       end
 
       Network.delete(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s?cascade=1', @icinga_api_url_base, name ),
+        url: format( '%s/objects/usergroups/%s?cascade=1', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -89,7 +89,7 @@ module Icinga2
       name = params.dig(:name)
 
       Network.get(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s', @icinga_api_url_base, name ),
+        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 

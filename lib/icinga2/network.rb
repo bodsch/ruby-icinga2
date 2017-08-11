@@ -3,6 +3,96 @@
 module Icinga2
 
   # namespace for network handling
+  module NetworkNG
+
+    def self.api_data( params = {} )
+
+      host    = params.dig(:host)
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+      payload = params.dig(:payload) || {}
+
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
+
+      max_retries = 30
+      retried     = 0
+
+      begin
+        if payload
+          headers["X-HTTP-Method-Override"] = "GET"
+          payload = JSON.generate(payload)
+          res = rest_client.post(payload, headers)
+        else
+          res = rest_client.get(headers)
+        end
+
+      rescue RestClient::Unauthorized => e
+
+        return {
+          status: 401,
+          message: 'unauthorized'
+        }
+
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
+
+        if (retried < max_retries)
+          retried += 1
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", api_url, e, retried, max_retries))
+          sleep(2)
+          retry
+        else
+          $stderr.puts("Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, api_url)
+
+          return {
+            status: 500,
+            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          }
+
+        end
+      end
+
+      body = res.body
+      data = JSON.parse(body)
+
+      return data
+    end
+
+
+    def self.application_data( params = {} )
+
+      url     = params.dig(:url)
+      headers = params.dig(:headers)
+      options = params.dig(:options)
+
+#       puts params
+
+      data    = NetworkNG.api_data( url: url, headers: headers, options: options )
+
+      status  = data.dig(:status)
+
+      if( status.nil? )
+
+        results = data.dig('results')
+
+        unless( results.nil? )
+
+          return results.first.dig('status')
+        end
+      end
+
+      return nil
+
+#       if not data or not data.has_key?('results') or data['results'].empty? or not data['results'][0].has_key?('status')
+#         return nil
+#       end
+#
+#       return data['results'][0]['status'] #there's only one row
+    end
+
+  end
+
+  # namespace for network handling
   module Network
 
     # static function for GET Requests

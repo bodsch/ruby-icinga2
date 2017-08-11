@@ -29,7 +29,7 @@ module Icinga2
         logger.debug( JSON.pretty_generate( payload ) )
 
         Network.put(           host: host,
-          url: format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, host, s ),
+          url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host, s ),
           headers: @headers,
           options: @options,
           payload: payload)
@@ -54,7 +54,7 @@ module Icinga2
 
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
       # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
-      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST 'https://127.0.0.1:5665/v1/objects/services' -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
+      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST 'https://127.0.0.1:5665/objects/services' -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
 
     end
 
@@ -79,9 +79,9 @@ module Icinga2
 
       url =
       if( service.nil? )
-        format( '%s/v1/objects/services/%s', @icinga_api_url_base, name )
+        format( '%s/objects/services/%s', @icinga_api_url_base, name )
       else
-        format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, name, service )
+        format( '%s/objects/services/%s!%s', @icinga_api_url_base, name, service )
       end
 
       Network.get(         host: name,
@@ -156,11 +156,30 @@ module Icinga2
       payload['filter'] = filter unless  filter.nil?
       payload['joins'] = joins unless  joins.nil?
 
-      Network.get(         host: nil,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+      data = Network.get(         host: nil,
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
+
+
+          s_objects = data.clone
+          all_services = s_objects.dig(:nodes)
+
+          unless( all_services.nil? )
+
+            @services_all                       = all_services.size
+            @services_problems                  = service_problems
+            @services_handled_warning_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+            @services_handled_critical_problems = handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+            @services_handled_unknown_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
+
+            # calculate service problems adjusted by handled problems
+            @services_warning_adjusted  = @services_warning - @services_handled_warning_problems
+            @services_critical_adjusted = @services_critical - @services_handled_critical_problems
+            @services_unknown_adjusted  = @services_unknown - @services_handled_unknown_problems
+          end
+
 
     end
 

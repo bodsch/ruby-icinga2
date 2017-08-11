@@ -63,6 +63,7 @@ module Icinga2
 
     include Icinga2::Version
     include Icinga2::Network
+    include Icinga2::NetworkNG
     include Icinga2::Status
     include Icinga2::Converts
     include Icinga2::Tools
@@ -109,6 +110,7 @@ module Icinga2
       @icinga_api_port       = settings.dig(:icinga, :api, :port)     || 5665
       @icinga_api_user       = settings.dig(:icinga, :api, :user)
       @icinga_api_pass       = settings.dig(:icinga, :api, :password)
+      @icinga_api_version    = settings.dig(:icinga, :api, :version)  || 'v1'
       @icinga_api_pki_path   = settings.dig(:icinga, :api, :pki_path)
       @icinga_api_node_name  = settings.dig(:icinga, :api, :node_name)
 
@@ -116,7 +118,7 @@ module Icinga2
       @icinga_satellite      = settings.dig(:icinga, :satellite)
       @icinga_notifications  = settings.dig(:icinga, :notifications)  || false
 
-      @icinga_api_url_base   = format( 'https://%s:%d', @icinga_host, @icinga_api_port )
+      @icinga_api_url_base   = format( 'https://%s:%d/%s', @icinga_host, @icinga_api_port, @icinga_api_version )
 
       if( @icinga_api_node_name.nil? )
         @icinga_api_node_name = Socket.gethostbyname( Socket.gethostname ).first
@@ -143,7 +145,7 @@ module Icinga2
       @services_warning_adjusted = @services_critical_adjusted = @services_unknown_adjusted = 0
       @hosts_active_checks_1min = @hosts_passive_checks_1min = @services_active_checks_1min = @services_passive_checks_1min = 0
 
-      extract_data
+#       extract_data
 
       self
     end

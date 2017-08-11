@@ -155,7 +155,7 @@ module Icinga2
       name = params.dig(:name)
 
       Network.get(         host: name,
-        url: format( '%s/v1/objects/notifications/%s', @icinga_api_url_base, name ),
+        url: format( '%s/objects/notifications/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options )
 
@@ -184,7 +184,7 @@ module Icinga2
       }
 
       Network.post(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -215,7 +215,7 @@ module Icinga2
       }
 
       Network.post(         host: host,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -245,7 +245,7 @@ module Icinga2
       }
 
       Network.post(         host: name,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )

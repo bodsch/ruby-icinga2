@@ -82,7 +82,7 @@ module Icinga2
       logger.debug( JSON.pretty_generate( payload ) )
 
       Network.put(         host: host,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options,
         payload: payload )
@@ -112,7 +112,7 @@ module Icinga2
       end
 
       Network.delete(         host: host,
-        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
 
@@ -146,7 +146,7 @@ module Icinga2
       payload['joins'] = joins unless  joins.nil?
 
       Network.get(         host: host,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options )
 
@@ -201,11 +201,23 @@ module Icinga2
       payload['filter'] = filter unless  filter.nil?
       payload['joins'] = joins unless  joins.nil?
 
-      Network.get(         host: nil,
-        url: format( '%s/v1/objects/hosts', @icinga_api_url_base ),
+      data = Network.get(         host: nil,
+        url: format( '%s/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload )
+
+          h_objects = data.clone
+          all_hosts = h_objects.dig(:nodes)
+
+          unless( all_hosts.nil? )
+
+            @hosts_all                       = all_hosts.size
+            @hosts_problems                  = host_problems
+            @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+          end
+
+      data
 
     end
 
