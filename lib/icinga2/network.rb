@@ -13,9 +13,11 @@ module Icinga2
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
 
+#       puts params
+
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
-      max_retries = 30
+      max_retries = 10
       retried     = 0
 
       begin
@@ -34,19 +36,32 @@ module Icinga2
           message: 'unauthorized'
         }
 
+      rescue RestClient::NotFound => e
+
+        message = format( "host not found (%s)", url )
+
+        $stderr.puts( message )
+
+        return {
+          status: 404,
+          message: message
+        }
+
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if (retried < max_retries)
           retried += 1
-          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", api_url, e, retried, max_retries))
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
           sleep(2)
           retry
         else
-          $stderr.puts("Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, api_url)
+
+          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          $stderr.puts( message )
 
           return {
             status: 500,
-            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+            message: message
           }
 
         end

@@ -111,10 +111,12 @@ module Icinga2
         }
       end
 
-      Network.delete(         host: host,
-        url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
-        headers: @headers,
-        options: @options )
+      puts "TODO"
+
+#       Network.delete(         host: host,
+#         url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
+#         headers: @headers,
+#         options: @options )
 
     end
 
@@ -140,16 +142,33 @@ module Icinga2
       attrs  = params.dig(:attrs)
       filter = params.dig(:filter)
       joins  = params.dig(:joins)
+      results = nil
 
-      payload['attrs'] = attrs unless  attrs.nil?
-      payload['filter'] = filter unless  filter.nil?
-      payload['joins'] = joins unless  joins.nil?
+      payload['attrs']  = attrs  unless attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+      payload['joins']  = joins  unless joins.nil?
 
-      Network.get(         host: host,
+#       Network.get(         host: host,
+#         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
+#         headers: @headers,
+#         options: @options )
+
+      data = NetworkNG.api_data(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      status  = data.dig(:status)
+
+      if( status.nil? )
+
+        results = data.dig('results')
+#        data = data.first if data.is_a?(Array)
+#        results = data.dig('attrs')
+      end
+
+      results
     end
 
     # returns true if the host exists
@@ -163,11 +182,11 @@ module Icinga2
     #
     def exists_host?( name )
 
-      result = hosts( name: name )
+      result = hosts( host: name )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 
@@ -192,32 +211,72 @@ module Icinga2
       filter  = params.dig(:filter)
       joins   = params.dig(:joins)
       payload = {}
+      results = nil
 
       if( attrs.nil? )
         attrs = %w[name state acknowledgement downtime_depth last_check]
       end
 
-      payload['attrs'] = attrs unless  attrs.nil?
-      payload['filter'] = filter unless  filter.nil?
-      payload['joins'] = joins unless  joins.nil?
+      payload['attrs']  = attrs  unless attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+      payload['joins']  = joins  unless joins.nil?
 
-      data = Network.get(         host: nil,
+#      data = Network.get(
+#        host: nil,
+#        url: format( '%s/objects/hosts', @icinga_api_url_base ),
+#        headers: @headers,
+#        options: @options,
+#        payload: payload
+#      )
+
+      data = NetworkNG.api_data(
         url: format( '%s/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
+        payload: payload
+      )
 
-          h_objects = data.clone
-          all_hosts = h_objects.dig(:nodes)
+      status  = data.dig(:status)
+
+      if( status.nil? )
+
+        results = data.dig('results')
+
+        unless( results.nil? )
+
+          all_hosts = results.clone
 
           unless( all_hosts.nil? )
 
-            @hosts_all                       = all_hosts.size
-            @hosts_problems                  = host_problems
-            @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+            # global var for count of all hosts
+            @hosts_all           = all_hosts.size
+            # global var for count of all host with a problem
+            @hosts_problems      = count_problems(results)
+            # global var for count of all gost with state HOSTS_DOWN
+            @hosts_problems_down = count_problems(results, Icinga2::HOSTS_DOWN)
           end
+        end
 
-      data
+#        return results
+      end
+
+      results
+
+#      return nil
+
+#       h_objects = data.clone
+#       all_hosts = h_objects.dig('results')
+#
+#       puts all_hosts
+#
+#       unless( all_hosts.nil? )
+#
+#         @hosts_all                       = all_hosts.size
+#         @hosts_problems                  = host_problems
+#         @hosts_problems_down             = count_problems(h_objects, Icinga2::HOSTS_DOWN)
+#       end
+#
+#       data
 
     end
 
@@ -228,71 +287,71 @@ module Icinga2
     #
     # @return [Integer]
     #
-    def host_problems
-
-      data     = host_objects
-      problems = 0
-
-      data = JSON.parse(data) if  data.is_a?(String)
-      nodes = data.dig(:nodes)
-
-      unless( nodes.nil? )
-
-        nodes.each do |n|
-
-          attrs           = n.last.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-
-        end
-      end
-      problems
-    end
+#     def host_problems
+#
+#       data     = host_objects
+#       problems = 0
+#
+#       data = JSON.parse(data) if  data.is_a?(String)
+#       nodes = data.dig(:nodes)
+#
+#       unless( nodes.nil? )
+#
+#         nodes.each do |n|
+#
+#           attrs           = n.last.dig('attrs')
+#           state           = attrs.dig('state')           || 0
+#           downtime_depth  = attrs.dig('downtime_depth')  || 0
+#           acknowledgement = attrs.dig('acknowledgement') || 0
+#
+#           if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
+#             problems += 1
+#           end
+#
+#         end
+#       end
+#       problems
+#     end
 
     # return a list of host with problems
     #
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    @icinga.problem_hosts
+    #    @icinga.list_hosts_with_problems
     #
     # @return [Hash]
     #
-    def problem_hosts( max_items = 5 )
+    def list_hosts_with_problems( max_items = 5 )
+
+      puts( "list_hosts_with_problems( #{max_items} )" )
 
       @host_problems = {}
       @host_problems_severity = {}
 
       host_data = host_objects
-
-      host_data = JSON.parse( host_data ) if  host_data.is_a?(String)
-      host_data = host_data.dig(:nodes)
+      host_data = JSON.parse( host_data ) if host_data.is_a?(String)
 
       unless( host_data.nil? )
 
-        host_data.each do |_host,v|
+        host_data.each do |h,v|
 
-          name  = v.dig('name')
-          state = v.dig('attrs','state')
+          name  = h.dig('name')
+          state = h.dig('attrs','state')
 
-          next if  state.zero?
+          next if state.to_i.zero?
 
-          @host_problems[name] = host_severity(v)
-        end
-
-        # get the count of problems
-        #
-        if( @host_problems.count != 0 )
-          @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+          @host_problems[name] = host_severity(h)
         end
       end
-      @host_problems_severity
 
+      # get the count of problems
+      #
+      if( @host_problems.count != 0 )
+        @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+      end
+
+      @host_problems_severity
     end
 
     # calculate a host severity

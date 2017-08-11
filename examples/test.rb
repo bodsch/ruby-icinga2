@@ -52,36 +52,132 @@ unless( i.nil? )
 
   puts ''
   puts ' ============================================================= '
-  puts 'icinga2 status'
+  puts '= icinga2 status'
   puts i.status_data
   puts ''
 
-  puts 'icinga2 application data'
+  puts '= icinga2 application data'
   puts i.application_data
   puts ''
-  puts 'CIB'
+  puts '= CIB'
   puts i.cib_data
   puts ''
-  puts 'API Listener'
+  puts '= API Listener'
   puts i.api_listener
   puts ''
 
-  puts format( 'version: %s, revision %s', i.version, i.revision )
-  puts format( 'start time: %s', i.start_time )
-  puts format( 'uptime: %s', i.uptime )
-
+  puts format( '= version: %s, revision %s', i.version, i.revision )
+  puts format( '= start time: %s', i.start_time )
+  puts format( '= uptime: %s', i.uptime )
   puts ''
 
+#  puts ' ------------------------------------------------------------- '
+#  puts ''
+#  puts ' ==> HOSTS'
+#  puts ''
+#  puts '= host objects'
+#  i.host_objects
+#  puts format( '= count of all hosts : %d', i.hosts_all )
+#  puts format( '= hosts with problems: %d', i.hosts_problems )
+#  puts format( '= hosts are down     : %d', i.hosts_problems_down )
+#
+#  puts '= check if Host \'icinga2\' exists'
+#  puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
+#  puts i.exists_host?( 'bp-foo' ) ? 'true' : 'false'
+#  puts ''
+#  puts '= Problem Hosts'
+#  puts i.list_hosts_with_problems
+#  puts ''
+#  puts '= list named Hosts'
+#  puts i.hosts( host: 'icinga2' )
+#  puts i.hosts( host: 'bp-cluster')
+#  puts i.hosts( host: 'bp-foo')
+#  puts ''
+#  puts '= list all Hosts'
+#  puts i.hosts
+#  puts ''
+#  puts ' ------------------------------------------------------------- '
+#  puts ''
+
+#  puts ''
+#  puts ' ------------------------------------------------------------- '
+#  puts ''
+#  puts ' ==> SERVICES'
+#  puts ''
+#  i.service_objects
+#  puts format( '= count of all services: %d', i.services_all )
+#  puts format( '= services critical: %d', i.services_critical)
+#  puts format( '= services warning: %d', i.services_warning)
+#  puts format( '= services unknown: %d', i.services_unknown)
+#  puts ''
+#  puts format( '= services handled warning problems: %d', i.services_handled_warning_problems)
+#  puts format( '= services handled critical problems: %d', i.services_handled_critical_problems)
+#  puts format( '= services handled unknown problems: %d', i.services_handled_unknown_problems)
+#  puts ''
+#  puts format( '= services adjusted critical: %d', i.services_critical_adjusted)
+#  puts format( '= services adjusted warning: %d',  i.services_warning_adjusted)
+#  puts format( '= services adjusted unknown: %d',  i.services_unknown_adjusted)
+#  puts ''
+#  puts '= check if service \'users\' on host \'icinga2\' exists'
+#  puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
+#  puts ''
+#  puts '= get service Objects'
+#  puts i.service_objects
+#  puts ''
+#  puts '= Services with problems'
+#  puts i.count_services_with_problems
+#  puts ''
+#  puts '= Problem Services'
+#  a,_b = i.list_services_with_problems
+#  puts a
+#  puts _b
+#  puts ''
+#  puts i.list_services_with_problems(10)
+#  puts ''
+#  puts '= list named Service \'ping4\' from Host \'icinga2\''
+#  puts i.services( host: 'icinga2', service: 'ping4' )
+#  puts ''
+#  puts '= list all Services'
+#  puts i.services
+#  puts ''
+#  puts ' ------------------------------------------------------------- '
+#  puts ''
+
+end
+
+def hosts()
+
+  puts ' ------------------------------------------------------------- '
   puts ''
-  puts format( 'count of all hosts: %d', i.hosts_all )
-  puts format( 'hosts with problems: %d', i.hosts_problems )
-  puts format( 'hosts problems down: %d', i.hosts_problems_down )
+  puts ' ==> HOSTS'
+  puts ''
+  puts '= host objects'
+  puts i.host_objects
+  puts format( '= count of all hosts : %d' , i.hosts_all )
+  puts format( '= hosts with problems: %d', i.hosts_problems )
+  puts format( '= hosts are down     : %d', i.hosts_problems_down )
 
-#            @hosts_all                       = all_hosts.size
-#            @hosts_problems                  = host_problems
-#            @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+  puts '= check if Host \'icinga2\' exists'
+  puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
+  puts i.exists_host?( 'bp-foo' ) ? 'true' : 'false'
+  puts ''
+  puts '= Problem Hosts'
+  puts i.list_hosts_with_problems
+  puts ''
+  puts '= list named Hosts'
+  puts i.hosts( host: 'icinga2' )
+  puts i.hosts( host: 'bp-cluster')
+  puts i.hosts( host: 'bp-foo')
+  puts ''
+  puts '= list all Hosts'
+  puts i.hosts
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
 
+end
 
+def filter()
 
 #   # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
 #   #
@@ -115,47 +211,57 @@ unless( i.nil? )
 
 end
 
+def services
+
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> SERVICES'
+  puts ''
+
+  i.service_objects
+
+  puts format( '= count of all services: %d', i.services_all )
+  puts format( '= services critical: %d', i.services_critical)
+  puts format( '= services warning: %d', i.services_warning)
+  puts format( '= services unknown: %d', i.services_unknown)
+  puts ''
+  puts format( '= services handled warning problems: %d', i.services_handled_warning_problems)
+  puts format( '= services handled critical problems: %d', i.services_handled_critical_problems)
+  puts format( '= services handled unknown problems: %d', i.services_handled_unknown_problems)
+  puts ''
+  puts format( '= services adjusted critical: %d', i.services_critical_adjusted)
+  puts format( '= services adjusted warning: %d',  i.services_warning_adjusted)
+  puts format( '= services adjusted unknown: %d',  i.services_unknown_adjusted)
+  puts ''
+  puts '= check if service \'users\' on host \'icinga2\' exists'
+  puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
+  puts ''
+  puts '= get service Objects'
+  puts i.service_objects
+  puts ''
+  puts '= Services with problems'
+  puts i.count_services_with_problems
+  puts ''
+  puts '= Problem Services'
+  a,_b = i.list_services_with_problems
+  puts a
+  puts _b
+  puts ''
+  puts i.list_services_with_problems(10)
+  puts ''
+  puts '= list named Service \'ping4\' from Host \'icinga2\''
+  puts i.services( host: 'icinga2', service: 'ping4' )
+  puts ''
+  puts '= list all Services'
+  puts i.services
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+
+end
+
 def all_others
-
-  puts ''
-  puts format( 'count of all hosts: %d', i.hosts_all )
-  puts format( 'host down: %d', i.hosts_down )
-  puts format( 'hosts problems down: %d', i.hosts_problems_down )
-
-  puts ''
-  puts format( 'count of all services: %d', i.services_all )
-  puts format( 'services critical: %d', i.services_critical)
-  puts format( 'services warning: %d', i.services_warning)
-  puts format( 'services unknown: %d', i.services_unknown)
-  puts ''
-  puts format( 'services handled warning problems: %d', i.services_handled_warning_problems)
-  puts format( 'services handled critical problems: %d', i.services_handled_critical_problems)
-  puts format( 'services handled unknown problems: %d', i.services_handled_unknown_problems)
-  puts ''
-  puts format( 'services adjusted critical: %d', i.services_critical_adjusted)
-  puts format( 'services adjusted warning: %d',  i.services_warning_adjusted)
-  puts format( 'services adjusted unknown: %d',  i.services_unknown_adjusted)
-  puts ''
-
-  puts 'check if Host \'icinga2\' exists'
-  puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
-  puts ''
-  puts 'get host Objects'
-  puts i.host_objects
-  puts ''
-  puts 'Host problems'
-  puts i.host_problems
-  puts ''
-  puts 'Problem Hosts'
-  puts i.problem_hosts
-  puts ''
-  puts 'list named Hosts'
-  puts i.hosts( host: 'icinga2' )
-  puts i.hosts( host: 'bp-cluster')
-  puts ''
-  puts 'list all Hosts'
-  puts i.hosts
-  puts ''
 
   puts 'check if Hostgroup \'linux-servers\' exists'
   puts i.exists_hostgroup?( 'linux-servers' ) ? 'true' : 'false'
@@ -171,28 +277,6 @@ def all_others
   puts ''
   puts 'delete Hostgroup \'foo\''
   puts i.delete_hostgroup( hosts_group: 'foo' )
-  puts ''
-
-  puts 'check if service \'users\' on host \'icinga2\' exists'
-  puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
-  puts ''
-  puts 'get service Objects'
-  puts i.service_objects
-  puts ''
-  puts 'Service problems'
-  puts i.service_problems
-  puts ''
-  puts 'Problem Services'
-  a,_b = i.problem_services
-  puts a
-  puts ''
-  puts i.problem_services(10)
-  puts ''
-  puts 'list named Service \'ping4\' from Host \'icinga2\''
-  puts i.services( host: 'icinga2', service: 'ping4' )
-  puts ''
-  puts 'list all Services'
-  puts i.services
   puts ''
 
   puts 'check if Servicegroup \'disk\' exists'

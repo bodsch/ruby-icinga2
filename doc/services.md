@@ -37,10 +37,10 @@
 
 
 ##
-    service_problems
+    count_services_with_problems
 
 ##
-    problem_services( max_items = 5 )
+    list_services_with_problems( max_items = 5 )
 
 ##
     update_host( hash, host )

@@ -138,7 +138,7 @@ module Icinga2
       @node_name = @start_time = @uptime = ''
       @avg_latency = @avg_execution_time = 0
       @hosts_up = @hosts_down = @hosts_in_downtime = @hosts_acknowledged = 0
-      @hosts_all = @hosts_problems = @hosts_handled_warning_problems = @hosts_handled_critical_problems = @hosts_handled_unknown_problems = 0
+      @hosts_all = @hosts_problems = @hosts_problems_down = @hosts_handled_warning_problems = @hosts_handled_critical_problems = @hosts_handled_unknown_problems = 0
       @hosts_handled_problems = @hosts_down_adjusted = 0
       @services_ok = @services_warning = @services_critical = @services_unknown = @services_in_downtime = @services_acknowledged = 0
       @services_all = @services_problems = @services_handled_warning_problems = @services_handled_critical_problems = @services_handled_unknown_problems = 0

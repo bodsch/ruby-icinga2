@@ -46,43 +46,73 @@ module Icinga2
     # return count of handled problems
     #
     # @param [Hash] objects
-    # @param [Integer] status
+    # @param [Integer] state
     #
     # @example for host objects
     #    h_objects = @icinga.host_objects
-    #    warning = @icinga.handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+    #    warning = @icinga.count_problems(h_objects, Icinga2::HOSTS_DOWN)
     #
     # @example for service objects
     #    s_objects = @icinga.service_objects
-    #    warning = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
-    #    critical = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
-    #    unknown = @icinga.handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
+    #    warning = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+    #    critical = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+    #    unknown = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
     #
     # @return [Integer]
     #
-    def handled_problems(objects, status)
+    def count_problems(objects, state = nil )
 
-      problems = 0
+#       problems = 0
 
-      objects = JSON.parse(objects) if  objects.is_a?(String)
-      nodes   = objects.dig(:nodes)
+      compare_states = []
 
-      unless( nodes.nil? )
+      unless( state.nil? )
 
-        nodes.each do |n|
-
-          attrs           = n.last.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state == status && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-
-        end
+        # 0 = "Up"   or "OK"
+        # 1 = "Down" or "Warning"
+        # 2 = "Critical"
+        # 3 = "Unknown"
+        compare_states = [1, 2, 3]
       end
-      problems
+
+      if( state.is_a?(Fixnum) )
+        compare_states.push(state)
+      end
+
+      objects = JSON.parse(objects) if objects.is_a?(String)
+
+#       puts "state: #{state}"
+#       puts "compare_states: #{compare_states}"
+
+      f = objects.select {
+        |t|
+          t.dig('attrs','state') == state &&
+          t.dig('attrs','downtime_depth').zero? &&
+          t.dig('attrs','acknowledgement').zero?
+      }
+
+      f.size
+
+#       unless( objects.nil? )
+#
+#         objects.each do |n|
+#
+#           attrs = n.dig('attrs')
+#           next if(attrs.nil?)
+#
+#           state = attrs.dig('state')           || 0
+#           next if( state.zero? )
+#
+#           downtime_depth  = attrs.dig('downtime_depth')  || 0
+#           acknowledgement = attrs.dig('acknowledgement') || 0
+#
+#           if( compare_states.include?( state ) && downtime_depth.zero? && acknowledgement.zero? )
+#             problems += 1
+#           end
+#
+#         end
+#       end
+#       problems
     end
 
   end

@@ -27,20 +27,24 @@ module Icinga2
         options: @options
       )
 
-#      puts data
+      unless( data.nil? )
 
-      a_data = data.dig('icingaapplication','app')
+        a_data = data.dig('icingaapplication','app')
 
-      # version and revision
-      @version, @revision = parse_version(a_data.dig('version'))
+        # version and revision
+        @version, @revision = parse_version(a_data.dig('version'))
 
-      #   - node_name
-      @node_name = a_data.dig('node_name')
+        #   - node_name
+        @node_name = a_data.dig('node_name')
 
-      #   - start_time
-      @start_time = Time.at(a_data.dig('program_start').to_f)
+        #   - start_time
+        @start_time = Time.at(a_data.dig('program_start').to_f)
 
-      data
+        return data
+
+      end
+
+      return nil
     end
 
     # return Icinga2 CIB
@@ -89,7 +93,7 @@ module Icinga2
 #
 #             @hosts_all                       = all_hosts.size
 #             @hosts_problems                  = host_problems
-#             @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+#             @hosts_problems_down             = count_problems(h_objects, Icinga2::HOSTS_DOWN)
 #           end
 
           # calculate host problems adjusted by handled problems
@@ -111,10 +115,10 @@ module Icinga2
 #           unless( all_services.nil? )
 #
 #             @services_all                       = all_services.size
-#             @services_problems                  = service_problems
-#             @services_handled_warning_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
-#             @services_handled_critical_problems = handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
-#             @services_handled_unknown_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
+#             @services_problems                  = count_services_with_problems
+#             @services_handled_warning_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+#             @services_handled_critical_problems = count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+#             @services_handled_unknown_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
 #
 #             # calculate service problems adjusted by handled problems
 #             @services_warning_adjusted  = @services_warning - @services_handled_warning_problems
@@ -128,7 +132,7 @@ module Icinga2
           @services_active_checks_1min  = c_data.dig('active_service_checks_1min')
           @services_passive_checks_1min = c_data.dig('passive_service_checks_1min')
 
-          @service_problems, @service_problems_severity = problem_services
+#           @count_services_with_problems, @count_services_with_problems_severity = list_services_with_problems
         end
       data
     end
@@ -271,7 +275,7 @@ module Icinga2
 
           @hosts_all                       = all_hosts.size
           @hosts_problems                  = host_problems
-          @hosts_problems_down             = handled_problems(h_objects, Icinga2::HOSTS_DOWN)
+          @hosts_problems_down             = count_problems(h_objects, Icinga2::HOSTS_DOWN)
 
           # calculate host problems adjusted by handled problems
           # count togther handled host problems
@@ -290,10 +294,10 @@ module Icinga2
           all_services = s_objects.dig(:nodes)
 
           @services_all                       = all_services.size
-          @services_problems                  = service_problems
-          @services_handled_warning_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
-          @services_handled_critical_problems = handled_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
-          @services_handled_unknown_problems  = handled_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
+          @services_problems                  = count_services_with_problems
+          @services_handled_warning_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+          @services_handled_critical_problems = count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+          @services_handled_unknown_problems  = count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
 
           # calculate service problems adjusted by handled problems
           @services_warning_adjusted  = @services_warning - @services_handled_warning_problems
@@ -307,7 +311,7 @@ module Icinga2
           @services_active_checks_1min  = c_data.dig('active_service_checks_1min')
           @services_passive_checks_1min = c_data.dig('passive_service_checks_1min')
 
-          @service_problems, @service_problems_severity = problem_services
+          @count_services_with_problems, @count_services_with_problems_severity = list_services_with_problems
         end
       end
     end

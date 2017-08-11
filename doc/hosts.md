@@ -28,7 +28,7 @@
     host_problems
 
 ##
-    problem_hosts
+    list_hosts_with_problems
 
 ##
     host_severity

@@ -57,7 +57,7 @@ supports the following API Calls:
     * exists_host?( name )
     * host_objects( params = {} )
     * host_problems
-    * problem_hosts( max_items = 5 )
+    * list_hosts_with_problems( max_items = 5 )
     * host_severity( host )
 
   - [Hostgroups](doc/hostgroups.md)
@@ -72,8 +72,8 @@ supports the following API Calls:
     * services( params = {} )
     * exists_service?( params = {} )
     * service_objects( params = {} )
-    * service_problems
-    * problem_services( max_items = 5 )
+    * count_services_with_problems
+    * list_services_with_problems( max_items = 5 )
     * update_host( hash, host )
     * service_severity( service )
 
