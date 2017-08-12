@@ -17,14 +17,20 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.api_data( params = {} )
+    def self.api_data( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
 
-#       puts params
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
@@ -42,7 +48,7 @@ module Icinga2
 
       rescue RestClient::Unauthorized => e
 
-        {
+        return {
           status: 401,
           message: 'unauthorized'
         }
@@ -53,7 +59,7 @@ module Icinga2
 
         $stderr.puts( message )
 
-        {
+        return {
           status: 404,
           message: message
         }
@@ -70,7 +76,7 @@ module Icinga2
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
           $stderr.puts( message )
 
-          {
+          return {
             status: 500,
             message: message
           }
@@ -94,11 +100,18 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.application_data( params = {} )
+    def self.application_data( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
 
       data    = Network.api_data( url: url, headers: headers, options: options )
 
@@ -119,12 +132,21 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.post( params = {} )
+    def self.post( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+
       max_retries   = 30
       times_retried = 0
 
@@ -195,7 +217,7 @@ module Icinga2
         else
           $stderr.puts( 'Exiting request ...' )
 
-          {
+          return {
             status: 500,
             message: format( 'Errno::ECONNREFUSED for request: %s', url )
           }
@@ -217,13 +239,21 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.put( params = {} )
+    def self.put( params )
 
-      host    = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+
       max_retries   = 30
       times_retried = 0
 
@@ -276,8 +306,8 @@ module Icinga2
           else
             result = {
               status: 204,
-              name: host,
-              message: 'unknown result'
+              message: 'unknown result (possible, object already exists)',
+              error: error
             }
           end
         else
@@ -301,7 +331,7 @@ module Icinga2
         else
           $stderr.puts( 'Exiting request ...' )
 
-          {
+          return {
             status: 500,
             message: format( 'Errno::ECONNREFUSED for request: %s', url )
           }
@@ -321,11 +351,19 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.delete( params = {} )
+    def self.delete( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+
       max_retries   = 3
       times_retried = 0
 
@@ -365,23 +403,19 @@ module Icinga2
 
         results = error.dig('results')
 
-        result = if( !results.nil? )
-
+        result =
+        if( results.nil? )
+          {
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
+          }
+        else
           {
             status: results.dig('code').to_i,
             name: results.dig('name'),
             message: results.dig('status')
           }
-
-        else
-
-          {
-            status: error.dig( 'error' ).to_i,
-#            :name        => results.dig('name'),
-            message: error.dig( 'status' )
-          }
-
-                 end
+        end
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
         if( times_retried < max_retries )
@@ -396,7 +430,7 @@ module Icinga2
         else
           $stderr.puts( 'Exiting request ...' )
 
-          {
+          return {
             status: 500,
             message: format( 'Errno::ECONNREFUSED for request: %s', url )
           }

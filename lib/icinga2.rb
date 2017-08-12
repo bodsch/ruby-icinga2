@@ -78,12 +78,13 @@ module Icinga2
     # Returns a new instance of Client
     #
     # @param [Hash, #read] settings the settings for Icinga2
-    # @option settings [String] :icinga, :host the Icinga2 Hostname (default: 'localhost')
-    # @option settings [Integer] :icinga, :api, :port the Icinga2 API Port (default: 5665)
-    # @option settings [String] :icinga, :api, :user the Icinga2 API User
-    # @option settings [String] :icinga, :api, :password the Icinga2 API Password
-    # @option settings [Bool] :icinga, :cluster Icinga2 Cluster Mode
-    # @option settings [Bool] :icinga, :notifications enable Icinga2 Host Notifications (default: false)
+    # @option settings [String] :host ('localhost') the Icinga2 Hostname
+    # @option settings [Integer] :port (5665) the Icinga2 API Port
+    # @option settings [String] :user the Icinga2 API User
+    # @option settings [String] :password the Icinga2 API Password
+    # @option settings [Integer] :version (1) the Icinga2 API Version
+    # @option settings [Bool] :cluster Icinga2 Cluster Mode
+    # @option settings [Bool] :notifications (false) enable Icinga2 Host Notifications
     #
     # @example to create an new Instance
     #    config = {
@@ -92,7 +93,8 @@ module Icinga2
     #        api: {
     #          port: 5665,
     #          user: 'root',
-    #          password: 'icinga'
+    #          password: 'icinga',
+    #          version: 1
     #        },
     #        cluster: false,
     #        satellite: true
@@ -103,13 +105,16 @@ module Icinga2
     #
     # @return [instance, #read]
     #
-    def initialize( settings = {} )
+    def initialize( settings )
+
+      raise ArgumentError.new('only Hash are allowed') unless( settings.is_a?(Hash) )
+      raise ArgumentError.new('missing settings') if( settings.size.zero? )
 
       @icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
       @icinga_api_port       = settings.dig(:icinga, :api, :port)     || 5665
       @icinga_api_user       = settings.dig(:icinga, :api, :user)
       @icinga_api_pass       = settings.dig(:icinga, :api, :password)
-      @icinga_api_version    = settings.dig(:icinga, :api, :version)  || 'v1'
+      @icinga_api_version    = settings.dig(:icinga, :api, :version)  || 1
       @icinga_api_pki_path   = settings.dig(:icinga, :api, :pki_path)
       @icinga_api_node_name  = settings.dig(:icinga, :api, :node_name)
 
@@ -117,11 +122,8 @@ module Icinga2
       @icinga_satellite      = settings.dig(:icinga, :satellite)
       @icinga_notifications  = settings.dig(:icinga, :notifications)  || false
 
-      @icinga_api_url_base   = format( 'https://%s:%d/%s', @icinga_host, @icinga_api_port, @icinga_api_version )
-
-      if( @icinga_api_node_name.nil? )
-        @icinga_api_node_name = Socket.gethostbyname( Socket.gethostname ).first
-      end
+      @icinga_api_url_base   = format( 'https://%s:%d/v%s', @icinga_host, @icinga_api_port, @icinga_api_version )
+      @icinga_api_node_name  = Socket.gethostbyname( Socket.gethostname ).first if( @icinga_api_node_name.nil? )
 
       @has_cert, @options = cert?(
         pki_path: @icinga_api_pki_path,
@@ -131,7 +133,6 @@ module Icinga2
       )
 
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
-
 
       @version = @revision = 0
       @node_name = @start_time = @uptime = ''
@@ -144,24 +145,29 @@ module Icinga2
       @services_warning_adjusted = @services_critical_adjusted = @services_unknown_adjusted = 0
       @hosts_active_checks_1min = @hosts_passive_checks_1min = @services_active_checks_1min = @services_passive_checks_1min = 0
 
-#       extract_data
-
       self
     end
 
-    # @param [Hash, #read] params create a HTTP Header based on a Icinga2 Certificate or an User PAI Login
-    # @option params [String] :node_name the Icinga2 Hostname (default: 'localhost')
-    # @option params [Integer] :user the Icinga2 API User
-    # @option params [Integer] :password the Icinga2 API Password
+    # create a HTTP Header based on a Icinga2 Certificate or an User API Login
+    #
+    # @param [Hash, #read] params
+    # @option params [String] :pki_path the location of the Certificate Files
+    # @option params [String] :node_name the Icinga2 Hostname
+    # @option params [String] :user the Icinga2 API User
+    # @option params [String] :password the Icinga2 API Password
+    #
     # @example with Certificate
-    #    @icinga.cert?(pki_path: '/etc/icinga2', name_name: 'icinga2-dashing')
+    #    @icinga.cert?(pki_path: '/etc/icinga2', node_name: 'icinga2-dashing')
     #
     # @example with User
     #    @icinga.cert?(user: 'root', password: 'icinga')
     #
     # @return [Bool, #read]
     #
-    def cert?( params = {} )
+    def cert?( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       pki_path     = params.dig(:pki_path)
       node_name    = params.dig(:node_name)
@@ -193,6 +199,9 @@ module Icinga2
       else
 
         logger.debug( 'PKI not found, using basic auth for connection to Icinga 2 API' )
+
+        raise ArgumentError.new('Missing user_name') if( user.nil? )
+        raise ArgumentError.new('Missing password')  if( password.nil? )
 
         [false, {
           user: user,

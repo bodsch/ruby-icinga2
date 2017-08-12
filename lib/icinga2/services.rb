@@ -8,19 +8,28 @@ module Icinga2
 
     # add services
     #
-    # @param [String] host
-    # @param [Hash] services
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :services
     #
+    # @todo
+    #  this function are not operable
+    #  need help, time or beer
     #
     # @return [Hash]
     #
-    def add_services( host, services = {} )
+    def add_services( params = {} )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      host_name = params.dig(:host)
+      services  = params.dig(:services)
 
       services.each do |s,v|
 
         payload = {
           'templates' => [ 'generic-service' ],
-          'attrs'     => update_host( v, host )
+          'attrs'     => update_host( v, host_name )
         }
 
         logger.debug( s )
@@ -29,7 +38,7 @@ module Icinga2
         logger.debug( JSON.pretty_generate( payload ) )
 
         Network.put(
-          url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host, s ),
+          url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
           headers: @headers,
           options: @options,
           payload: payload
@@ -49,6 +58,8 @@ module Icinga2
     # @return [Nil]
     #
     def unhandled_services( params = {} )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
       # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
@@ -72,14 +83,16 @@ module Icinga2
     #
     def services( params = {} )
 
-      name    = params.dig(:host)
-      service = params.dig(:service)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      host_name = params.dig(:host)
+      service   = params.dig(:service)
 
       url =
       if( service.nil? )
-        format( '%s/objects/services/%s', @icinga_api_url_base, name )
+        format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
       else
-        format( '%s/objects/services/%s!%s', @icinga_api_url_base, name, service )
+        format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service )
       end
 
       data = Network.api_data(
@@ -104,17 +117,16 @@ module Icinga2
     #
     # @return [Bool]
     #
-    def exists_service?( params = {} )
+    def exists_service?( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host    = params.dig(:host)
       service = params.dig(:service)
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing service') if( service.nil? )
 
       result = services( host: host, service: service )
       result = JSON.parse( result ) if  result.is_a?( String )
@@ -240,8 +252,6 @@ module Icinga2
     # @return [Hash]
     #
     def list_services_with_problems( max_items = 5 )
-
-      puts( "list_services_with_problems( #{max_items} )" )
 
       count_services_with_problems = {}
       count_services_with_problems_severity = {}

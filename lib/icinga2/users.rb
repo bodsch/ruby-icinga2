@@ -9,41 +9,32 @@ module Icinga2
     # add a user
     #
     # @param [Hash] params
-    # @option params [String] :name user to create
-    # @option params [String] :display_name the displayed name
+    # @option params [String] :user_name ('') user to create
+    # @option params [String] :display_name ('') the displayed name
     # @option params [String] :email ('') the user email
     # @option params [String] :pager ('') optional a pager
     # @option params [Bool] :enable_notifications (false) enable notifications for this user
     # @option params [Array] :groups ([]) a hash with groups
     #
     # @example
-    #   @icinga.add_user(name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'])
+    #   @icinga.add_user(user_name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'])
     #
     # @return [Hash] result
     #
-    def add_user( params = {} )
+    def add_user( params )
 
-      name          = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      user_name     = params.dig(:user_name)
       display_name  = params.dig(:display_name)
       email         = params.dig(:email)
       pager         = params.dig(:pager)
       notifications = params.dig(:enable_notifications) || false
       groups        = params.dig(:groups) || []
 
-      if( name.nil? )
-        {
-          status: 404,
-          message: 'missing user name'
-        }
-      end
-
-      unless( groups.is_a?( Array ) )
-        {
-          status: 404,
-          message: 'groups must be an array',
-          data: params
-        }
-      end
+      raise ArgumentError.new('Missing user_name') if( user_name.nil? )
+      raise ArgumentError.new('groups must be an array') unless( groups.is_a?( Array ) )
 
       payload = {
         'attrs' => {
@@ -66,7 +57,7 @@ module Icinga2
 
         groups = group_validate.join(', ')
 
-        {
+        return {
           status: 404,
           message: "these groups are not exists: #{groups}",
           data: params
@@ -74,7 +65,7 @@ module Icinga2
       end
 
       Network.put(
-        url: format( '%s/objects/users/%s', @icinga_api_url_base, name ),
+        url: format( '%s/objects/users/%s', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options,
         payload: payload
@@ -84,53 +75,51 @@ module Icinga2
     # delete a user
     #
     # @param [Hash] params
-    # @option params [String] :name user to delete
+    # @option params [String] :user_name user to delete
     #
     # @example
-    #   @icinga.delete_user(name: 'foo')
+    #   @icinga.delete_user(user_name: 'foo')
     #
     # @return [Hash] result
     #
-    def delete_user( params = {} )
+    def delete_user( params )
 
-      name = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing user name'
-        }
-      end
+      user_name = params.dig(:user_name)
+
+      raise ArgumentError.new('Missing user_name') if( user_name.nil? )
 
       Network.delete(
-        url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, name ),
+        url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options
       )
     end
 
-    # returns all users
+    # returns a named or all users
     #
     # @param [Hash] params
-    # @option params [String] :name ('') optional for a single user
+    # @option params [String] :user_name ('') optional for a single user
     #
     # @example to get all users
     #    @icinga.users
     #
     # @example to get one user
-    #    @icinga.users(name: 'icingaadmin')
+    #    @icinga.users(user_name: 'icingaadmin')
     #
-    # @return [Hash] returns a hash with all users
+    # @return [Hash] returns a hash
     #
     def users( params = {} )
 
-      name = params.dig(:name)
+      user_name = params.dig(:user_name)
 
       url =
-      if( name.nil? )
+      if( user_name.nil? )
         format( '%s/objects/users'   , @icinga_api_url_base )
       else
-        format( '%s/objects/users/%s', @icinga_api_url_base, name )
+        format( '%s/objects/users/%s', @icinga_api_url_base, user_name )
       end
 
       data = Network.api_data(
@@ -144,20 +133,24 @@ module Icinga2
       nil
     end
 
-    # returns true if the user exists
+    # checks if the user exists
     #
-    # @param [String] name the name of the user
+    # @param [String] user_name the name of the user
     #
     # @example
     #    @icinga.exists_user?('icingaadmin')
     #
     # @return [Bool] returns true if the user exists
-    def exists_user?( name )
+    #
+    def exists_user?( user_name )
 
-      result = users( name: name )
-      result = JSON.parse( result ) if  result.is_a?( String )
+      raise ArgumentError.new('only String are allowed') unless( user_name.is_a?(String) )
+      raise ArgumentError.new('Missing user_name') if( user_name.size.zero? )
 
-      return true if  !result.nil? && result.is_a?(Array)
+      result = users( user_name: user_name )
+      result = JSON.parse( result ) if( result.is_a?(String) )
+
+      return true if( !result.nil? && result.is_a?(Array) )
 
       false
     end

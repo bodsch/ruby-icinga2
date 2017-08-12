@@ -17,24 +17,16 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def add_hostgroup(params = {})
+    def add_hostgroup( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host_group   = params.dig(:host_group)
       display_name = params.dig(:display_name)
 
-      if( host_group.nil? )
-        {
-          status: 404,
-          message: 'no name for the hostgroup'
-        }
-      end
-
-      if( display_name.nil? )
-        {
-          status: 404,
-          message: 'no display name for the hostgroup'
-        }
-      end
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
+      raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
       Network.put(
         url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
@@ -54,16 +46,14 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_hostgroup(params = {})
+    def delete_hostgroup(  params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host_group = params.dig(:host_group)
 
-      if host_group.nil?
-        {
-          status: 404,
-          message: 'no name for the hostgroup'
-        }
-      end
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
       Network.delete(
         url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
@@ -109,15 +99,19 @@ module Icinga2
 
     # returns true if the hostgroup exists
     #
-    # @param [String] name the name of the hostgroup
+    # @param [String] host_group the name of the hostgroup
     #
     # @example
     #    @icinga.exists_hostgroup?('linux-servers')
     #
     # @return [Bool] returns true if the hostgroup exists
     #
-    def exists_hostgroup?(name)
-      result = hostgroups(host_group: name)
+    def exists_hostgroup?(host_group)
+
+      raise ArgumentError.new('only String are allowed') unless( host_group.is_a?(String) )
+      raise ArgumentError.new('Missing host_group') if( host_group.size.zero? )
+
+      result = hostgroups(host_group: host_group)
       result = JSON.parse( result ) if  result.is_a?( String )
 
       return true if  !result.nil? && result.is_a?(Array)

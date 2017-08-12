@@ -17,24 +17,16 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def add_servicegroup( params = {} )
+    def add_servicegroup( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
       display_name = params.dig(:display_name)
 
-      if( service_group.nil? )
-        {
-          status: 404,
-          message: 'missing service group name'
-        }
-      end
-
-      if( display_name.nil? )
-        {
-          status: 404,
-          message: 'missing display_name for service group'
-        }
-      end
+      raise ArgumentError.new('Missing service_group') if( service_group.nil? )
+      raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
       payload = { 'attrs' => { 'display_name' => display_name } }
 
@@ -56,16 +48,14 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_servicegroup( params = {} )
+    def delete_servicegroup( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
 
-      if( service_group.nil? )
-        return {
-          status: 404,
-          message: 'missing servicegroup name'
-        }
-      end
+      raise ArgumentError.new('Missing service_group') if( service_group.nil? )
 
       Network.delete(
         url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
@@ -109,17 +99,22 @@ module Icinga2
       nil
     end
 
-    # returns true if the servicegroup exists
+    # checks if the servicegroup exists
     #
-    # @param [String] name the name of the servicegroups
+    # @param [String] service_group the name of the servicegroup
     #
     # @example
     #    @icinga.exists_servicegroup?('disk')
     #
     # @return [Bool] returns true if the servicegroup exists
     #
-    def exists_servicegroup?( name )
-      result = servicegroups( service_group: name )
+    def exists_servicegroup?( service_group )
+
+      raise ArgumentError.new('only String are allowed') unless( service_group.is_a?(String) )
+      raise ArgumentError.new('Missing service_group') if( service_group.size.zero? )
+
+
+      result = servicegroups( service_group: service_group )
       result = JSON.parse( result ) if  result.is_a?( String )
 
       return true if  !result.nil? && result.is_a?(Array)

@@ -32,7 +32,10 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def add_host( params = {} )
+    def add_host( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host               = params.dig(:host)
       fqdn               = params.dig(:fqdn)
@@ -46,12 +49,14 @@ module Icinga2
       action_url         = params.dig(:action_url)
       vars               = params.dig(:vars) || {}
 
-      if( host.nil? )
-        {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('only true or false for notifications are allowed') unless( notifications.is_a?(TrueClass) || notifications.is_a?(FalseClass) )
+      raise ArgumentError.new('only Integer for max_check_attempts are allowed') unless( max_check_attempts.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for check_interval are allowed') unless( check_interval.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for retry_interval are allowed') unless( retry_interval.is_a?(Integer) )
+      raise ArgumentError.new('only String for notes are allowed') unless( notes.is_a?(String) || notes.nil? )
+      raise ArgumentError.new('only String for notes_url are allowed') unless( notes_url.is_a?(String) || notes_url.nil? )
+      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
       if( fqdn.nil? )
         # build FQDN
@@ -79,7 +84,7 @@ module Icinga2
         payload['attrs']['zone'] = @icinga_satellite
       end
 
-      logger.debug( JSON.pretty_generate( payload ) )
+      # logger.debug( JSON.pretty_generate( payload ) )
 
       Network.put(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
@@ -99,16 +104,14 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_host( params = {} )
+    def delete_host( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host = params.dig(:host)
 
-      if( host.nil? )
-        {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
 
       Network.delete(
         url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
@@ -157,16 +160,19 @@ module Icinga2
 
     # returns true if the host exists
     #
-    # @param [String] name
+    # @param [String] host_name
     #
     # @example
     #    @icinga.exists_host?('icinga2')
     #
     # @return [Bool]
     #
-    def exists_host?( name )
+    def exists_host?( host_name )
 
-      result = hosts( host: name )
+      raise ArgumentError.new('only String are allowed') unless( host_name.is_a?(String) )
+      raise ArgumentError.new('Missing host_name') if( host_name.size.zero? )
+
+      result = hosts( host: host_name )
       result = JSON.parse( result ) if  result.is_a?( String )
 
       return true if  !result.nil? && result.is_a?(Array)
@@ -194,6 +200,11 @@ module Icinga2
       attrs   = params.dig(:attrs)
       filter  = params.dig(:filter)
       joins   = params.dig(:joins)
+
+#       raise ArgumentError.new('only Array for attrs are allowed') unless( attrs.is_a?(Hash) )
+#       raise ArgumentError.new('only Array for filter are allowed') unless( filter.is_a?(Hash) )
+#       raise ArgumentError.new('only Array for joins are allowed') unless( joins.is_a?(Hash) )
+
       payload = {}
       results = nil
 
@@ -281,7 +292,7 @@ module Icinga2
     #
     def list_hosts_with_problems( max_items = 5 )
 
-      puts( "list_hosts_with_problems( #{max_items} )" )
+      raise ArgumentError.new('only Integer for max_items are allowed') unless( max_items.is_a?(Integer) )
 
       @host_problems = {}
       @host_problems_severity = {}
@@ -321,12 +332,18 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def host_severity( host )
+    def host_severity( params )
 
-      attrs           = host.dig('attrs')
-      state           = attrs.dig('state')
-      acknowledgement = attrs.dig('acknowledgement') || 0
-      downtime_depth  = attrs.dig('downtime_depth')  || 0
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      state           = params.dig('attrs','state')
+      acknowledgement = params.dig('attrs','acknowledgement') || 0
+      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+
+      raise ArgumentError.new('only Integer for state are allowed') unless( state.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for acknowledgement are allowed') unless( acknowledgement.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for downtime_depth are allowed') unless( downtime_depth.is_a?(Integer) )
 
       severity = 0
 
