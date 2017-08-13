@@ -142,9 +142,9 @@ module Icinga2
       nil
     end
 
-
+    protected
     # function for host notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] name
@@ -152,7 +152,6 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def host_notification( params = {} )
 
       name          = params.dig(:name)
@@ -173,7 +172,7 @@ module Icinga2
     end
 
     # function for hostgroup notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] host_group
@@ -181,7 +180,6 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def hostgroup_notification( params = {} )
 
       group         = params.dig(:host_group)
@@ -203,7 +201,7 @@ module Icinga2
     end
 
     # function for service notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] name
@@ -211,7 +209,6 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def service_notification( params = {} )
 
       name          = params.dig(:name)

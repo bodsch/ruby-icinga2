@@ -46,7 +46,7 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_hostgroup(  params )
+    def delete_hostgroup( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -75,7 +75,7 @@ module Icinga2
     #
     # @return [Hash] returns a hash with all hostgroups
     #
-    def hostgroups(params = {})
+    def hostgroups( params = {} )
 
       host_group = params.dig(:host_group)
 
@@ -106,7 +106,7 @@ module Icinga2
     #
     # @return [Bool] returns true if the hostgroup exists
     #
-    def exists_hostgroup?(host_group)
+    def exists_hostgroup?( host_group )
 
       raise ArgumentError.new('only String are allowed') unless( host_group.is_a?(String) )
       raise ArgumentError.new('Missing host_group') if( host_group.size.zero? )

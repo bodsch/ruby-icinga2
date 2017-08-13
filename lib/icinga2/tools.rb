@@ -13,7 +13,7 @@ module Icinga2
     #
     # @return [Bool]
     #
-    def object_has_been_checked?(object)
+    def object_has_been_checked?( object )
       object.dig('attrs', 'last_check').positive?
     end
 
@@ -23,7 +23,7 @@ module Icinga2
     #
     # @return [String, String]
     #
-    def parse_version(version)
+    def parse_version( version )
 
       # version = "v2.4.10-504-gab4ba18"
       # version = "v2.4.10"
@@ -46,23 +46,25 @@ module Icinga2
     # return count of handled problems
     #
     # @param [Hash] objects
-    # @param [Integer] state
+    # @param [Integer] state (nil)
     #
     # @example for host objects
     #    h_objects = @icinga.host_objects
-    #    warning = @icinga.count_problems(h_objects, Icinga2::HOSTS_DOWN)
+    #    all = @icinga.count_problems(h_objects)
+    #    down = @icinga.count_problems(h_objects, Icinga2::HOSTS_DOWN)
+    #    critical = @icinga.count_problems(h_objects, Icinga2::HOSTS_CRITICAL)
+    #    unknown = @icinga.count_problems(h_objects, Icinga2::HOSTS_UNKNOWN)
     #
     # @example for service objects
     #    s_objects = @icinga.service_objects
+    #    all = @icinga.count_problems(s_objects)
     #    warning = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
     #    critical = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
     #    unknown = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
     #
     # @return [Integer]
     #
-    def count_problems(objects, state = nil )
-
-#       problems = 0
+    def count_problems( objects, state = nil )
 
       compare_states = []
 

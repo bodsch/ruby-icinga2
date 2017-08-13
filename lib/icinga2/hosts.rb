@@ -240,7 +240,10 @@ module Icinga2
             # global var for count of all host with a problem
             @hosts_problems      = count_problems(results)
             # global var for count of all gost with state HOSTS_DOWN
-            @hosts_problems_down = count_problems(results, Icinga2::HOSTS_DOWN)
+            @hosts_problems_down     = count_problems(results, Icinga2::HOSTS_DOWN)
+            @hosts_problems_critical = count_problems(results, Icinga2::HOSTS_CRITICAL)
+            @hosts_problems_unknown  = count_problems(results, Icinga2::HOSTS_UNKNOWN)
+
           end
         end
       end
@@ -248,38 +251,41 @@ module Icinga2
       results
     end
 
+    # returns adjusted hosts state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.host_objects
+    #    warning, critical, unknown = @icinga.hosts_adjusted
+    #
+    # @return [Array] (handled_problems, down_adjusted)
+    #
+    def hosts_adjusted
+
+      # calculate host problems adjusted by handled problems
+      # count togther handled host problems
+      handled_problems = @hosts_problems_down + @hosts_problems_critical + @hosts_problems_unknown
+      down_adjusted    = @hosts_down - handled_problems
+
+      [handled_problems, down_adjusted]
+    end
+
     # return count of hosts with problems
     #
     # @example
-    #    @icinga.host_problems
+    #    @icinga.count_hosts_with_problems
     #
     # @return [Integer]
     #
-#     def host_problems
-#
-#       data     = host_objects
-#       problems = 0
-#
-#       data = JSON.parse(data) if  data.is_a?(String)
-#       nodes = data.dig(:nodes)
-#
-#       unless( nodes.nil? )
-#
-#         nodes.each do |n|
-#
-#           attrs           = n.last.dig('attrs')
-#           state           = attrs.dig('state')           || 0
-#           downtime_depth  = attrs.dig('downtime_depth')  || 0
-#           acknowledgement = attrs.dig('acknowledgement') || 0
-#
-#           if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-#             problems += 1
-#           end
-#
-#         end
-#       end
-#       problems
-#     end
+    def count_hosts_with_problems
+
+      host_data = host_objects
+      host_data = JSON.parse(host_data) if  host_data.is_a?(String)
+
+      f = host_data.select { |t| t.dig('attrs','state') != 0 && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
+
+      f.size
+    end
 
     # return a list of host with problems
     #
@@ -294,8 +300,8 @@ module Icinga2
 
       raise ArgumentError.new('only Integer for max_items are allowed') unless( max_items.is_a?(Integer) )
 
-      @host_problems = {}
-      @host_problems_severity = {}
+      host_problems = {}
+      host_problems_severity = {}
 
       host_data = host_objects
       host_data = JSON.parse( host_data ) if host_data.is_a?(String)
@@ -308,17 +314,17 @@ module Icinga2
 
           next if state.to_i.zero?
 
-          @host_problems[name] = host_severity(h)
+          host_problems[name] = host_severity(h)
         end
       end
 
       # get the count of problems
       #
-      if( @host_problems.count != 0 )
-        @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+      if( host_problems.count != 0 )
+        host_problems.keys[1..max_items].each { |k,_v| host_problems_severity[k] = host_problems[k] }
       end
 
-      @host_problems_severity
+      host_problems_severity
     end
 
     # calculate a host severity
@@ -326,11 +332,18 @@ module Icinga2
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    # @param [Hash] host
+    # @param [Hash] params
+    # @option params [hash] attrs ()
+    #   * state [Float]
+    #   * acknowledgement [Float] (default: 0)
+    #   * downtime_depth [Float] (default: 0)
     #
     # @private
     #
-    # @return [Hash]
+    # @example
+    #   host_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
+    #
+    # @return [Integer]
     #
     def host_severity( params )
 
@@ -341,9 +354,9 @@ module Icinga2
       acknowledgement = params.dig('attrs','acknowledgement') || 0
       downtime_depth  = params.dig('attrs','downtime_depth')  || 0
 
-      raise ArgumentError.new('only Integer for state are allowed') unless( state.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for acknowledgement are allowed') unless( acknowledgement.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for downtime_depth are allowed') unless( downtime_depth.is_a?(Integer) )
+      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
+      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
 
       severity = 0
 
@@ -356,7 +369,7 @@ module Icinga2
           4
         end
 
-      severity += 16 if object_has_been_checked?(host)
+      severity += 16 if object_has_been_checked?(params)
 
       unless state.zero?
 
@@ -371,6 +384,66 @@ module Icinga2
       end
 
       severity
+    end
+
+    # returns a counter of all hosts
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_all
+    #
+    # @return [Integer]
+    #
+    def hosts_all
+      @hosts_all
+    end
+
+    # returns a counter of all hosts with problems (down, warning, unknown state)
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_problems
+    #
+    # @return [Integer]
+    #
+    def hosts_problems
+      @hosts_problems
+    end
+
+    # returns a counter of hosts with critical state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_down
+    #
+    # @return [Integer]
+    #
+    def hosts_down
+      @hosts_problems_down
+    end
+
+    # returns a counter of hosts with warning state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_critical
+    #
+    # @return [Integer]
+    #
+    def hosts_critical
+      @hosts_problems_critical
+    end
+
+    # returns a counter of hosts with unknown state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_unknown
+    #
+    # @return [Integer]
+    #
+    def hosts_unknown
+      @hosts_problems_unknown
     end
 
   end

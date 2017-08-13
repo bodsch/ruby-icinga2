@@ -13,7 +13,7 @@ module Icinga2
     # @option params [String] :services
     #
     # @todo
-    #  this function are not operable
+    #  this function is not operable
     #  need help, time or beer
     #
     # @return [Hash]
@@ -21,6 +21,9 @@ module Icinga2
     def add_services( params = {} )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      # TODO
+      puts 'add_services() ToDo'
 
       host_name = params.dig(:host)
       services  = params.dig(:services)
@@ -52,7 +55,7 @@ module Icinga2
     # @param [Hash] params
     #
     # @todo
-    #  this function are not operable
+    #  this function is not operable
     #  need help, time or beer
     #
     # @return [Nil]
@@ -61,9 +64,14 @@ module Icinga2
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
+      # TODO
+      puts 'unhandled_services() ToDo'
+
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
       # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
-      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST 'https://127.0.0.1:5665/objects/services' -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
+      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST
+      # 'https://127.0.0.1:5665/objects/services' #
+      # -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
 
     end
 
@@ -189,25 +197,42 @@ module Icinga2
 
           unless( all_services.nil? )
 
-            @services_all                       = all_services.size
-            @services_problems                  = count_problems(results)
-            @services_handled_warning_problems  = count_problems(results, Icinga2::SERVICE_STATE_WARNING)
-            @services_handled_critical_problems = count_problems(results, Icinga2::SERVICE_STATE_CRITICAL)
-            @services_handled_unknown_problems  = count_problems(results, Icinga2::SERVICE_STATE_UNKNOWN)
-
-            # read CIB data
-            cib_data
-
-            # calculate service problems adjusted by handled problems
-            @services_warning_adjusted  = @services_warning  - @services_handled_warning_problems
-            @services_critical_adjusted = @services_critical - @services_handled_critical_problems
-            @services_unknown_adjusted  = @services_unknown  - @services_handled_unknown_problems
+            @services_all              = all_services.size
+            @services_problems         = count_problems(results)
+            @services_handled_warning  = count_problems(results, Icinga2::SERVICE_STATE_WARNING)
+            @services_handled_critical = count_problems(results, Icinga2::SERVICE_STATE_CRITICAL)
+            @services_handled_unknown  = count_problems(results, Icinga2::SERVICE_STATE_UNKNOWN)
           end
         end
       end
 
       results
+    end
 
+    # returns adjusted service state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    warning, critical, unknown = @icinga.services_adjusted
+    #
+    # @return [Array] (warning_adjusted, critical_adjusted, unknown_adjusted)
+    #
+    def services_adjusted
+
+      warning          = @services_warning.nil?      ? 0 : @services_warning
+      critical         = @services_critical.nil?     ? 0 : @services_critical
+      unknown          = @services_unknown.nil?      ? 0 : @services_unknown
+      handled_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
+      handled_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
+      handled_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
+
+      # calculate service problems adjusted by handled problems
+      warning_adjusted  = warning  - handled_warning
+      critical_adjusted = critical - handled_critical
+      unknown_adjusted  = unknown  - handled_unknown
+
+      [warning_adjusted, critical_adjusted, unknown_adjusted]
     end
 
     # return count of services with problems
@@ -220,26 +245,11 @@ module Icinga2
     def count_services_with_problems
 
       service_data = service_objects
-      problems = 0
-
       service_data = JSON.parse(service_data) if service_data.is_a?(String)
 
-      unless( service_data.nil? )
+      f = service_data.select { |t| t.dig('attrs','state') != 0 && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
 
-        service_data.each do |n|
-
-          attrs           = n.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-        end
-      end
-
-      problems
+      f.size
     end
 
     # return a list of services with problems
@@ -324,7 +334,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def service_severity(service)
+    def service_severity( service )
 
       attrs           = service.dig('attrs')
       state           = attrs.dig('state')
@@ -375,6 +385,125 @@ module Icinga2
       end
 
       severity
+    end
+
+
+    # returns a counter of all services
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_all
+    #
+    # @return [Integer]
+    #
+    def services_all
+      @services_all
+    end
+
+    # returns a counter of all services with problems (critical, warning, unknown state)
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_problems
+    #
+    # @return [Integer]
+    #
+    def services_problems
+      @services_problems
+    end
+
+    # returns a counter of services with critical state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_critical
+    #
+    # @return [Integer]
+    #
+    def services_critical
+      @services_critical
+    end
+
+    # returns a counter of services with warning state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_warning
+    #
+    # @return [Integer]
+    #
+    def services_warning
+      @services_warning
+    end
+
+    # returns a counter of services with unknown state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_unknown
+    #
+    # @return [Integer]
+    #
+    def services_unknown
+      @services_unknown
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with critical state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_handled_critical
+    #
+    # @return [Integer]
+    #
+    def services_handled_critical
+      @services_handled_critical
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with warning state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_handled_warning
+    #
+    # @return [Integer]
+    #
+    def services_handled_warning
+      @services_handled_warning
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with unknown state
+    #
+    # @example
+    #    @icinga.service_objects
+    #    @icinga.services_handled_unknown
+    #
+    # @return [Integer]
+    #
+    def services_handled_unknown
+      @services_handled_unknown
+    end
+
+
+    #
+    # @deprecated use {services_handled_critical} instead.
+    #
+    def services_handled_critical_problems
+      @services_handled_critical
+    end
+
+    #
+    # @deprecated use {services_handled_warning} instead.
+    #
+    def services_handled_warning_problems
+      @services_handled_warning
+    end
+
+    #
+    # @deprecated use {services_handled_unknown} instead.
+    #
+    def services_handled_unknown_problems
+      @services_handled_unknown
     end
 
   end
