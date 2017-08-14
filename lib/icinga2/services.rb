@@ -8,19 +8,31 @@ module Icinga2
 
     # add services
     #
-    # @param [String] host
-    # @param [Hash] services
+    # @param [Hash] params
+    # @option params [String] :host
+    # @option params [String] :services
     #
+    # @todo
+    #  this function is not operable
+    #  need help, time or beer
     #
     # @return [Hash]
     #
-    def add_services( host, services = {} )
+    def add_services( params = {} )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      # TODO
+      puts 'add_services() ToDo'
+
+      host_name = params.dig(:host)
+      services  = params.dig(:services)
 
       services.each do |s,v|
 
         payload = {
           'templates' => [ 'generic-service' ],
-          'attrs'     => update_host( v, host )
+          'attrs'     => update_host( v, host_name )
         }
 
         logger.debug( s )
@@ -28,14 +40,12 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        Network.put(           host: host,
-          url: format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, host, s ),
+        Network.put(
+          url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
           headers: @headers,
           options: @options,
-          payload: payload)
-
-        logger.debug( result )
-
+          payload: payload
+        )
       end
 
     end
@@ -45,16 +55,23 @@ module Icinga2
     # @param [Hash] params
     #
     # @todo
-    #  this function are not operable
+    #  this function is not operable
     #  need help, time or beer
     #
     # @return [Nil]
     #
     def unhandled_services( params = {} )
 
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      # TODO
+      puts 'unhandled_services() ToDo'
+
       # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
       # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
-      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST 'https://127.0.0.1:5665/v1/objects/services' -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
+      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST
+      # 'https://127.0.0.1:5665/objects/services' #
+      # -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
 
     end
 
@@ -74,21 +91,27 @@ module Icinga2
     #
     def services( params = {} )
 
-      name    = params.dig(:host)
-      service = params.dig(:service)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
+      host_name = params.dig(:host)
+      service   = params.dig(:service)
 
       url =
       if( service.nil? )
-        format( '%s/v1/objects/services/%s', @icinga_api_url_base, name )
+        format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
       else
-        format( '%s/v1/objects/services/%s!%s', @icinga_api_url_base, name, service )
+        format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service )
       end
 
-      Network.get(         host: name,
+      data = Network.api_data(
         url: url,
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the service exists
@@ -102,23 +125,22 @@ module Icinga2
     #
     # @return [Bool]
     #
-    def exists_service?( params = {} )
+    def exists_service?( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host    = params.dig(:host)
       service = params.dig(:service)
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing service') if( service.nil? )
 
       result = services( host: host, service: service )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 
@@ -135,7 +157,7 @@ module Icinga2
     # @example
     #    @icinga.service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def service_objects( params = {} )
 
@@ -152,47 +174,82 @@ module Icinga2
         joins = ['host.name', 'host.state', 'host.acknowledgement', 'host.downtime_depth', 'host.last_check']
       end
 
-      payload['attrs'] = attrs unless  attrs.nil?
-      payload['filter'] = filter unless  filter.nil?
-      payload['joins'] = joins unless  joins.nil?
+      payload['attrs']  = attrs unless  attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+      payload['joins']  = joins unless  joins.nil?
 
-      Network.get(         host: nil,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+      data = Network.api_data(
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
+        payload: payload
+      )
 
+      status  = data.dig(:status)
+
+      if( status.nil? )
+
+        results = data.dig('results')
+
+        unless( results.nil? )
+
+          all_services = results.clone
+
+          unless( all_services.nil? )
+
+            @services_all              = all_services.size
+            @services_problems         = count_problems(results)
+            @services_handled_warning  = count_problems(results, Icinga2::SERVICE_STATE_WARNING)
+            @services_handled_critical = count_problems(results, Icinga2::SERVICE_STATE_CRITICAL)
+            @services_handled_unknown  = count_problems(results, Icinga2::SERVICE_STATE_UNKNOWN)
+          end
+        end
+      end
+
+      results
+    end
+
+    # returns adjusted service state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    warning, critical, unknown = @icinga.services_adjusted
+    #
+    # @return [Array] (warning_adjusted, critical_adjusted, unknown_adjusted)
+    #
+    def services_adjusted
+
+      warning          = @services_warning.nil?      ? 0 : @services_warning
+      critical         = @services_critical.nil?     ? 0 : @services_critical
+      unknown          = @services_unknown.nil?      ? 0 : @services_unknown
+      handled_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
+      handled_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
+      handled_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
+
+      # calculate service problems adjusted by handled problems
+      warning_adjusted  = warning  - handled_warning
+      critical_adjusted = critical - handled_critical
+      unknown_adjusted  = unknown  - handled_unknown
+
+      [warning_adjusted, critical_adjusted, unknown_adjusted]
     end
 
     # return count of services with problems
     #
     # @example
-    #    @icinga.service_problems
+    #    @icinga.count_services_with_problems
     #
     # @return [Integer]
     #
-    def service_problems
+    def count_services_with_problems
 
-      data     = service_objects
-      problems = 0
+      service_data = service_objects
+      service_data = JSON.parse(service_data) if service_data.is_a?(String)
 
-      data = JSON.parse(data) if  data.is_a?(String)
-      nodes = data.dig(:nodes)
+      f = service_data.select { |t| t.dig('attrs','state') != 0 && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
 
-      unless( nodes.nil? )
-
-        nodes.each do |n|
-          attrs           = n.last.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-        end
-      end
-      problems
+      f.size
     end
 
     # return a list of services with problems
@@ -200,42 +257,40 @@ module Icinga2
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    @icinga.problem_services
+    #    @icinga.list_services_with_problems
     #
-    # @return [Hash]
+    # @return [Array]
     #
-    def problem_services( max_items = 5 )
+    def list_services_with_problems( max_items = 5 )
 
-      service_problems = {}
-      service_problems_severity = {}
+      count_services_with_problems = {}
+      count_services_with_problems_severity = {}
 
       # only fetch the minimal attribute set required for severity calculation
       services_data = service_objects
-
-      if( services_data.is_a?(String) )
-        services_data = JSON.parse( services_data )
-      end
-
-      services_data = services_data.dig(:nodes)
+      services_data = JSON.parse( services_data ) if services_data.is_a?(String)
 
       unless( services_data.nil? )
 
-        services_data.each do |_service,v|
+        services_data.each do |s,_v|
 
-          name  = v.dig('name')
-          state = v.dig('attrs','state')
+          name  = s.dig('name')
+          state = s.dig('attrs','state')
           next if  state.zero?
 
-          service_problems[name] = service_severity(v)
+          count_services_with_problems[name] = service_severity(s)
         end
 
-        if( service_problems.count != 0 )
-          service_problems.sort.reverse!
-          service_problems = service_problems.keys[1..max_items].each { |k,_v| service_problems_severity[k] = service_problems[k] }
+        if( count_services_with_problems.count != 0 )
+          count_services_with_problems.sort.reverse!
+          count_services_with_problems = count_services_with_problems.keys[1..max_items].each { |k,_v| count_services_with_problems_severity[k] = count_services_with_problems[k] }
         end
       end
 
-      [service_problems, service_problems_severity]
+      @count_services_with_problems          = count_services_with_problems
+      @count_services_with_problems_severity = count_services_with_problems_severity
+
+      [count_services_with_problems, count_services_with_problems_severity]
     end
 
     # update host
@@ -268,23 +323,163 @@ module Icinga2
       hash
     end
 
+    # returns a counter of all services
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_all
+    #
+    # @return [Integer]
+    #
+    def services_all
+      @services_all
+    end
+
+    # returns a counter of all services with problems (critical, warning, unknown state)
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_problems
+    #
+    # @return [Integer]
+    #
+    def services_problems
+      @services_problems
+    end
+
+    # returns a counter of services with critical state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_critical
+    #
+    # @return [Integer]
+    #
+    def services_critical
+      @services_critical
+    end
+
+    # returns a counter of services with warning state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_warning
+    #
+    # @return [Integer]
+    #
+    def services_warning
+      @services_warning
+    end
+
+    # returns a counter of services with unknown state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_unknown
+    #
+    # @return [Integer]
+    #
+    def services_unknown
+      @services_unknown
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with critical state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_handled_critical
+    #
+    # @return [Integer]
+    #
+    def services_handled_critical
+      @services_handled_critical
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with warning state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_handled_warning
+    #
+    # @return [Integer]
+    #
+    def services_handled_warning
+      @services_handled_warning
+    end
+
+    # returns a counter of handled (acknowledged or downtimed) services with unknown state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.service_objects
+    #    @icinga.services_handled_unknown
+    #
+    # @return [Integer]
+    #
+    def services_handled_unknown
+      @services_handled_unknown
+    end
+
+
+    #
+    # @deprecated use {services_handled_critical} instead.
+    #
+    def services_handled_critical_problems
+      @services_handled_critical
+    end
+
+    #
+    # @deprecated use {services_handled_warning} instead.
+    #
+    def services_handled_warning_problems
+      @services_handled_warning
+    end
+
+    #
+    # @deprecated use {services_handled_unknown} instead.
+    #
+    def services_handled_unknown_problems
+      @services_handled_unknown
+    end
+
+    protected
     # calculate a service severity
     #
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    # @param [Hash] service
+    # @param [Hash] params
+    # @option params [hash] attrs ()
+    #   * state [Float]
+    #   * acknowledgement [Float] (default: 0)
+    #   * downtime_depth [Float] (default: 0)
     #
-    # @private
+    # @api protected
     #
-    # @return [Hash]
+    # @example
+    #   service_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
     #
-    def service_severity(service)
+    # @return [Integer]
+    #
+    def service_severity( params )
 
-      attrs           = service.dig('attrs')
-      state           = attrs.dig('state')
-      acknowledgement = attrs.dig('acknowledgement') || 0
-      downtime_depth  = attrs.dig('downtime_depth')  || 0
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      state           = params.dig('attrs','state')
+      acknowledgement = params.dig('attrs','acknowledgement') || 0
+      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+
+      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
+      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
 
       severity = 0
 
@@ -297,7 +492,7 @@ module Icinga2
           4
         end
 
-      severity += 16 if object_has_been_checked?(service)
+      severity += 16 if object_has_been_checked?(params)
 
       unless state.zero?
 
@@ -311,7 +506,7 @@ module Icinga2
           end
 
         # requires joins
-        host_attrs = service.dig('joins','host')
+        host_attrs = params.dig('joins','host')
         host_state           = host_attrs.dig('state')
         host_acknowledgement = host_attrs.dig('acknowledgement')
         host_downtime_depth  = host_attrs.dig('downtime_depth')

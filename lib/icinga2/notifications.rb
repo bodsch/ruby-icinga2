@@ -17,6 +17,9 @@ module Icinga2
     #
     def enable_host_notification( host )
 
+      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
+      raise ArgumentError.new('missing host') if( host.size.zero? )
+
       host_notification( name: host, enable_notifications: true )
     end
 
@@ -30,6 +33,9 @@ module Icinga2
     # @return [Hash]
     #
     def disable_host_notification( host )
+
+      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
+      raise ArgumentError.new('missing host') if( host.size.zero? )
 
       host_notification( name: host, enable_notifications: false )
     end
@@ -45,13 +51,8 @@ module Icinga2
     #
     def enable_service_notification( host )
 
-      if( host.nil? )
-
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
+      raise ArgumentError.new('missing host') if( host.size.zero? )
 
       service_notification( name: host, enable_notifications: true )
     end
@@ -67,12 +68,8 @@ module Icinga2
     #
     def disable_service_notification( host )
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
+      raise ArgumentError.new('missing host') if( host.size.zero? )
 
       service_notification( name: host, enable_notifications: false )
     end
@@ -88,24 +85,16 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def enable_hostgroup_notification( params = {} )
+    def enable_hostgroup_notification( params )
 
-      host = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      host       = params.dig(:host)
       host_group = params.dig(:host_group)
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
-
-      if( host_group.nil? )
-        return {
-          status: 404,
-          message: 'missing host_group name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
       hostgroup_notification( host: host, host_group: host_group, enable_notifications: true )
     end
@@ -121,49 +110,41 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def disable_hostgroup_notification( params = {} )
+    def disable_hostgroup_notification( params )
 
-      host = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      host       = params.dig(:host)
       host_group = params.dig(:host_group)
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
-
-      if( host_group.nil? )
-        return {
-          status: 404,
-          message: 'missing host_group name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
       hostgroup_notification( host: host, host_group: host_group, enable_notifications: false )
     end
 
     # return all notifications
     #
-    # @param [Hash] params
-    # @option params [String] name
     #
-    # @return [Hash]
+    # @return [Array]
     #
-    def notifications( params = {} )
+    def notifications
 
-      name = params.dig(:name)
-
-      Network.get(         host: name,
-        url: format( '%s/v1/objects/notifications/%s', @icinga_api_url_base, name ),
+      data = Network.api_data(
+        url: format( '%s/objects/notifications', @icinga_api_url_base ),
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
-
+    protected
     # function for host notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] name
@@ -171,7 +152,6 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def host_notification( params = {} )
 
       name          = params.dig(:name)
@@ -183,16 +163,16 @@ module Icinga2
         }
       }
 
-      Network.post(         host: name,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, name ),
+      Network.post(
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # function for hostgroup notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] host_group
@@ -200,10 +180,8 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def hostgroup_notification( params = {} )
 
-      host          = params.dig(:host)
       group         = params.dig(:host_group)
       notifications = params.dig(:enable_notifications) || false
 
@@ -214,16 +192,16 @@ module Icinga2
         }
       }
 
-      Network.post(         host: host,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+      Network.post(
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # function for service notifications
-    # @private
+    # @api protected
     #
     # @param [Hash] params
     # @option params [String] name
@@ -231,7 +209,6 @@ module Icinga2
     #
     # @return [Hash]
     #
-    private
     def service_notification( params = {} )
 
       name          = params.dig(:name)
@@ -244,12 +221,12 @@ module Icinga2
         }
       }
 
-      Network.post(         host: name,
-        url: format( '%s/v1/objects/services', @icinga_api_url_base ),
+      Network.post(
+        url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
   end

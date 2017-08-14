@@ -3,7 +3,8 @@ AllCops:
 
 AllCops:
   Exclude:
-    - bin/**/*
+    - examples/*
+    - spec/**/*
 
 # Disables "Use nested module/class definitions instead of compact style" warning
 ClassAndModuleChildren:
@@ -13,45 +14,43 @@ ClassAndModuleChildren:
 Metrics/ClassLength:
   Max: 200
 
-# Increases "Module has too many lines" warning from 100 to 200
-Metrics/ModuleLength:
-  Max: 200
+# Increases "Method has too many lines" warning from 10 to 75
+Metrics/MethodLength:
+  Max: 75
 
-# Increases "Assignment Branch Condition size" warning from 15 to 30
+# Increases "Module has too many lines" warning from 100 to 300
+Metrics/ModuleLength:
+  Max: 300
+
+# Increases "Assignment Branch Condition size" warning from 15 to 70
 Metrics/AbcSize:
-  Max: 50
+  Max: 70
+
+# Increases "Block has too many lines" warning from 25 to 190
+Metrics/BlockLength:
+  Max: 190
 
 # Disables "Missing top-level class documentation comment" warning
 Documentation:
   Enabled: false
 
-# Disables "Line is too long" warning
-LineLength:
-  Enabled: false
+# Increases "Line is too long" warning from 80 tp 200
+Metrics/LineLength:
+  Max: 200
+  Enabled: true
 
 CyclomaticComplexity:
   Enabled: false
-  
-PerceivedComplexity:
-  Enabled: false
 
-# Disables "Method has too many lines" warning
-MethodLength:
+PerceivedComplexity:
   Enabled: false
 
 Style/Encoding:
   Enabled: false
 
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
 Layout:
   Enabled: False
-
-
-
-#Metrics/MethodLength:
-#  Exclude:
-#    - 'Klass#method_with_large_hash'
-
-#Metrics/LineLength:
-#  Max: 120
-
 

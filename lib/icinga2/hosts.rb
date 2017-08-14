@@ -32,7 +32,10 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def add_host( params = {} )
+    def add_host( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host               = params.dig(:host)
       fqdn               = params.dig(:fqdn)
@@ -46,12 +49,14 @@ module Icinga2
       action_url         = params.dig(:action_url)
       vars               = params.dig(:vars) || {}
 
-      if( host.nil? )
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
+      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('only true or false for notifications are allowed') unless( notifications.is_a?(TrueClass) || notifications.is_a?(FalseClass) )
+      raise ArgumentError.new('only Integer for max_check_attempts are allowed') unless( max_check_attempts.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for check_interval are allowed') unless( check_interval.is_a?(Integer) )
+      raise ArgumentError.new('only Integer for retry_interval are allowed') unless( retry_interval.is_a?(Integer) )
+      raise ArgumentError.new('only String for notes are allowed') unless( notes.is_a?(String) || notes.nil? )
+      raise ArgumentError.new('only String for notes_url are allowed') unless( notes_url.is_a?(String) || notes_url.nil? )
+      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
       if( fqdn.nil? )
         # build FQDN
@@ -79,14 +84,14 @@ module Icinga2
         payload['attrs']['zone'] = @icinga_satellite
       end
 
-      logger.debug( JSON.pretty_generate( payload ) )
+      # logger.debug( JSON.pretty_generate( payload ) )
 
-      Network.put(         host: host,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
+      Network.put(
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # delete a host
@@ -99,23 +104,20 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_host( params = {} )
+    def delete_host( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host = params.dig(:host)
 
-      if( host.nil? )
+      raise ArgumentError.new('Missing host') if( host.nil? )
 
-        return {
-          status: 404,
-          message: 'missing host name'
-        }
-      end
-
-      Network.delete(         host: host,
-        url: format( '%s/v1/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
+      Network.delete(
+        url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
         headers: @headers,
-        options: @options )
-
+        options: @options
+      )
     end
 
     # return hosts
@@ -130,9 +132,9 @@ module Icinga2
     #    @icinga.hosts
     #
     # @example to get one host
-    #    @icinga.host(host: 'icinga2')
+    #    @icinga.hosts(host: 'icinga2')
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def hosts( params = {} )
 
@@ -141,33 +143,40 @@ module Icinga2
       filter = params.dig(:filter)
       joins  = params.dig(:joins)
 
-      payload['attrs'] = attrs unless  attrs.nil?
-      payload['filter'] = filter unless  filter.nil?
-      payload['joins'] = joins unless  joins.nil?
+      payload['attrs']  = attrs  unless attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+      payload['joins']  = joins  unless joins.nil?
 
-      Network.get(         host: host,
-        url: format( '%s/v1/objects/hosts/%s', @icinga_api_url_base, host ),
+      data = Network.api_data(
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the host exists
     #
-    # @param [String] name
+    # @param [String] host_name
     #
     # @example
     #    @icinga.exists_host?('icinga2')
     #
     # @return [Bool]
     #
-    def exists_host?( name )
+    def exists_host?( host_name )
 
-      result = hosts( name: name )
+      raise ArgumentError.new('only String are allowed') unless( host_name.is_a?(String) )
+      raise ArgumentError.new('Missing host_name') if( host_name.size.zero? )
+
+      result = hosts( host: host_name )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 
@@ -191,115 +200,224 @@ module Icinga2
       attrs   = params.dig(:attrs)
       filter  = params.dig(:filter)
       joins   = params.dig(:joins)
+
+#       raise ArgumentError.new('only Array for attrs are allowed') unless( attrs.is_a?(Hash) )
+#       raise ArgumentError.new('only Array for filter are allowed') unless( filter.is_a?(Hash) )
+#       raise ArgumentError.new('only Array for joins are allowed') unless( joins.is_a?(Hash) )
+
       payload = {}
+      results = nil
 
       if( attrs.nil? )
         attrs = %w[name state acknowledgement downtime_depth last_check]
       end
 
-      payload['attrs'] = attrs unless  attrs.nil?
-      payload['filter'] = filter unless  filter.nil?
-      payload['joins'] = joins unless  joins.nil?
+      payload['attrs']  = attrs  unless attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+      payload['joins']  = joins  unless joins.nil?
 
-      Network.get(         host: nil,
-        url: format( '%s/v1/objects/hosts', @icinga_api_url_base ),
+      data = Network.api_data(
+        url: format( '%s/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
+        payload: payload
+      )
 
+      status  = data.dig(:status)
+
+      if( status.nil? )
+
+        results = data.dig('results')
+
+        unless( results.nil? )
+
+          all_hosts = results.clone
+
+          unless( all_hosts.nil? )
+
+            # global var for count of all hosts
+            @hosts_all           = all_hosts.size
+            # global var for count of all host with a problem
+            @hosts_problems      = count_problems(results)
+            # global var for count of all gost with state HOSTS_DOWN
+            @hosts_problems_down     = count_problems(results, Icinga2::HOSTS_DOWN)
+            @hosts_problems_critical = count_problems(results, Icinga2::HOSTS_CRITICAL)
+            @hosts_problems_unknown  = count_problems(results, Icinga2::HOSTS_UNKNOWN)
+
+          end
+        end
+      end
+
+      results
+    end
+
+    # returns adjusted hosts state
+    #
+    # @example
+    #    @icinga.cib_data
+    #    @icinga.host_objects
+    #    handled, down = @icinga.hosts_adjusted
+    #
+    # @return [Array] (handled_problems, down_adjusted)
+    #
+    def hosts_adjusted
+
+      # calculate host problems adjusted by handled problems
+      # count togther handled host problems
+      handled_problems = @hosts_problems_down + @hosts_problems_critical + @hosts_problems_unknown
+      down_adjusted    = @hosts_down - handled_problems
+
+      [handled_problems, down_adjusted]
     end
 
     # return count of hosts with problems
     #
     # @example
-    #    @icinga.host_problems
+    #    @icinga.count_hosts_with_problems
     #
     # @return [Integer]
     #
-    def host_problems
+    def count_hosts_with_problems
 
-      data     = host_objects
-      problems = 0
+      host_data = host_objects
+      host_data = JSON.parse(host_data) if  host_data.is_a?(String)
 
-      data = JSON.parse(data) if  data.is_a?(String)
-      nodes = data.dig(:nodes)
+      f = host_data.select { |t| t.dig('attrs','state') != 0 && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
 
-      unless( nodes.nil? )
-
-        nodes.each do |n|
-
-          attrs           = n.last.dig('attrs')
-          state           = attrs.dig('state')           || 0
-          downtime_depth  = attrs.dig('downtime_depth')  || 0
-          acknowledgement = attrs.dig('acknowledgement') || 0
-
-          if( state != 0 && downtime_depth.zero? && acknowledgement.zero? )
-            problems += 1
-          end
-
-        end
-      end
-      problems
+      f.size
     end
 
-    # return a list of host with problems
+    # return a list of hosts with problems
     #
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    @icinga.problem_hosts
+    #    @icinga.list_hosts_with_problems
     #
     # @return [Hash]
     #
-    def problem_hosts( max_items = 5 )
+    def list_hosts_with_problems( max_items = 5 )
 
-      @host_problems = {}
-      @host_problems_severity = {}
+      raise ArgumentError.new('only Integer for max_items are allowed') unless( max_items.is_a?(Integer) )
+
+      host_problems = {}
+      host_problems_severity = {}
 
       host_data = host_objects
-
-      host_data = JSON.parse( host_data ) if  host_data.is_a?(String)
-      host_data = host_data.dig(:nodes)
+      host_data = JSON.parse( host_data ) if host_data.is_a?(String)
 
       unless( host_data.nil? )
 
-        host_data.each do |_host,v|
+        host_data.each do |h,_v|
+          name  = h.dig('name')
+          state = h.dig('attrs','state')
 
-          name  = v.dig('name')
-          state = v.dig('attrs','state')
+          next if state.to_i.zero?
 
-          next if  state.zero?
-
-          @host_problems[name] = host_severity(v)
-        end
-
-        # get the count of problems
-        #
-        if( @host_problems.count != 0 )
-          @host_problems.keys[1..max_items].each { |k,_v| @host_problems_severity[k] = @host_problems[k] }
+          host_problems[name] = host_severity(h)
         end
       end
-      @host_problems_severity
 
+      # get the count of problems
+      #
+      if( host_problems.count != 0 )
+        host_problems.keys[1..max_items].each { |k,_v| host_problems_severity[k] = host_problems[k] }
+      end
+
+      host_problems_severity
     end
 
+    # returns a counter of all hosts
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_all
+    #
+    # @return [Integer]
+    #
+    def hosts_all
+      @hosts_all
+    end
+
+    # returns a counter of all hosts with problems (down, warning, unknown state)
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_problems
+    #
+    # @return [Integer]
+    #
+    def hosts_problems
+      @hosts_problems
+    end
+
+    # returns a counter of hosts with critical state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_down
+    #
+    # @return [Integer]
+    #
+    def hosts_down
+      @hosts_problems_down
+    end
+
+    # returns a counter of hosts with warning state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_critical
+    #
+    # @return [Integer]
+    #
+    def hosts_critical
+      @hosts_problems_critical
+    end
+
+    # returns a counter of hosts with unknown state
+    #
+    # @example
+    #    @icinga.host_objects
+    #    @icinga.hosts_unknown
+    #
+    # @return [Integer]
+    #
+    def hosts_unknown
+      @hosts_problems_unknown
+    end
+
+    protected
     # calculate a host severity
     #
     # stolen from Icinga Web 2
     # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
     #
-    # @param [Hash] host
+    # @param [Hash] params
+    # @option params [hash] attrs ()
+    #   * state [Float]
+    #   * acknowledgement [Float] (default: 0)
+    #   * downtime_depth [Float] (default: 0)
     #
-    # @private
+    # @api protected
     #
-    # @return [Hash]
+    # @example
+    #   host_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
     #
-    def host_severity( host )
+    # @return [Integer]
+    #
+    def host_severity( params )
 
-      attrs           = host.dig('attrs')
-      state           = attrs.dig('state')
-      acknowledgement = attrs.dig('acknowledgement') || 0
-      downtime_depth  = attrs.dig('downtime_depth')  || 0
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      state           = params.dig('attrs','state')
+      acknowledgement = params.dig('attrs','acknowledgement') || 0
+      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+
+      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
+      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
 
       severity = 0
 
@@ -312,7 +430,7 @@ module Icinga2
           4
         end
 
-      severity += 16 if object_has_been_checked?(host)
+      severity += 16 if object_has_been_checked?(params)
 
       unless state.zero?
 

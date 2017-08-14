@@ -50,151 +50,245 @@ unless( i.nil? )
   #
   #
 
-  puts 'Information about Icinga2'
+  puts ''
+  puts ' ============================================================= '
+  puts '= icinga2 status'
+  puts i.status_data
+  puts ''
+
+  puts '= icinga2 application data'
   puts i.application_data
   puts ''
-  puts 'CIB'
+  puts '= CIB'
   puts i.cib_data
   puts ''
-  puts 'API Listener'
+  puts '= API Listener'
   puts i.api_listener
-
-  puts ''
-  puts format( 'version: %s, revision %s', i.version, i.revision )
-  puts format( 'start time: %s', i.start_time )
-  puts format( 'uptime: %s', i.uptime )
-
-  puts ''
-  puts format( 'count of all hosts: %d', i.hosts_all )
-  puts format( 'host down: %d', i.hosts_down )
-  puts format( 'hosts problems down: %d', i.hosts_problems_down )
-
-  puts ''
-  puts format( 'count of all services: %d', i.services_all )
-  puts format( 'services critical: %d', i.services_critical)
-  puts format( 'services warning: %d', i.services_warning)
-  puts format( 'services unknown: %d', i.services_unknown)
-  puts ''
-  puts format( 'services handled warning problems: %d', i.services_handled_warning_problems)
-  puts format( 'services handled critical problems: %d', i.services_handled_critical_problems)
-  puts format( 'services handled unknown problems: %d', i.services_handled_unknown_problems)
-  puts ''
-  puts format( 'services adjusted critical: %d', i.services_critical_adjusted)
-  puts format( 'services adjusted warning: %d',  i.services_warning_adjusted)
-  puts format( 'services adjusted unknown: %d',  i.services_unknown_adjusted)
   puts ''
 
-  puts 'check if Host \'icinga2\' exists'
-  puts i.exists_host?( 'icinga2' ) ? 'true' : 'false'
+  v, r = i.version
+  l, e = i.average_statistics
+  puts format( '= version: %s, revision %s', v, r )
+  puts format( '= avg_latency: %s, avg_execution_time %s', l, e )
+  puts format( '= start time: %s', i.start_time )
+  puts format( '= uptime: %s', i.uptime )
   puts ''
-  puts 'get host Objects'
-  puts i.host_objects
+
+  puts ' ------------------------------------------------------------- '
   puts ''
-  puts 'Host problems'
-  puts i.host_problems
+  puts ' ==> HOSTS'
   puts ''
-  puts 'Problem Hosts'
-  puts i.problem_hosts
+
+  i.cib_data
+  i.host_objects
+
+  p, a = i.hosts_adjusted
+
+  puts format( '= host handled problems : %d', p )
+  puts format( '= host down adjusted    : %d', a )
+
+  puts '= host objects'
+  puts format( '= count of all hosts : %d', i.hosts_all )
+  puts format( '= hosts with problems: %d', i.hosts_problems )
+  puts format( '= hosts are down     : %d', i.hosts_down )
+  puts format( '= hosts are critical : %d', i.hosts_critical )
+  puts format( '= hosts are unknown  : %d', i.hosts_unknown )
+  puts format( '= count hosts w. problems: %d', i.count_hosts_with_problems )
+
+  ['icinga2', 'bp-foo'].each do |h|
+    puts format( '= check if Host \'%s\' exists', h )
+    puts i.exists_host?( h ) ? 'true' : 'false'
+  end
+
   puts ''
-  puts 'list named Hosts'
-  puts i.hosts( host: 'icinga2' )
-  puts i.hosts( host: 'bp-cluster')
+  puts '= Problem Hosts'
+  puts i.list_hosts_with_problems
   puts ''
-  puts 'list all Hosts'
+
+  ['icinga2', 'bp-foo'].each do |h|
+    puts format('= list named Hosts \'%s\'', h )
+    puts i.hosts( host: h )
+  end
+
+  puts ''
+  puts '= list all Hosts'
   puts i.hosts
+  puts ' = delete Host'
+  puts i.delete_host( host: 'foo' )
+  puts ' = add Host'
+  puts i.add_host(
+     host: 'foo',
+     fqdn: 'foo.bar.com',
+     display_name: 'test node',
+     max_check_attempts: 5,
+     notes: 'test node'
+  )
+  puts ''
+  puts ' ------------------------------------------------------------- '
   puts ''
 
-  puts 'check if Hostgroup \'linux-servers\' exists'
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> HOSTGROUPS'
+  puts ''
+  puts '= check if Hostgroup \'linux-servers\' exists'
   puts i.exists_hostgroup?( 'linux-servers' ) ? 'true' : 'false'
   puts ''
-  puts 'add hostgroup \'foo\''
-  puts i.add_hostgroup( hosts_group: 'foo', display_name: 'FOO' )
+  puts '= list named Hostgroup \'linux-servers\''
+  puts i.hostgroups( host_group: 'linux-servers' )
+  puts '= list named Hostgroup \'foo\''
+  puts i.hostgroups( host_group: 'foo' )
   puts ''
-  puts 'list named Hostgroup \'foo\''
-  puts i.hostgroups( hosts_group: 'foo' )
-  puts ''
-  puts 'list all Hostgroups'
+  puts '= list all Hostgroups'
   puts i.hostgroups
   puts ''
-  puts 'delete Hostgroup \'foo\''
-  puts i.delete_hostgroup( hosts_group: 'foo' )
+  puts '= add hostgroup \'foo\''
+  puts i.add_hostgroup( host_group: 'foo', display_name: 'FOO' )
+  puts ''
+  puts '= delete Hostgroup \'foo\''
+  puts i.delete_hostgroup( host_group: 'foo' )
+  puts ''
+  puts ' ------------------------------------------------------------- '
   puts ''
 
-  puts 'check if service \'users\' on host \'icinga2\' exists'
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> SERVICES'
+  puts ''
+  i.service_objects
+
+  warning, critical, unknown = i.services_adjusted
+
+  puts format( '= count of all services: %d', i.services_all )
+  puts format( '= services critical: %d', i.services_critical)
+  puts format( '= services warning: %d', i.services_warning)
+  puts format( '= services unknown: %d', i.services_unknown)
+  puts ''
+  puts format( '= services handled warning problems: %d', i.services_handled_critical)
+  puts format( '= services handled critical problems: %d', i.services_handled_critical)
+  puts format( '= services handled unknown problems: %d', i.services_handled_unknown)
+  puts ''
+  puts format( '= services adjusted warning: %d',  warning)
+  puts format( '= services adjusted critical: %d', critical)
+  puts format( '= services adjusted unknown: %d',  unknown)
+  puts ''
+  puts '= check if service \'users\' on host \'icinga2\' exists'
   puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
   puts ''
-  puts 'get service Objects'
+  puts '= get service Objects'
   puts i.service_objects
   puts ''
-  puts 'Service problems'
-  puts i.service_problems
+  puts '= Services with problems'
+  puts i.count_services_with_problems
   puts ''
-  puts 'Problem Services'
-  a,_b = i.problem_services
+  puts '= Problem Services'
+  a,b = i.list_services_with_problems
   puts a
+  puts b
   puts ''
-  puts i.problem_services(10)
+  puts i.list_services_with_problems(10)
   puts ''
-  puts 'list named Service \'ping4\' from Host \'icinga2\''
+  puts '= list named Service \'ping4\' from Host \'icinga2\''
   puts i.services( host: 'icinga2', service: 'ping4' )
   puts ''
-  puts 'list all Services'
+  puts '= list all Services'
   puts i.services
   puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
 
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> SERVICEGROUPS'
+  puts ''
   puts 'check if Servicegroup \'disk\' exists'
   puts i.exists_servicegroup?( 'disk' ) ? 'true' : 'false'
-  puts ''
-  puts 'add Servicegroup \'foo\''
-  puts i.add_servicegroup( name: 'foo', display_name: 'FOO' )
+  puts 'check if Servicegroup \'foo\' exists'
+  puts i.exists_servicegroup?( 'foo' ) ? 'true' : 'false'
   puts ''
   puts 'list named Servicegroup \'foo\''
-  puts i.servicegroups( name: 'foo' )
+  puts i.servicegroups( service_group: 'foo' )
+  puts 'list named Servicegroup \'disk\''
+  puts i.servicegroups( service_group: 'disk' )
   puts ''
   puts 'list all Servicegroup'
   puts i.servicegroups
   puts ''
+  puts 'add Servicegroup \'foo\''
+  puts i.add_servicegroup( service_group: 'foo', display_name: 'FOO' )
+  puts ''
   puts 'delete Servicegroup \'foo\''
-  puts i.delete_servicegroup( name: 'foo' )
+  puts i.delete_servicegroup( service_group: 'foo' )
+  puts ''
+  puts ' ------------------------------------------------------------- '
   puts ''
 
-  puts 'check if Usergroup \'icingaadmins\' exists'
-  puts i.exists_usergroup?( 'icingaadmins' ) ? 'true' : 'false'
   puts ''
-  puts 'add Usergroup \'foo\''
-  puts i.add_usergroup( name: 'foo', display_name: 'FOO' )
+  puts ' ------------------------------------------------------------- '
   puts ''
-  puts 'list named Usergroup \'foo\''
-  puts i.usergroups( name: 'foo' )
+  puts ' ==> USERS'
   puts ''
-  puts 'list all Usergroup'
-  puts i.usergroups
-  puts ''
-  puts 'delete Usergroup \'foo\''
-  puts i.delete_usergroup( name: 'foo' )
-  puts ''
-
   puts 'check if User \'icingaadmin\' exists'
   puts i.exists_user?( 'icingaadmin' ) ? 'true' : 'false'
   puts ''
-  puts 'add User \'foo\''
-  puts i.add_user( name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'] )
-  puts ''
   puts 'list named User \'icingaadmin\''
-  puts i.users name: 'icingaadmin'
+  puts i.users( user_name: 'icingaadmin' )
   puts ''
   puts 'list all User'
   puts i.users
   puts ''
+  puts 'add User \'foo\''
+  puts i.add_user( user_name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'] )
+  puts ''
   puts 'delete User \'foo\''
-  puts i.delete_user( name: 'foo' )
+  puts i.delete_user( user_name: 'foo' )
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> USERGROUPS'
+  puts ''
+  puts 'check if Usergroup \'icingaadmins\' exists'
+  puts i.exists_usergroup?( 'icingaadmins' ) ? 'true' : 'false'
+  puts ''
+  puts 'list named Usergroup \'icingaadmins\''
+  puts i.usergroups( user_group: 'icingaadmins' )
+  puts ''
+  puts 'list all Usergroup'
+  puts i.usergroups
+  puts ''
+  puts 'add Usergroup \'foo\''
+  puts i.add_usergroup( user_group: 'foo', display_name: 'FOO' )
+  puts ''
+  puts 'delete Usergroup \'foo\''
+  puts i.delete_usergroup( user_group: 'foo' )
+  puts ''
+  puts ''
+  puts ' ------------------------------------------------------------- '
   puts ''
 
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> DOWNTIMES'
+  puts ''
   puts 'add Downtime \'test\''
-  puts i.add_downtime( name: 'test', type: 'service', host: 'icinga2', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+  puts i.add_downtime( name: 'test', type: 'service', host: 'foo', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
   puts ''
   puts 'list all Downtimes'
   puts i.downtimes
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> NOTIFICATIONS'
   puts ''
   puts 'list all Notifications'
   puts i.notifications
@@ -217,11 +311,54 @@ unless( i.nil? )
   puts 'disable Notifications for hostgroup'
   puts i.disable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
   puts ''
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
 
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> WORK QUEUE STATISTICS'
+  puts ''
   puts 'work queue statistics'
   puts i.work_queue_statistics
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+
+
+#   # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
+#   #
+#   # Get display_name, check_command attribute for services applied for filtered hosts matching host.address == 1.2.3.4.
+#   # Join the output with the hosts on which these checks run (services are applied to hosts)
+#   #
+#   puts i.service_objects(
+#     attrs: ["display_name", "check_command"],
+#     filter: "match(\"1.2.3.4\",host.address)" ,
+#     joins: ["host.name", "host.address"]
+#   )
+#
+#   puts ''
+#
+#   # Get all services in critical state and filter out the ones for which active checks are disabled
+#   # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
+#   #
+#   # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
+#   puts i.service_objects(
+#     attrs: ["display_name", "check_command", "enable_active_checks"],
+#     filter: "service.state==1" ,
+#     joins: ["host.name", "host.address"]
+#   )
+#
+#   puts ''
+#   # Get host name, address of hosts belonging to a specific hostgroup
+#   puts i.host_objects(
+#     attrs: ["display_name", "name", "address"],
+#     filter: "\"windows-servers\" in host.groups"
+#   )
 
 end
+
 
 # -----------------------------------------------------------------------------
 

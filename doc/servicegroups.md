@@ -1,22 +1,37 @@
 # Icinga2 - Servicegroups
 
 
-## add
-    add_servicegroup()
+## add a servicegroup
+    add_servicegroup( params )
+
+**example**
+    @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
+
+## delete a servicegroup
+    delete_servicegroup( params )
+
+**example**
+    @icinga.delete_servicegroup(service_group: 'foo')
 
 
-## delete
-    delete_servicegroup()
+## checks if the servicegroup exists
+    exists_servicegroup?( service_group )
 
+**example**
+    @icinga.exists_servicegroup?('disk')
 
-## check
-    exists_servicegroup?
 
 ## list
 
 ### named
-    servicegroups()
+    servicegroups( params )
+
+**example**
+    @icinga.servicegroups(service_group: 'disk')
 
 ### all
-    servicegroups()
+    servicegroups
+
+**example**
+    @icinga.servicegroups
 

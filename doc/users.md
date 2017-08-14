@@ -2,41 +2,42 @@
 
 
 ## add User
+    add_user( params )
 
-    var =  {
-      :name => 'foo',
-      :display_name => 'FOO',
-      :email => 'foo@bar.com',
-      :pager => '0000',
-      :groups => ['icingaadmins']
+**example**
+    params =  {
+      user_name: 'foo',
+      display_name: 'FOO',
+      email: 'foo@bar.com',
+      pager: '0000',
+      groups: ['icingaadmins']
     }
 
-    add_user var
+    @icinga.add_user( params )
 
-return `Hash`
 
 ## delete User
+    delete_user( params )
 
-    delete_user { :name => $USERNAME }
+**example**
+    @icinga.delete_user(user_name: 'foo')
 
-return `Hash`
 
-## list User
+## list
 
-### named User
+### named
+    users( params )
 
-    users { :name => $USERNAME }
+**example**
+    @icinga.users(user_name: 'icingaadmin')
 
-return `Hash`
-
-### all Users
-
+### all
     users
+**example**
+    @icinga.users
 
-return `Hash`
 
-## check, if User exists
+## checks if the user exists
 
-    exists_user? $USERNAME
-
-return `true` or `false`
+**example**
+    @icinga.exists_user?('icingaadmin')
