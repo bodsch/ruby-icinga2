@@ -26,7 +26,6 @@ describe Icinga2 do
     }
 
     @icinga2  = Icinga2::Client.new( config )
-    @icinga_host = 'icinga2-master.matrix.lan'
   end
 
   describe 'Information' do
@@ -113,8 +112,8 @@ describe Icinga2 do
 
   describe 'Module Host' do
 
-    it "list host '#{@icinga_host}'" do
-      h = @icinga2.hosts(host: @icinga_host)
+    it "list host 'c1-mysql-1'" do
+      h = @icinga2.hosts(host: 'c1-mysql-1')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -123,8 +122,8 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
-    it "exists host '#{@icinga_host}'" do
-      expect(@icinga2.exists_host?(@icinga_host)).to be_truthy
+    it "exists host 'c1-mysql-1'" do
+      expect(@icinga2.exists_host?('c1-mysql-1')).to be_truthy
     end
     it 'exists_host \'test\'' do
       expect(@icinga2.exists_host?('test')).to be_falsey
@@ -186,8 +185,8 @@ describe Icinga2 do
 
   describe 'Module Services' do
 
-    it "list services 'ping4' for host '#{@icinga_host}'" do
-      h = @icinga2.services( host: @icinga_host, service: 'ping4' )
+    it "list services 'ping4' for host 'c1-mysql-1'" do
+      h = @icinga2.services( host: 'c1-mysql-1', service: 'ping4' )
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -199,8 +198,8 @@ describe Icinga2 do
     it "exists service check 'ssh' for host 'c1-mysql-1'" do
       expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'ssh' )).to be_truthy
     end
-    it "exists service check 'hdb' for host '#{@icinga_host}'" do
-      expect(@icinga2.exists_service?( host: @icinga_host, service: 'hdb' )).to be_falsey
+    it "exists service check 'hdb' for host '#{'c1-mysql-1'}'" do
+      expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'hdb' )).to be_falsey
     end
     it 'count of all services with default parameters' do
       c = @icinga2.service_objects
@@ -324,7 +323,7 @@ describe Icinga2 do
   describe 'Module Downtimes' do
 
     it "add downtime 'test'" do
-      h = @icinga2.add_downtime( name: 'test', type: 'service', host: 'foo', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+      h = @icinga2.add_downtime( name: 'test', type: 'service', host: 'c1-mysql-1', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
       status_code = h[:status]
       expect(h).to be_a(Hash)
       expect(status_code).to be == 200
