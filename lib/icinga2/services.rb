@@ -323,71 +323,6 @@ module Icinga2
       hash
     end
 
-    # calculate a service severity
-    #
-    # stolen from Icinga Web 2
-    # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
-    #
-    # @param [Hash] service
-    #
-    # @private
-    #
-    # @return [Hash]
-    #
-    def service_severity( service )
-
-      attrs           = service.dig('attrs')
-      state           = attrs.dig('state')
-      acknowledgement = attrs.dig('acknowledgement') || 0
-      downtime_depth  = attrs.dig('downtime_depth')  || 0
-
-      severity = 0
-
-      severity +=
-        if acknowledgement != 0
-          2
-        elsif downtime_depth > 0
-          1
-        else
-          4
-        end
-
-      severity += 16 if object_has_been_checked?(service)
-
-      unless state.zero?
-
-        severity +=
-          if state == 1
-            32
-          elsif state == 2
-            64
-          else
-            256
-          end
-
-        # requires joins
-        host_attrs = service.dig('joins','host')
-        host_state           = host_attrs.dig('state')
-        host_acknowledgement = host_attrs.dig('acknowledgement')
-        host_downtime_depth  = host_attrs.dig('downtime_depth')
-
-        severity +=
-          if host_state > 0
-            1024
-          elsif host_acknowledgement
-            512
-          elsif host_downtime_depth > 0
-            256
-          else
-            2048
-          end
-
-      end
-
-      severity
-    end
-
-
     # returns a counter of all services
     #
     # @example
@@ -504,6 +439,84 @@ module Icinga2
     #
     def services_handled_unknown_problems
       @services_handled_unknown
+    end
+
+    protected
+    # calculate a service severity
+    #
+    # stolen from Icinga Web 2
+    # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
+    #
+    # @param [Hash] params
+    # @option params [hash] attrs ()
+    #   * state [Float]
+    #   * acknowledgement [Float] (default: 0)
+    #   * downtime_depth [Float] (default: 0)
+    #
+    # @api protected
+    #
+    # @example
+    #   service_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
+    #
+    # @return [Integer]
+    #
+    def service_severity( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      state           = params.dig('attrs','state')
+      acknowledgement = params.dig('attrs','acknowledgement') || 0
+      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+
+      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
+      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
+
+      severity = 0
+
+      severity +=
+        if acknowledgement != 0
+          2
+        elsif downtime_depth > 0
+          1
+        else
+          4
+        end
+
+      severity += 16 if object_has_been_checked?(params)
+
+      unless state.zero?
+
+        severity +=
+          if state == 1
+            32
+          elsif state == 2
+            64
+          else
+            256
+          end
+
+        # requires joins
+        host_attrs = service.dig('joins','host')
+        host_state           = host_attrs.dig('state')
+        host_acknowledgement = host_attrs.dig('acknowledgement')
+        host_downtime_depth  = host_attrs.dig('downtime_depth')
+
+        severity +=
+          if host_state > 0
+            1024
+          elsif host_acknowledgement
+            512
+          elsif host_downtime_depth > 0
+            256
+          else
+            2048
+          end
+
+      end
+
+      severity
     end
 
   end

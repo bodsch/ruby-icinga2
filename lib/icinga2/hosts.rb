@@ -287,7 +287,7 @@ module Icinga2
       f.size
     end
 
-    # return a list of host with problems
+    # return a list of hosts with problems
     #
     # @param [Integer] max_items numbers of list entries
     #
@@ -325,65 +325,6 @@ module Icinga2
       end
 
       host_problems_severity
-    end
-
-    # calculate a host severity
-    #
-    # stolen from Icinga Web 2
-    # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
-    #
-    # @param [Hash] params
-    # @option params [hash] attrs ()
-    #   * state [Float]
-    #   * acknowledgement [Float] (default: 0)
-    #   * downtime_depth [Float] (default: 0)
-    #
-    # @private
-    #
-    # @example
-    #   host_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
-    #
-    # @return [Integer]
-    #
-    def host_severity( params )
-
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
-
-      state           = params.dig('attrs','state')
-      acknowledgement = params.dig('attrs','acknowledgement') || 0
-      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
-
-      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
-      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
-      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
-
-      severity = 0
-
-      severity +=
-        if acknowledgement != 0
-          2
-        elsif downtime_depth > 0
-          1
-        else
-          4
-        end
-
-      severity += 16 if object_has_been_checked?(params)
-
-      unless state.zero?
-
-        severity +=
-          if state == 1
-            32
-          elsif state == 2
-            64
-          else
-            256
-          end
-      end
-
-      severity
     end
 
     # returns a counter of all hosts
@@ -444,6 +385,66 @@ module Icinga2
     #
     def hosts_unknown
       @hosts_problems_unknown
+    end
+
+    protected
+    # calculate a host severity
+    #
+    # stolen from Icinga Web 2
+    # ./modules/monitoring/library/Monitoring/Backend/Ido/Query/ServicestatusQuery.php
+    #
+    # @param [Hash] params
+    # @option params [hash] attrs ()
+    #   * state [Float]
+    #   * acknowledgement [Float] (default: 0)
+    #   * downtime_depth [Float] (default: 0)
+    #
+    # @api protected
+    #
+    # @example
+    #   host_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
+    #
+    # @return [Integer]
+    #
+    def host_severity( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      state           = params.dig('attrs','state')
+      acknowledgement = params.dig('attrs','acknowledgement') || 0
+      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+
+      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
+      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
+
+      severity = 0
+
+      severity +=
+        if acknowledgement != 0
+          2
+        elsif downtime_depth > 0
+          1
+        else
+          4
+        end
+
+      severity += 16 if object_has_been_checked?(params)
+
+      unless state.zero?
+
+        severity +=
+          if state == 1
+            32
+          elsif state == 2
+            64
+          else
+            256
+          end
+      end
+
+      severity
     end
 
   end
