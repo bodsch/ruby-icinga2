@@ -92,7 +92,7 @@ module Icinga2
     # @example
     #    @icinga.downtimes
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def downtimes
 

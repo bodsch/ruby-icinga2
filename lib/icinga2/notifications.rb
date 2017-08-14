@@ -127,7 +127,7 @@ module Icinga2
     # return all notifications
     #
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def notifications
 

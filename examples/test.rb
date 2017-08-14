@@ -327,7 +327,6 @@ unless( i.nil? )
   puts ''
 
 
-
 #   # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
 #   #
 #   # Get display_name, check_command attribute for services applied for filtered hosts matching host.address == 1.2.3.4.

@@ -46,7 +46,7 @@ module Icinga2
     # @example
     #   @icinga.delete_servicegroup(service_group: 'foo')
     #
-    # @return [Hash] result
+    # @return [Array] result
     #
     def delete_servicegroup( params )
 
@@ -75,7 +75,7 @@ module Icinga2
     # @example to get one user
     #    @icinga.servicegroups(service_group: 'disk')
     #
-    # @return [Hash] returns a hash with all servicegroups
+    # @return [Array] returns a hash with all servicegroups
     #
     def servicegroups( params = {} )
 

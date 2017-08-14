@@ -132,9 +132,9 @@ module Icinga2
     #    @icinga.hosts
     #
     # @example to get one host
-    #    @icinga.host(host: 'icinga2')
+    #    @icinga.hosts(host: 'icinga2')
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def hosts( params = {} )
 
@@ -256,7 +256,7 @@ module Icinga2
     # @example
     #    @icinga.cib_data
     #    @icinga.host_objects
-    #    warning, critical, unknown = @icinga.hosts_adjusted
+    #    handled, down = @icinga.hosts_adjusted
     #
     # @return [Array] (handled_problems, down_adjusted)
     #

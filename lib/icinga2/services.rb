@@ -157,7 +157,7 @@ module Icinga2
     # @example
     #    @icinga.service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def service_objects( params = {} )
 
@@ -259,7 +259,7 @@ module Icinga2
     # @example
     #    @icinga.list_services_with_problems
     #
-    # @return [Hash]
+    # @return [Array]
     #
     def list_services_with_problems( max_items = 5 )
 
@@ -326,6 +326,7 @@ module Icinga2
     # returns a counter of all services
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_all
     #
@@ -338,6 +339,7 @@ module Icinga2
     # returns a counter of all services with problems (critical, warning, unknown state)
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_problems
     #
@@ -350,6 +352,7 @@ module Icinga2
     # returns a counter of services with critical state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_critical
     #
@@ -362,6 +365,7 @@ module Icinga2
     # returns a counter of services with warning state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_warning
     #
@@ -374,6 +378,7 @@ module Icinga2
     # returns a counter of services with unknown state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_unknown
     #
@@ -386,6 +391,7 @@ module Icinga2
     # returns a counter of handled (acknowledged or downtimed) services with critical state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_handled_critical
     #
@@ -398,6 +404,7 @@ module Icinga2
     # returns a counter of handled (acknowledged or downtimed) services with warning state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_handled_warning
     #
@@ -410,6 +417,7 @@ module Icinga2
     # returns a counter of handled (acknowledged or downtimed) services with unknown state
     #
     # @example
+    #    @icinga.cib_data
     #    @icinga.service_objects
     #    @icinga.services_handled_unknown
     #
@@ -498,7 +506,7 @@ module Icinga2
           end
 
         # requires joins
-        host_attrs = service.dig('joins','host')
+        host_attrs = params.dig('joins','host')
         host_state           = host_attrs.dig('state')
         host_acknowledgement = host_attrs.dig('acknowledgement')
         host_downtime_depth  = host_attrs.dig('downtime_depth')
