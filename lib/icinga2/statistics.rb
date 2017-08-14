@@ -112,9 +112,9 @@ module Icinga2
         graphite_data  = results.find { |k| k['name'] == 'GraphiteWriter' }
         ido_mysql_data = results.find { |k| k['name'] == 'IdoMysqlConnection' }
 
-        json_rpc_data  = json_rpc_data.dig('status', 'api', 'json_rpc')
-        graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')
-        ido_mysql_data = ido_mysql_data.dig('status', 'idomysqlconnection', 'ido-mysql')
+        json_rpc_data  = json_rpc_data.dig('status', 'api', 'json_rpc') unless( json_rpc_data.nil? )
+        graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')       unless( graphite_data.nil? )
+        ido_mysql_data = ido_mysql_data.dig('status', 'idomysqlconnection', 'ido-mysql') unless( ido_mysql_data.nil? )
 
         a = {}
         a['json_rpc']  = json_rpc_data  if(json_rpc_data.is_a?(Hash))

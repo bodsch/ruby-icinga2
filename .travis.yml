@@ -1,7 +1,7 @@
 # .travis.yml
 language: ruby
 
-sudo: false
+sudo: required
 bundler_args: --retry=3 --jobs=3
 
 rvm:
@@ -9,12 +9,18 @@ rvm:
   - 2.3.3
   - 2.4.0
 
+services:
+  - docker
+
+before_install:
+  - gem install bundler
+  - docker pull bodsch/docker-icinga2:1708-33
+  - docker run --rm --publish=5665:5665 --env ICINGA_MASTER=icinga2.matrix.lan --env ICINGA_CLUSTER=true --env DEMO_DATA=true bodsch/docker-icinga2
+  - docker ps -a
+
 script: bundle exec rspec spec || true
 
 fast_finish: true
 
 gemfile:
   - Gemfile
-
-before_install:
-  - gem install bundler

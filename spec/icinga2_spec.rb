@@ -14,7 +14,7 @@ describe Icinga2 do
 
     config = {
       icinga: {
-        host: '192.168.33.5',
+        host: 'localhost',
         api: {
           port: 5665,
           user: 'root',
@@ -26,6 +26,7 @@ describe Icinga2 do
     }
 
     @icinga2  = Icinga2::Client.new( config )
+    @icinga_host = 'icinga2-master.matrix.lan'
   end
 
   describe 'Information' do
@@ -112,8 +113,8 @@ describe Icinga2 do
 
   describe 'Module Host' do
 
-    it 'list host \'icinga2\'' do
-      h = @icinga2.hosts(host: 'icinga2')
+    it "list host '#{@icinga_host}'" do
+      h = @icinga2.hosts(host: @icinga_host)
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -122,8 +123,8 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
-    it 'exists host \'icinga2\'' do
-      expect(@icinga2.exists_host?('icinga2')).to be_truthy
+    it "exists host '#{@icinga_host}'" do
+      expect(@icinga2.exists_host?(@icinga_host)).to be_truthy
     end
     it 'exists_host \'test\'' do
       expect(@icinga2.exists_host?('test')).to be_falsey
@@ -185,8 +186,8 @@ describe Icinga2 do
 
   describe 'Module Services' do
 
-    it 'list services \'ping4\' for host \'icinga2\'' do
-      h = @icinga2.services( host: 'icinga2', service: 'ping4' )
+    it "list services 'ping4' for host '#{@icinga_host}'" do
+      h = @icinga2.services( host: @icinga_host, service: 'ping4' )
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -195,11 +196,11 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
-    it 'exists service check \'users\' for host \'icinga2\'' do
-      expect(@icinga2.exists_service?(host: 'icinga2', service: 'users' )).to be_truthy
+    it "exists service check 'ssh' for host 'c1-mysql-1'" do
+      expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'ssh' )).to be_truthy
     end
-    it 'exists service check \'hdb\' for host \'icinga2\'' do
-      expect(@icinga2.exists_service?(host: 'icinga2', service: 'hdb' )).to be_falsey
+    it "exists service check 'hdb' for host '#{@icinga_host}'" do
+      expect(@icinga2.exists_service?( host: @icinga_host, service: 'hdb' )).to be_falsey
     end
     it 'count of all services with default parameters' do
       c = @icinga2.service_objects
@@ -299,14 +300,35 @@ describe Icinga2 do
   end
 
   describe 'Module Notification' do
+
+    it "enable notification for host 'c1-mysql-1'" do
+      h = @icinga2.enable_host_notification( 'c1-mysql-1' )
+      status_code = h[:status]
+      expect(h).to be_a(Hash)
+      expect(status_code).to be == 200
+    end
+    it "enable notification for host 'c1-mysql-1' and all services" do
+      h = @icinga2.enable_service_notification( 'c1-mysql-1' )
+      status_code = h[:status]
+      expect(h).to be_a(Hash)
+      expect(status_code).to be == 200
+    end
+
     it 'list notifications' do
       h = @icinga2.notifications
       expect(h).to be_a(Array)
-      expect(h.count).to be >= 1
+      expect(h.count).to be_a(Integer)
     end
   end
 
   describe 'Module Downtimes' do
+
+    it "add downtime 'test'" do
+      h = @icinga2.add_downtime( name: 'test', type: 'service', host: 'foo', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+      status_code = h[:status]
+      expect(h).to be_a(Hash)
+      expect(status_code).to be == 200
+    end
     it 'list downtimes' do
       h = @icinga2.downtimes
       expect(h).to be_a(Array)
