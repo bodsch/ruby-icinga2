@@ -14,7 +14,7 @@ services:
 
 before_install:
   - gem install bundler
-  - docker pull bodsch/docker-icinga2:1708-33
+  - docker pull bodsch/docker-icinga2:1708-33.1
   - docker run --rm --publish=5665:5665 --env ICINGA_MASTER=icinga2.matrix.lan --env ICINGA_CLUSTER=true --env DEMO_DATA=true bodsch/docker-icinga2
   - docker ps -a
 
