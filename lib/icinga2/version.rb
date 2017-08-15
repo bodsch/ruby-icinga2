@@ -9,11 +9,11 @@ module Icinga2
     # major part of version
     MAJOR = 0
     # minor part of version
-    MINOR = 7
+    MINOR = 8
     # tiny part of version
-    TINY  = 9
+    TINY  = 0
     # patch part
-    PATCH = 6
+    PATCH = 0
 
   end
 
