@@ -17,23 +17,23 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def add_hostgroup(params = {})
+    def add_hostgroup( params )
 
-      host_group = params.dig(:host_group)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      host_group   = params.dig(:host_group)
       display_name = params.dig(:display_name)
 
-      if host_group.nil?
-        return {
-          status: 404,
-          message: 'no name for the hostgroup'
-        }
-      end
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
+      raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
-      Network.put(url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, host_group),
+      Network.put(
+        url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options,
-        payload: { 'attrs' => { 'display_name' => display_name } })
-
+        payload: { 'attrs' => { 'display_name' => display_name } }
+      )
     end
 
     # delete a hostgroup
@@ -46,21 +46,20 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def delete_hostgroup(params = {})
+    def delete_hostgroup( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host_group = params.dig(:host_group)
 
-      if host_group.nil?
-        return {
-          status: 404,
-          message: 'no name for the hostgroup'
-        }
-      end
+      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
-      Network.delete(host: host_group,
-        url: format('%s/v1/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
+      Network.delete(
+        url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
         headers: @headers,
-        options: @options)
+        options: @options
+      )
     end
 
     # returns all usersgroups
@@ -72,36 +71,51 @@ module Icinga2
     #    @icinga.hostgroups
     #
     # @example to get one user
-    #    @icinga.hostgroups(name: 'linux-servers')
+    #    @icinga.hostgroups(host_group: 'linux-servers')
     #
     # @return [Hash] returns a hash with all hostgroups
     #
-    def hostgroups(params = {})
+    def hostgroups( params = {} )
 
       host_group = params.dig(:host_group)
 
-      Network.get(host: host_group,
-        url: format('%s/v1/objects/hostgroups/%s', @icinga_api_url_base, host_group),
-        headers: @headers,
-        options: @options)
+      url =
+      if( host_group.nil? )
+        format( '%s/objects/hostgroups'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/hostgroups/%s', @icinga_api_url_base, host_group )
+      end
 
+      data = Network.api_data(
+        url: url,
+        headers: @headers,
+        options: @options
+      )
+
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the hostgroup exists
     #
-    # @param [String] name the name of the hostgroup
+    # @param [String] host_group the name of the hostgroup
     #
     # @example
     #    @icinga.exists_hostgroup?('linux-servers')
     #
     # @return [Bool] returns true if the hostgroup exists
     #
-    def exists_hostgroup?(name)
-      result = hostgroups(host_group: name)
-      result = JSON.parse(result) if result.is_a?(String)
-      status = result.dig(:status)
+    def exists_hostgroup?( host_group )
 
-      return true if  !status.nil? && status == 200
+      raise ArgumentError.new('only String are allowed') unless( host_group.is_a?(String) )
+      raise ArgumentError.new('Missing host_group') if( host_group.size.zero? )
+
+      result = hostgroups(host_group: host_group)
+      result = JSON.parse( result ) if  result.is_a?( String )
+
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 

@@ -1,13 +1,5 @@
 # Icinga2 - Hosts
 
-<<<<<<< Updated upstream
-## add
-    vars = {
-      'aws' => false
-    }
-
-    addHost( 'foo-bar.lan', vars )
-=======
 ## <a name="add-host"></a>add a host
     add_host( params )
 
@@ -27,23 +19,10 @@
 
 ### Example
     @icinga.delete_host(host: 'foo')
->>>>>>> Stashed changes
 
-## delete
-    deleteHost( 'foo-bar.lan' )
 
 ## <a name="list-hosts"></a>list hosts
 
-<<<<<<< Updated upstream
-### named
-    hosts( 'foo-bar.lan' )
-
-### all
-    hosts()
-
-## check
-    existsHost()
-=======
 ### list a named host
     hosts( params )
 
@@ -133,21 +112,8 @@
 ### Example
     @icinga.host_objects
     @icinga.hosts_unknown
->>>>>>> Stashed changes
 
-##
-    host_objects
 
-<<<<<<< Updated upstream
-##
-    host_problems
-
-##
-    problem_hosts
-
-##
-    host_severity
-=======
 ## <a name="host-severity"></a>(protected) calculate a host severity
     host_severity( params )
 
@@ -155,4 +121,3 @@ original code are from [Icinga Web2](/modules/monitoring/library/Monitoring/Back
 
 ### Example
     host_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
->>>>>>> Stashed changes

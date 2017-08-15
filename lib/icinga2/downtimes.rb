@@ -32,7 +32,10 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def add_downtime( params = {} )
+    def add_downtime( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       name            = params.dig(:name)
       host_name       = params.dig(:host)
@@ -46,29 +49,14 @@ module Icinga2
 
       # sanitychecks
       #
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing downtime name'
-        }
-      end
-
-      if( %w[host service].include?(type.downcase) == false )
-        return {
-          status: 404,
-          message: "wrong downtype type. only 'host' or' service' allowed ('#{type}' giving"
-        }
-      else
-        # we need the first char as Uppercase
-        type = type.capitalize
-      end
-
-      if( !host_group.nil? && !host_name.nil? )
-        return {
-          status: 404,
-          message: 'choose host or host_group, not both'
-        }
-      end
+      raise ArgumentError.new('Missing name') if( name.nil? )
+      raise ArgumentError.new("wrong downtype type. only 'host' or' service' allowed ('#{type}' giving)") if( %w[host service].include?(type.downcase) == false )
+      raise ArgumentError.new('choose host or host_group, not both') if( !host_group.nil? && !host_name.nil? )
+      raise ArgumentError.new('Missing downtime author') if( author.nil? )
+      raise ArgumentError.new("these author ar not exists: #{author}") unless( exists_user?( author ) )
+      raise ArgumentError.new('Missing downtime comment') if( comment.nil? )
+      raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
+      raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )
 
       if( !host_name.nil? )
 
@@ -78,47 +66,10 @@ module Icinga2
         # check if hostgroup available ?
         #
         filter = format( '"%s" in host.groups', host_group )
-      else
-
-        return {
-          status: 404,
-          message: 'missing host or host_group for downtime'
-        }
-      end
-
-      if( comment.nil? )
-        return {
-          status: 404,
-          message: 'missing downtime comment'
-        }
-      end
-
-      if( author.nil? )
-        return {
-          status: 404,
-          message: 'missing downtime author'
-        }
-      elsif( exists_user?( author ) == false )
-        return {
-          status: 404,
-          message: "these author ar not exists: #{author}"
-        }
-      end
-
-      if( end_time.nil? )
-        return {
-          status: 404,
-          message: 'missing end_time'
-        }
-      elsif( end_time.to_i <= start_time )
-        return {
-          status: 404,
-          message: 'end_time are equal or smaller then start_time'
-        }
       end
 
       payload = {
-        'type'        => type,
+        'type'        => type.capitalize, # we need the first char as Uppercase
         'start_time'  => start_time,
         'end_time'    => end_time,
         'author'      => author,
@@ -128,45 +79,32 @@ module Icinga2
         'filter'      => filter
       }
 
-      Network.post(         host: name,
-        url: format( '%s/v1/actions/schedule-downtime', @icinga_api_url_base ),
+      Network.post(
+        url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
-
-      # schedule downtime for a host
-      #  --data '{ "type": "Host", "filter": "host.name==\"api_dummy_host_1\"", ... }'
-
-      # schedule downtime for all services of a host
-      #  --data '{ "type": "Service", "filter": "host.name==\"api_dummy_host_1\"", ... }'
-
-      # schedule downtime for all hosts and services in a hostgroup
-      #  --data '{ "type": "Host", "filter": "\"api_dummy_hostgroup\" in host.groups", ... }'
-
-      #  --data '{ "type": "Service", "filter": "\"api_dummy_hostgroup\" in host.groups)", ... }'
-
+        payload: payload
+      )
     end
 
     # return downtimes
     #
-    # @param [Hash] params
-    # @option params [String] :host
-    #
     # @example
     #    @icinga.downtimes
     #
-    # @return [Hash]
+    # @return [Array]
     #
-    def downtimes( params = {} )
+    def downtimes
 
-      host = params.dig(:host)
-
-      Network.get(         host: host,
-        url: format( '%s/v1/objects/downtimes/%s', @icinga_api_url_base, host ),
+      data = Network.api_data(
+        url: format( '%s/objects/downtimes'   , @icinga_api_url_base ),
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
   end

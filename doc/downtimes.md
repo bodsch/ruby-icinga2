@@ -1,13 +1,6 @@
 # Icinga2 - Downtimes
 
 
-<<<<<<< Updated upstream
-## add
-    add_downtime()
-
-## list
-    downtimes()
-=======
 ## <a name="add-downtime"></a>add a downtime
     add_downtime( params )
 
@@ -30,4 +23,3 @@
 
 ### Example
     @icinga.downtimes
->>>>>>> Stashed changes

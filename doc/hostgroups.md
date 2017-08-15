@@ -1,14 +1,6 @@
 # Icinga2 - Hostgroups
 
 
-<<<<<<< Updated upstream
-## add
-    add_hostgroup()
-
-
-## delete
-    delete_hostgroup()
-=======
 ## <a name="add-hostgroup"></a>add a hostgroup
     add_hostgroup( params )
 
@@ -21,22 +13,10 @@
 
 ### Example
     @icinga.delete_hostgroup(host_group: 'foo')
->>>>>>> Stashed changes
 
 
 ## <a name="list-hostgroups"></a>list hostgroups
 
-<<<<<<< Updated upstream
-### named
-    hostgroups()
-
-### all
-    hostgroups()
-
-
-## check
-    exists_hostgroup()
-=======
 ### list named hostgroup
     hostgroups( params )
 
@@ -55,4 +35,3 @@
 
 ### Example
     @icinga.exists_hostgroup?('linux-servers')
->>>>>>> Stashed changes

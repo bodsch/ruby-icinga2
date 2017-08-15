@@ -9,41 +9,32 @@ module Icinga2
     # add a user
     #
     # @param [Hash] params
-    # @option params [String] :name user to create
-    # @option params [String] :display_name the displayed name
+    # @option params [String] :user_name ('') user to create
+    # @option params [String] :display_name ('') the displayed name
     # @option params [String] :email ('') the user email
     # @option params [String] :pager ('') optional a pager
     # @option params [Bool] :enable_notifications (false) enable notifications for this user
     # @option params [Array] :groups ([]) a hash with groups
     #
     # @example
-    #   @icinga.add_user(name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'])
+    #   @icinga.add_user(user_name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'])
     #
     # @return [Hash] result
     #
-    def add_user( params = {} )
+    def add_user( params )
 
-      name          = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      user_name     = params.dig(:user_name)
       display_name  = params.dig(:display_name)
       email         = params.dig(:email)
       pager         = params.dig(:pager)
       notifications = params.dig(:enable_notifications) || false
       groups        = params.dig(:groups) || []
 
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing user name'
-        }
-      end
-
-      unless( groups.is_a?( Array ) )
-        return {
-          status: 404,
-          message: 'groups must be an array',
-          data: params
-        }
-      end
+      raise ArgumentError.new('Missing user_name') if( user_name.nil? )
+      raise ArgumentError.new('groups must be an array') unless( groups.is_a?( Array ) )
 
       payload = {
         'attrs' => {
@@ -73,90 +64,94 @@ module Icinga2
         }
       end
 
-      Network.put(         host: name,
-        url: format( '%s/v1/objects/users/%s', @icinga_api_url_base, name ),
+      Network.put(
+        url: format( '%s/objects/users/%s', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
-      # result:
-      #   {:status=>200, :name=>nil, :message=>"Object was created"}
+        payload: payload
+      )
     end
 
     # delete a user
     #
     # @param [Hash] params
-    # @option params [String] :name user to delete
+    # @option params [String] :user_name user to delete
     #
     # @example
-    #   @icinga.delete_user(name: 'foo')
+    #   @icinga.delete_user(user_name: 'foo')
     #
     # @return [Hash] result
     #
-    def delete_user( params = {} )
+    def delete_user( params )
 
-      name = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing user name'
-        }
-      end
+      user_name = params.dig(:user_name)
 
-      Network.delete(         host: name,
-        url: format( '%s/v1/objects/users/%s?cascade=1', @icinga_api_url_base, name ),
+      raise ArgumentError.new('Missing user_name') if( user_name.nil? )
+
+      Network.delete(
+        url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, user_name ),
         headers: @headers,
-        options: @options )
-
-      # result:
-      #   {:status=>200, :name=>"foo", :message=>"Object was deleted."}
+        options: @options
+      )
     end
 
-    # returns all users
+    # returns a named or all users
     #
     # @param [Hash] params
-    # @option params [String] :name ('') optional for a single user
+    # @option params [String] :user_name ('') optional for a single user
     #
     # @example to get all users
     #    @icinga.users
     #
     # @example to get one user
-    #    @icinga.users(name: 'icingaadmin')
+    #    @icinga.users(user_name: 'icingaadmin')
     #
-    # @return [Hash] returns a hash with all users
+    # @return [Hash] returns a hash
     #
     def users( params = {} )
 
-      name = params.dig(:name)
+      user_name = params.dig(:user_name)
 
-      Network.get(         host: name,
-        url: format( '%s/v1/objects/users/%s', @icinga_api_url_base, name ),
+      url =
+      if( user_name.nil? )
+        format( '%s/objects/users'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/users/%s', @icinga_api_url_base, user_name )
+      end
+
+      data = Network.api_data(
+        url: url,
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
-      # result:
-      #  - named user:
-      #   {:status=>200, :data=>{"icingaadmin"=>{:name=>"icingaadmin", :display_name=>"Icinga 2 Admin", :type=>"User"}}}
-      #  - all users:
-      #   {:status=>200, :data=>{"icingaadmin"=>{:name=>"icingaadmin", :display_name=>"Icinga 2 Admin", :type=>"User"}, "foo"=>{:name=>"foo", :display_name=>"FOO", :type=>"User"}}}
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
-    # returns true if the user exists
+    # checks if the user exists
     #
-    # @param [String] name the name of the user
+    # @param [String] user_name the name of the user
     #
     # @example
     #    @icinga.exists_user?('icingaadmin')
     #
     # @return [Bool] returns true if the user exists
-    def exists_user?( name )
+    #
+    def exists_user?( user_name )
 
-      result = users( name: name )
-      result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
+      raise ArgumentError.new('only String are allowed') unless( user_name.is_a?(String) )
+      raise ArgumentError.new('Missing user_name') if( user_name.size.zero? )
 
-      return true if  !status.nil? && status == 200
+      result = users( user_name: user_name )
+      result = JSON.parse( result ) if( result.is_a?(String) )
+
+      return true if( !result.nil? && result.is_a?(Array) )
+
       false
     end
 

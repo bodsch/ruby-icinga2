@@ -1,29 +1,13 @@
 # Icinga2 - Usergroups
 
 
-<<<<<<< Updated upstream
-    add_usergroup
-
-=======
 ## <a name="add-usergroup"></a>add a usergroup
     add_usergroup( params )
 
 ### Example
     @icinga.add_usergroup(user_group: 'foo', display_name: 'FOO')
->>>>>>> Stashed changes
-
-    delete_usergroup
-
-<<<<<<< Updated upstream
-
-    usergroups
 
 
-    exists_usergroup?
-
-
-
-=======
 ## <a name="delete-usergroup"></a>delete a usergroup
     delete_usergroup( params )
 
@@ -51,4 +35,3 @@
 
 ### Example
     @icinga.exists_usergroup?('icingaadmins')
->>>>>>> Stashed changes

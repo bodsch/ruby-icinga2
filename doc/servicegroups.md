@@ -1,26 +1,6 @@
 # Icinga2 - Servicegroups
 
 
-<<<<<<< Updated upstream
-## add
-    add_servicegroup()
-
-
-## delete
-    delete_servicegroup()
-
-
-## check
-    exists_servicegroup?
-
-## list
-
-### named
-    servicegroups()
-
-### all
-    servicegroups()
-=======
 ## <a name="add-servicegroup"></a>add a servicegroup
     add_servicegroup( params )
 
@@ -46,7 +26,6 @@
 
 #### Example
     @icinga.servicegroups
->>>>>>> Stashed changes
 
 
 ## <a name="servicegroup-exists"></a>checks if the servicegroup exists

@@ -1,25 +1,6 @@
 # Icinga2 - Notifications
 
 
-<<<<<<< Updated upstream
-## -
-    enable_host_notification( host )
-
-## -
-    disable_host_notification( host )
-
-## -
-    enable_service_notification( params = {} )
-
-## -
-    disable_service_notification( host )
-
-## -
-    enable_hostgroup_notification( group )
-
-## -
-    disable_hostgroup_notification( group )
-=======
 ## <a name="enable-host-notification"></a>enable host notifications
     enable_host_notification( host )
 
@@ -67,20 +48,8 @@
 
 ### Example
     @icinga.notifications
->>>>>>> Stashed changes
 
-## -
-    notifications( params = {} )
 
-<<<<<<< Updated upstream
-## -
-    host_notification( params = {} )
-
-## -
-    hostgroup_notification( params = {} )
-
-## -
-=======
 ## (protected) function for host notifications
     host_notification( params = {} )
 
@@ -88,5 +57,4 @@
     hostgroup_notification( params = {} )
 
 ## (protected) function for service notifications
->>>>>>> Stashed changes
     service_notification( params = {} )

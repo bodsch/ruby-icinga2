@@ -17,90 +17,74 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.get( params = {} )
+    def self.api_data( params )
 
-      host    = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload) || {}
-      result  = {}
-      max_retries   = 30
-      times_retried = 0
 
-      return get_with_payload( params ) if  payload.count >= 1
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
 
-      headers.delete( 'X-HTTP-Method-Override' )
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
-      result  = {}
-
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
+      max_retries = 10
+      retried     = 0
 
       begin
-
-        data     = rest_client.get( headers )
-        results  = JSON.parse( data.body )
-        results  = results.dig('results')
-
-        result[:status] = 200
-        result[:data] ||={}
-
-        results.each do |r|
-          attrs = r.dig('attrs')
-          if( !attrs.nil? )
-            result[:data][attrs['name']] = {
-              name: attrs['name'],
-              display_name: attrs['display_name'],
-              type: attrs['type']
-            }
-          else
-            result = r
-          end
-
+        if payload
+          headers['X-HTTP-Method-Override'] = 'GET'
+          payload = JSON.generate(payload)
+          res = rest_client.post(payload, headers)
+        else
+          res = rest_client.get(headers)
         end
+
       rescue RestClient::Unauthorized => e
 
-        result = {
+        return {
           status: 401,
-          name: host,
           message: 'unauthorized'
         }
 
-      rescue RestClient::ExceptionWithResponse => e
+      rescue RestClient::NotFound => e
 
-        error  = e.response ? e.response : nil
-        error  = JSON.parse( error )
+        message = format( 'not found (request %s)', url )
 
-        result = {
-          status: error['error'].to_i,
-          name: host,
-          message: error['status']
+        $stderr.puts( message )
+
+        return {
+          status: 404,
+          message: message
         }
+
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
+        if( retried < max_retries )
+          retried += 1
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
+          sleep(2)
           retry
         else
-          $stderr.puts(format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url ))
+
+          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          $stderr.puts( message )
 
           return {
             status: 500,
-            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+            message: message
           }
         end
       end
 
-      result
+      body = res.body
+      JSON.parse(body)
     end
 
     # static function for GET Requests without filters
@@ -115,168 +99,26 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.get_raw( params = {} )
+    def self.application_data( params )
 
-      host    = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
-      payload = params.dig(:payload) || {}
-      result  = {}
-      max_retries   = 30
-      times_retried = 0
 
-      return get_with_payload( params ) if  payload.count >= 1
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
 
-      headers.delete( 'X-HTTP-Method-Override' )
+      data    = Network.api_data( url: url, headers: headers, options: options )
 
-      result  = {}
+      return nil unless( data.dig(:status).nil? )
 
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
+      results = data.dig('results')
 
-      begin
-
-        data     = rest_client.get( headers )
-        results  = JSON.parse( data.body )
-        results  = results.dig('results')
-
-        result[:status] = 200
-        result[:data] ||={}
-
-        results.each do |r|
-
-          r.reject! { |x| x == 'perfdata' }
-          result[:data][r.dig('name')] = r.dig('status')
-        end
-
-      rescue RestClient::ExceptionWithResponse => e
-
-        error  = e.response ? e.response : nil
-        error  = JSON.parse( error )
-
-        result = {
-          status: error['error'].to_i,
-          name: host,
-          message: error['status']
-        }
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
-
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
-          retry
-        else
-          $stderr.puts(format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url ))
-
-          return {
-            status: 500,
-            message: format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          }
-        end
-      end
-
-      result
-    end
-
-
-    # static function for GET Requests with payload
-    # internal we use here an POST Request and overwrite a http header
-    #
-    # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
-    # @option params [Hash] :payload
-    #
-    #
-    # @return [Hash]
-    #
-    def self.get_with_payload( params = {} )
-
-      host    = params.dig(:host)
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-      payload = params.dig(:payload) || {}
-      result  = {}
-      max_retries   = 30
-      times_retried = 0
-
-      headers['X-HTTP-Method-Override'] = 'GET'
-
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
-
-      begin
-
-        response = rest_client.post(
-          JSON.generate( payload ),
-          headers
-        )
-
-        response_code = response.code
-        response_body = response.body
-        node         = {}
-
-        data    = JSON.parse( response_body )
-        results = data.dig('results')
-
-        unless( results.nil? )
-
-          results.each do |r|
-            node[r.dig('name')] = r
-          end
-
-          result = {
-            status: response_code,
-            nodes: node
-          }
-        end
-
-      rescue RestClient::ExceptionWithResponse => e
-
-        error  = e.response ? e.response : nil
-        error  = JSON.parse( error )
-
-        result = {
-          status: error['error'].to_i,
-          name: host,
-          message: error['status']
-        }
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH  => e
-
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
-          retry
-        else
-          $stderr.puts( 'Exiting request ...' )
-
-          return {
-            status: 500,
-            message: format( 'Errno::ECONNREFUSED for request: %s', url )
-          }
-        end
-      end
-
-      result
-
+      return results.first.dig('status') unless( results.nil? )
     end
 
     # static function for POST Requests
@@ -290,18 +132,26 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.post( params = {} )
+    def self.post( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
-      max_retries   = 30
-      times_retried = 0
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+
+      max_retries = 30
+      retried     = 0
+      result      = {}
 
       headers['X-HTTP-Method-Override'] = 'POST'
-
-      result  = {}
 
       rest_client = RestClient::Resource.new(
         URI.encode( url ),
@@ -354,21 +204,19 @@ module Icinga2
 
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
+        if( retried < max_retries )
+          retried += 1
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
+          sleep(2)
           retry
         else
-          $stderr.puts( 'Exiting request ...' )
+
+          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          $stderr.puts( message )
 
           return {
             status: 500,
-            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+            message: message
           }
         end
       end
@@ -388,19 +236,26 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.put( params = {} )
+    def self.put( params )
 
-      host    = params.dig(:host)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
       payload = params.dig(:payload)
-      max_retries   = 30
-      times_retried = 0
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+
+      max_retries = 30
+      retried     = 0
+      result      = {}
 
       headers['X-HTTP-Method-Override'] = 'PUT'
-
-      result  = {}
 
       rest_client = RestClient::Resource.new(
         URI.encode( url ),
@@ -408,81 +263,61 @@ module Icinga2
       )
 
       begin
-
         data = rest_client.put(
           JSON.generate( payload ),
           headers
         )
-
         data    = JSON.parse( data )
         results = data.dig('results').first
 
         unless( results.nil? )
-
           result = {
             status: results.dig('code').to_i,
             name: results.dig('name'),
             message: results.dig('status')
           }
-
         end
-
       rescue RestClient::ExceptionWithResponse => e
 
         error  = e.response ? e.response : nil
-
         error = JSON.parse( error ) if  error.is_a?( String )
 
-        results = error.dig( 'results' )
+        results = error.dig('results')
 
-        if( !results.nil? )
+        return { status: error.dig('error').to_i, message: error.dig('status'), error: results } if( results.nil? )
 
-          if( result.is_a?( Hash ) && result.count != 0 )
+        if( results.is_a?( Hash ) && results.count != 0 )
 
-            result = result.first
-
-            result = {
-              status: results.dig('code').to_i,
-              name: results.dig('name'),
-              message: results.dig('status'),
-              error: results.dig('errors')
-            }
-
-          else
-
-            result = {
-              status: 204,
-              name: host,
-              message: 'unknown result'
-            }
-          end
-
-        else
-
-          result = {
-            status: error.dig( 'error' ).to_i,
-            message: error.dig( 'status' )
+#          result = result.first
+          return {
+            status: results.dig('code').to_i,
+            name: results.dig('name'),
+            message: results.dig('status'),
+            error: results
           }
-
+        else
+          return {
+            status: results.first.dig('code').to_i,
+            message: format('%s (possible, object already exists)', results.first.dig('status') ),
+            error: results
+          }
         end
 
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
+        if( retried < max_retries )
+          retried += 1
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
+          sleep(2)
           retry
         else
-          $stderr.puts( 'Exiting request ...' )
+
+          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          $stderr.puts( message )
 
           return {
             status: 500,
-            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+            message: message
           }
         end
       end
@@ -500,13 +335,21 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.delete( params = {} )
+    def self.delete( params )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
-      max_retries   = 3
-      times_retried = 0
+
+      raise ArgumentError.new('Missing url') if( url.nil? )
+      raise ArgumentError.new('Missing headers') if( headers.nil? )
+      raise ArgumentError.new('Missing options') if( options.nil? )
+
+      max_retries = 3
+      retried     = 0
 
       headers['X-HTTP-Method-Override'] = 'DELETE'
 
@@ -544,40 +387,34 @@ module Icinga2
 
         results = error.dig('results')
 
-        result = if( !results.nil? )
-
+        result =
+        if( results.nil? )
+          {
+            status: error.dig( 'error' ).to_i,
+            message: error.dig( 'status' )
+          }
+        else
           {
             status: results.dig('code').to_i,
             name: results.dig('name'),
             message: results.dig('status')
           }
-
-        else
-
-          {
-            status: error.dig( 'error' ).to_i,
-#            :name        => results.dig('name'),
-            message: error.dig( 'status' )
-          }
-
-                 end
+        end
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
-        if( times_retried < max_retries )
-
-          times_retried += 1
-          $stderr.puts(format( 'Cannot execute request %s', url ))
-          $stderr.puts(format( '   cause: %s', e ))
-          $stderr.puts(format( '   retry %d / %d', times_retried, max_retries ))
-
-          sleep( 4 )
+        if( retried < max_retries )
+          retried += 1
+          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
+          sleep(2)
           retry
         else
-          $stderr.puts( 'Exiting request ...' )
+
+          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
+          $stderr.puts( message )
 
           return {
             status: 500,
-            message: format( 'Errno::ECONNREFUSED for request: %s', url )
+            message: message
           }
         end
       end
@@ -587,5 +424,3 @@ module Icinga2
 
   end
 end
-
-

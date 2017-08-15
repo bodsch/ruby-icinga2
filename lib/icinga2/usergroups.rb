@@ -9,25 +9,23 @@ module Icinga2
     # add a usergroup
     #
     # @param [Hash] params
-    # @option params [String] :name usergroup to create
+    # @option params [String] :user_group usergroup to create
     # @option params [String] :display_name the displayed name
     #
     # @example
-    #   @icinga.add_usergroup(name: 'foo', display_name: 'FOO')
+    #   @icinga.add_usergroup(user_group: 'foo', display_name: 'FOO')
     #
     # @return [Hash] result
     #
-    def add_usergroup( params = {} )
+    def add_usergroup( params )
 
-      name     = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      user_group   = params.dig(:user_group)
       display_name = params.dig(:display_name)
 
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing usergroup name'
-        }
-      end
+      raise ArgumentError.new('Missing user_group') if( user_group.nil? )
 
       payload = {
         'attrs' => {
@@ -35,82 +33,94 @@ module Icinga2
         }
       }
 
-      Network.put(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s', @icinga_api_url_base, name ),
+      Network.put(
+        url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group ),
         headers: @headers,
         options: @options,
-        payload: payload )
-
+        payload: payload
+      )
     end
 
     # delete a usergroup
     #
     # @param [Hash] params
-    # @option params [String] :name usergroup to delete
+    # @option params [String] :user_group usergroup to delete
     #
     # @example
-    #   @icinga.delete_usergroup(name: 'foo')
+    #   @icinga.delete_usergroup(user_group: 'foo')
     #
     # @return [Hash] result
     #
-    def delete_usergroup( params = {} )
+    def delete_usergroup( params )
 
-      name = params.dig(:name)
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      if( name.nil? )
-        return {
-          status: 404,
-          message: 'missing usergroup name'
-        }
-      end
+      user_group = params.dig(:user_group)
 
-      Network.delete(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s?cascade=1', @icinga_api_url_base, name ),
+      raise ArgumentError.new('Missing user_group') if( user_group.nil? )
+
+      Network.delete(
+        url: format( '%s/objects/usergroups/%s?cascade=1', @icinga_api_url_base, user_group ),
         headers: @headers,
-        options: @options )
-
+        options: @options
+      )
     end
 
     # returns all usersgroups
     #
     # @param [Hash] params
-    # @option params [String] :name ('') optional for a single usergroup
+    # @option params [String] :user_group ('') optional for a single usergroup
     #
     # @example to get all users
     #    @icinga.usergroups
     #
     # @example to get one user
-    #    @icinga.usergroups(name: 'icingaadmins')
+    #    @icinga.usergroups(user_group: 'icingaadmins')
     #
     # @return [Hash] returns a hash with all usergroups
     #
     def usergroups( params = {} )
 
-      name = params.dig(:name)
+      user_group = params.dig(:user_group)
 
-      Network.get(         host: name,
-        url: format( '%s/v1/objects/usergroups/%s', @icinga_api_url_base, name ),
+      url =
+      if( user_group.nil? )
+        format( '%s/objects/usergroups'   , @icinga_api_url_base )
+      else
+        format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group )
+      end
+
+      data = Network.api_data(
+        url: url,
         headers: @headers,
-        options: @options )
+        options: @options
+      )
 
+      return data.dig('results') if( data.dig(:status).nil? )
+
+      nil
     end
 
     # returns true if the usergroup exists
     #
-    # @param [String] name the name of the usergroups
+    # @param [String] user_group the name of the usergroups
     #
     # @example
     #    @icinga.exists_usergroup?('icingaadmins')
     #
     # @return [Bool] returns true if the usergroup exists
     #
-    def exists_usergroup?( name )
+    def exists_usergroup?( user_group )
 
-      result = usergroups( name: name )
+      raise ArgumentError.new('only String are allowed') unless( user_group.is_a?(String) )
+      raise ArgumentError.new('Missing user_group') if( user_group.size.zero? )
+
+      result = usergroups( user_group: user_group )
       result = JSON.parse( result ) if  result.is_a?( String )
-      status = result.dig(:status)
 
-      return true if  !status.nil? && status == 200
+      return true if  !result.nil? && result.is_a?(Array)
+
       false
     end
 
