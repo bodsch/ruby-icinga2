@@ -19,7 +19,7 @@ module Icinga2
       avg_latency        = @avg_latency.nil?        ? 0 : @avg_latency
       avg_execution_time = @avg_execution_time.nil? ? 0 : @avg_execution_time
 
-      [avg_latency.to_s, avg_execution_time.to_s]
+      [avg_latency.to_f, avg_execution_time.to_f]
     end
 
     # return statistic data for intervall data

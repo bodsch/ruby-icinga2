@@ -72,8 +72,8 @@ describe Icinga2 do
     it 'average' do
       @icinga2.cib_data
       latency, execution_time = @icinga2.average_statistics
-      expect(latency).to be_a(String)
-      expect(execution_time).to be_a(String)
+      expect(latency).to be_a(Float)
+      expect(execution_time).to be_a(Float)
     end
     it 'interval' do
       @icinga2.cib_data
@@ -161,6 +161,16 @@ describe Icinga2 do
       expect(h).to be >= 1
     end
 
+    it 'data with host problems' do
+      @icinga2.host_objects
+      h = @icinga2.host_problems
+      expect(h).to be_a(Array)
+      expect(h.count).to be == 4
+      expect(h[0]).to be_a(Integer)
+      expect(h[1]).to be_a(Integer)
+      expect(h[2]).to be_a(Integer)
+      expect(h[3]).to be_a(Integer)
+    end
   end
 
   describe 'Module Hostgroups' do
@@ -214,10 +224,12 @@ describe Icinga2 do
     it 'adjusted' do
       @icinga2.cib_data
       @icinga2.service_objects
-      warning, critical, unknown = @icinga2.services_adjusted
-      expect(warning).to be_a(Fixnum)
-      expect(critical).to be_a(Fixnum)
-      expect(unknown).to be_a(Fixnum)
+      a = @icinga2.services_adjusted
+      expect(a).to be_a(Array)
+      expect(a.count).to be == 3
+      expect(a[0]).to be_a(Fixnum)
+      expect(a[1]).to be_a(Fixnum)
+      expect(a[2]).to be_a(Fixnum)
     end
     it 'count of services with problems' do
       expect(@icinga2.count_services_with_problems).to be_a(Integer)
@@ -240,41 +252,19 @@ describe Icinga2 do
       @icinga2.service_objects
       expect(@icinga2.services_all).to be_a(Integer)
     end
-    it 'count of all services with problems (critical, warning, unknown state)' do
+
+    it 'data with handled (acknowledged or downtimed) service problems' do
       @icinga2.cib_data
       @icinga2.service_objects
-      expect(@icinga2.services_problems).to be_a(Integer)
+      s = @icinga2.service_problems_handled
+      expect(s).to be_a(Array)
+      expect(s.count).to be == 4
+      expect(s[0]).to be_a(Integer)
+      expect(s[1]).to be_a(Integer)
+      expect(s[2]).to be_a(Integer)
+      expect(s[3]).to be_a(Integer)
     end
-    it 'count of services with critical state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_critical).to be_a(Integer)
-    end
-    it 'count of services with warning state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_warning).to be_a(Integer)
-    end
-    it 'count of services with unknown state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_unknown).to be_a(Integer)
-    end
-    it 'count of handled (acknowledged or downtimed) services with critical state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_handled_critical).to be_a(Integer)
-    end
-    it 'count of handled (acknowledged or downtimed) services with warning state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_handled_warning).to be_a(Integer)
-    end
-    it 'count of handled (acknowledged or downtimed) services with unknown state' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      expect(@icinga2.services_handled_unknown).to be_a(Integer)
-    end
+
   end
 
   describe 'Module Servicegroups' do

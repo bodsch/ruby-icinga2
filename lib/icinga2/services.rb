@@ -216,23 +216,23 @@ module Icinga2
     #    @icinga.service_objects
     #    warning, critical, unknown = @icinga.services_adjusted
     #
-    # @return [Array] (warning_adjusted, critical_adjusted, unknown_adjusted)
+    # @return [Array] (service_adjusted_warning, service_adjusted_critical, service_adjusted_unknown)
     #
     def services_adjusted
 
-      warning          = @services_warning.nil?      ? 0 : @services_warning
-      critical         = @services_critical.nil?     ? 0 : @services_critical
-      unknown          = @services_unknown.nil?      ? 0 : @services_unknown
-      handled_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
-      handled_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
-      handled_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
+      service_warning          = @services_warning.nil?          ? 0 : @services_warning
+      service_critical         = @services_critical.nil?         ? 0 : @services_critical
+      service_unknown          = @services_unknown.nil?          ? 0 : @services_unknown
+      service_handled_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
+      service_handled_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
+      service_handled_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
 
       # calculate service problems adjusted by handled problems
-      warning_adjusted  = warning  - handled_warning
-      critical_adjusted = critical - handled_critical
-      unknown_adjusted  = unknown  - handled_unknown
+      service_adjusted_warning  = service_warning  - service_handled_warning
+      service_adjusted_critical = service_critical - service_handled_critical
+      service_adjusted_unknown  = service_unknown  - service_handled_unknown
 
-      [warning_adjusted, critical_adjusted, unknown_adjusted]
+      [service_adjusted_warning, service_adjusted_critical, service_adjusted_unknown]
     end
 
     # return count of services with problems
@@ -336,97 +336,23 @@ module Icinga2
       @services_all
     end
 
-    # returns a counter of all services with problems (critical, warning, unknown state)
+    # returns data with service problems they be handled (acknowledged or in downtime)
     #
     # @example
     #    @icinga.cib_data
     #    @icinga.service_objects
-    #    @icinga.services_problems
     #
-    # @return [Integer]
+    # @return [Array] (problems_all,problems_critical,problems_warning,problems_unknown)
     #
-    def services_problems
-      @services_problems
-    end
+    def service_problems_handled
 
-    # returns a counter of services with critical state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_critical
-    #
-    # @return [Integer]
-    #
-    def services_critical
-      @services_critical
-    end
+      problems_all      = @services_handled.nil?          ? 0 : @services_handled
+      problems_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
+      problems_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
+      problems_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
 
-    # returns a counter of services with warning state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_warning
-    #
-    # @return [Integer]
-    #
-    def services_warning
-      @services_warning
+      [problems_all,problems_critical,problems_warning,problems_unknown]
     end
-
-    # returns a counter of services with unknown state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_unknown
-    #
-    # @return [Integer]
-    #
-    def services_unknown
-      @services_unknown
-    end
-
-    # returns a counter of handled (acknowledged or downtimed) services with critical state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_handled_critical
-    #
-    # @return [Integer]
-    #
-    def services_handled_critical
-      @services_handled_critical
-    end
-
-    # returns a counter of handled (acknowledged or downtimed) services with warning state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_handled_warning
-    #
-    # @return [Integer]
-    #
-    def services_handled_warning
-      @services_handled_warning
-    end
-
-    # returns a counter of handled (acknowledged or downtimed) services with unknown state
-    #
-    # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
-    #    @icinga.services_handled_unknown
-    #
-    # @return [Integer]
-    #
-    def services_handled_unknown
-      @services_handled_unknown
-    end
-
 
     #
     # @deprecated use {services_handled_critical} instead.

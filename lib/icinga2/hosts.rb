@@ -262,6 +262,11 @@ module Icinga2
     #
     def hosts_adjusted
 
+      raise ArgumentError.new('Integer for @hosts_problems_down needed') unless( @hosts_problems_down.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_problems_critical needed') unless( @hosts_problems_critical.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_problems_unknown needed') unless( @hosts_problems_unknown.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_down needed') unless( @hosts_down.is_a?(Integer) )
+
       # calculate host problems adjusted by handled problems
       # count togther handled host problems
       handled_problems = @hosts_problems_down + @hosts_problems_critical + @hosts_problems_unknown
@@ -339,52 +344,22 @@ module Icinga2
       @hosts_all
     end
 
-    # returns a counter of all hosts with problems (down, warning, unknown state)
+    # returns data with host problems
     #
     # @example
     #    @icinga.host_objects
     #    @icinga.hosts_problems
     #
-    # @return [Integer]
+    # @return [Array] (problems_all, problems_down, problems_critical, problems_unknown)
     #
-    def hosts_problems
-      @hosts_problems
-    end
+    def host_problems
 
-    # returns a counter of hosts with critical state
-    #
-    # @example
-    #    @icinga.host_objects
-    #    @icinga.hosts_down
-    #
-    # @return [Integer]
-    #
-    def hosts_down
-      @hosts_problems_down
-    end
+      problems_all      = @hosts_problems.nil?           ? 0 : @hosts_problems
+      problems_down     = @hosts_problems_down.nil?      ? 0 : @hosts_problems_down
+      problems_critical = @hosts_problems_critical.nil?  ? 0 : @hosts_problems_critical
+      problems_unknown  = @hosts_problems_unknown.nil?   ? 0 : @hosts_problems_unknown
 
-    # returns a counter of hosts with warning state
-    #
-    # @example
-    #    @icinga.host_objects
-    #    @icinga.hosts_critical
-    #
-    # @return [Integer]
-    #
-    def hosts_critical
-      @hosts_problems_critical
-    end
-
-    # returns a counter of hosts with unknown state
-    #
-    # @example
-    #    @icinga.host_objects
-    #    @icinga.hosts_unknown
-    #
-    # @return [Integer]
-    #
-    def hosts_unknown
-      @hosts_problems_unknown
+      [problems_all,problems_down,problems_critical,problems_unknown]
     end
 
     protected
