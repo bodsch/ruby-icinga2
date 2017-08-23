@@ -56,7 +56,11 @@
 ### Example
     @icinga.cib_data
     @icinga.host_objects
-    warning, critical, unknown = @icinga.hosts_adjusted
+    warning, critical, unknown = @icinga.hosts_adjusted.values
+
+or
+    h = @icinga.hosts_adjusted
+    down = h.dig(:down_adjusted)
 
 
 ## <a name="count-hosts-with-problems"></a>count of hosts with problems
@@ -83,35 +87,15 @@
 
 
 ## <a name="count-host-problems"></a>count all hosts with problems (down, warning, unknown state)
-    hosts_problems
+    host_problems
 
 ### Example
     @icinga.host_objects
-    @icinga.hosts_problems
+    all, down, critical, unknown = @icinga.host_problems.values
 
-
-## <a name="count-hosts-down"></a>count hosts with down state
-    hosts_down
-
-### Example
-    @icinga.host_objects
-    @icinga.hosts_down
-
-
-## <a name="count-hosts-critical"></a>count hosts with critical state
-    hosts_critical
-
-### Example
-    @icinga.host_objects
-    @icinga.hosts_critical
-
-
-## <a name="count-hosts-unknown"></a>count hosts with unknown state
-    hosts_unknown
-
-### Example
-    @icinga.host_objects
-    @icinga.hosts_unknown
+or
+    p = @icinga.host_problems
+    down = h.dig(:down)
 
 
 ## <a name="host-severity"></a>(protected) calculate a host severity

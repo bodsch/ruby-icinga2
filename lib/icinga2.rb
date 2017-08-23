@@ -326,15 +326,23 @@ module Icinga2
     #
     # @example
     #    @icinga.application_data
-    #    @icinga.version
+    #    @icinga.version.values
     #
-    # @return [Array] (version, revision)
+    #    v = @icinga.version
+    #    version = v.dig(:version)
+    #
+    # @return [Hash]
+    #    * version
+    #    * revision
     #
     def version
       version  = @version.nil?  ? 0 : @version
       revision = @revision.nil? ? 0 : @revision
 
-      [version.to_s, revision.to_s]
+      {
+        version: version.to_s,
+        revision: revision.to_s
+      }
     end
 
     # return Icinga2 node_name

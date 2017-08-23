@@ -214,9 +214,15 @@ module Icinga2
     # @example
     #    @icinga.cib_data
     #    @icinga.service_objects
-    #    warning, critical, unknown = @icinga.services_adjusted
+    #    warning, critical, unknown = @icinga.services_adjusted.values
     #
-    # @return [Array] (service_adjusted_warning, service_adjusted_critical, service_adjusted_unknown)
+    #    s = @icinga.services_adjusted
+    #    unknown = s.dig(:unknown)
+    #
+    # @return [Hash]
+    #    * warning
+    #    * critical
+    #    * unknown
     #
     def services_adjusted
 
@@ -232,7 +238,11 @@ module Icinga2
       service_adjusted_critical = service_critical - service_handled_critical
       service_adjusted_unknown  = service_unknown  - service_handled_unknown
 
-      [service_adjusted_warning, service_adjusted_critical, service_adjusted_unknown]
+      {
+        warning: service_adjusted_warning.to_i,
+        critical: service_adjusted_critical.to_i,
+        unknown: service_adjusted_unknown.to_i
+      }
     end
 
     # return count of services with problems
@@ -257,14 +267,19 @@ module Icinga2
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    @icinga.list_services_with_problems
+    #    problems, problems_and_severity = @icinga.list_services_with_problems.values
     #
-    # @return [Array]
+    #    l = @icinga.list_services_with_problems
+    #    problems_and_severity = l.dig(:services_with_problems_and_severity)
+    #
+    # @return [Hash]
+    #    * Array (services_with_problems)
+    #    * Hash  (services_with_problems_and_severity)
     #
     def list_services_with_problems( max_items = 5 )
 
-      count_services_with_problems = {}
-      count_services_with_problems_severity = {}
+      services_with_problems = {}
+      services_with_problems_and_severity = {}
 
       # only fetch the minimal attribute set required for severity calculation
       services_data = service_objects
@@ -278,19 +293,19 @@ module Icinga2
           state = s.dig('attrs','state')
           next if  state.zero?
 
-          count_services_with_problems[name] = service_severity(s)
+          services_with_problems[name] = service_severity(s)
         end
 
-        if( count_services_with_problems.count != 0 )
-          count_services_with_problems.sort.reverse!
-          count_services_with_problems = count_services_with_problems.keys[1..max_items].each { |k,_v| count_services_with_problems_severity[k] = count_services_with_problems[k] }
+        if( services_with_problems.count != 0 )
+          services_with_problems.sort.reverse!
+          services_with_problems = services_with_problems.keys[1..max_items].each { |k,_v| services_with_problems_and_severity[k] = services_with_problems[k] }
         end
       end
 
-      @count_services_with_problems          = count_services_with_problems
-      @count_services_with_problems_severity = count_services_with_problems_severity
-
-      [count_services_with_problems, count_services_with_problems_severity]
+      {
+        services_with_problems: services_with_problems,
+        services_with_problems_and_severity: services_with_problems_and_severity
+      }
     end
 
     # update host
@@ -341,8 +356,16 @@ module Icinga2
     # @example
     #    @icinga.cib_data
     #    @icinga.service_objects
+    #    all, critical, warning, unknown = @icinga.service_problems_handled.values
     #
-    # @return [Array] (problems_all,problems_critical,problems_warning,problems_unknown)
+    #    p = @icinga.service_problems_handled
+    #    warning = p.dig(:warning)
+    #
+    # @return [Hash]
+    #    * all
+    #    * critical
+    #    * warning
+    #    * unknown
     #
     def service_problems_handled
 
@@ -351,28 +374,14 @@ module Icinga2
       problems_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
       problems_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
 
-      [problems_all,problems_critical,problems_warning,problems_unknown]
-    end
+      {
+        all: problems_all.to_i,
+        critical: problems_critical.to_i,
+        warning: problems_warning.to_i,
+        unknown: problems_unknown.to_i
+      }
 
-    #
-    # @deprecated use {services_handled_critical} instead.
-    #
-    def services_handled_critical_problems
-      @services_handled_critical
-    end
-
-    #
-    # @deprecated use {services_handled_warning} instead.
-    #
-    def services_handled_warning_problems
-      @services_handled_warning
-    end
-
-    #
-    # @deprecated use {services_handled_unknown} instead.
-    #
-    def services_handled_unknown_problems
-      @services_handled_unknown
+#      [problems_all,problems_critical,problems_warning,problems_unknown]
     end
 
     protected

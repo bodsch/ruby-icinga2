@@ -11,24 +11,39 @@ module Icinga2
     #
     # @example
     #    @icinga.cib_data
-    #    @icinga.average_statistics
+    #    latency, execution_time = @icinga.average_statistics.values
     #
-    # @return [Array] (avg_latency, avg_execution_time)
+    #    h = @icinga.average_statistics
+    #    latency = h.dig(:latency)
+    #
+    # @return [Hash]
+    #    * latency (Float)
+    #    * execution_time (Float)
     #
     def average_statistics
       avg_latency        = @avg_latency.nil?        ? 0 : @avg_latency
       avg_execution_time = @avg_execution_time.nil? ? 0 : @avg_execution_time
 
-      [avg_latency.to_f, avg_execution_time.to_f]
+      {
+        latency: avg_latency.to_f,
+        execution_time: avg_execution_time.to_f
+      }
     end
 
     # return statistic data for intervall data
     #
     # @example
     #    @icinga.cib_data
-    #    @icinga.interval_statistics
+    #    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = @icinga.interval_statistics.values
     #
-    # @return [Array] (hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks)
+    #    i = @icinga.interval_statistics
+    #    hosts_active_checks = i.dig(:hosts_active_checks)
+    #
+    # @return [Hash]
+    #    * hosts_active_checks (Float)
+    #    * hosts_passive_checks (Float)
+    #    * services_active_checks (Float)
+    #    * services_passive_checks (Float)
     #
     def interval_statistics
 
@@ -39,18 +54,31 @@ module Icinga2
       services_active_checks  = @services_active_checks_1min.nil?  ? 0 : @services_active_checks_1min
       services_passive_checks = @services_passive_checks_1min.nil? ? 0 : @services_passive_checks_1min
 
-      [hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks]
+      {
+        hosts_active_checks: hosts_active_checks.to_f,
+        hosts_passive_checks: hosts_passive_checks.to_f,
+        services_active_checks: services_active_checks.to_f,
+        services_passive_checks: services_passive_checks.to_f
+      }
     end
 
     # return statistic data for services
     #
     # @example
     #    @icinga.cib_data
-    #    ok, warning, nil, nil, pending, nil, nil = @icinga.service_statistics
+    #    ok, warning, critical, unknown, pending, in_downtime, ack = @icinga.service_statistics.values
     #
-    # @return [Array] (services_ok, services_warning, services_critical,
-    #                  services_unknown, services_pending,
-    #                  services_in_downtime, services_acknowledged)
+    #    s = @icinga.service_statistics
+    #    critical = s.dig(:critical)
+    #
+    # @return [Hash]
+    #    * ok (Integer)
+    #    * warning (Integer)
+    #    * critical (Integer)
+    #    * unknown (Integer)
+    #    * pending (Integer)
+    #    * in_downtime (Integer)
+    #    * acknowledged (Integer)
     #
     def service_statistics
 
@@ -62,17 +90,33 @@ module Icinga2
       services_in_downtime  = @services_in_downtime.nil?  ? 0 : @services_in_downtime
       services_acknowledged = @services_acknowledged.nil? ? 0 : @services_acknowledged
 
-      [services_ok, services_warning, services_critical, services_unknown, services_pending,
-       services_in_downtime, services_acknowledged]
+      {
+        ok: services_ok.to_i,
+        warning: services_warning.to_i,
+        critical: services_critical.to_i,
+        unknown: services_unknown.to_i,
+        pending: services_pending.to_i,
+        in_downtime: services_in_downtime.to_i,
+        acknowledged: services_acknowledged.to_i
+      }
     end
 
     # return statistic data for hosts
     #
     # @example
     #    @icinga.cib_data
-    #    up, down, pending, unreachable, in_downtime, ack = @icinga.host_statistics
+    #    up, down, pending, unreachable, in_downtime, ack = @icinga.host_statistics.values
     #
-    # @return [Array] (hosts_up, hosts_down, hosts_pending, hosts_unreachable, hosts_in_downtime, hosts_acknowledged)
+    #    h = @icinga.host_statistics
+    #    pending = h.dig(:pending)
+    #
+    # @return [Hash]
+    #    * up (Integer)
+    #    * down (Integer)
+    #    * pending (Integer)
+    #    * unreachable (Integer)
+    #    * in_downtime (Integer)
+    #    * acknowledged (Integer)
     #
     def host_statistics
 
@@ -83,7 +127,14 @@ module Icinga2
       hosts_in_downtime  = @hosts_in_downtime.nil?  ? 0 : @hosts_in_downtime
       hosts_acknowledged = @hosts_acknowledged.nil? ? 0 : @hosts_acknowledged
 
-      [hosts_up, hosts_down, hosts_pending, hosts_unreachable, hosts_in_downtime, hosts_acknowledged]
+      {
+        up: hosts_up.to_i,
+        down: hosts_down.to_i,
+        pending: hosts_pending.to_i,
+        unreachable: hosts_unreachable.to_i,
+        in_downtime: hosts_in_downtime.to_i,
+        acknowledged: hosts_acknowledged.to_i
+      }
     end
 
 

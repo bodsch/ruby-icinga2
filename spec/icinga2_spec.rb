@@ -29,6 +29,7 @@ describe Icinga2 do
   end
 
   describe 'Information' do
+
     it 'status_data' do
       expect(@icinga2.status_data).to be_a(Hash)
     end
@@ -46,9 +47,11 @@ describe Icinga2 do
 
     it 'version' do
       @icinga2.application_data
-      v, r = @icinga2.version
-      expect(v).to be_a(String)
-      expect(r).to be_a(String)
+      v = @icinga2.version
+      expect(v).to be_a(Hash)
+      expect(v.count).to be == 2
+      expect(v.dig(:version)).to be_a(String)
+      expect(v.dig(:revision)).to be_a(String)
     end
 
     it 'node name' do
@@ -69,44 +72,60 @@ describe Icinga2 do
   end
 
   describe 'Module Statistics' do
+
     it 'average' do
       @icinga2.cib_data
-      latency, execution_time = @icinga2.average_statistics
+      latency, execution_time = @icinga2.average_statistics.values
       expect(latency).to be_a(Float)
       expect(execution_time).to be_a(Float)
     end
+
     it 'interval' do
       @icinga2.cib_data
-      h_act_checks, h_pas_checks, s_act_checks, s_pas_checks = @icinga2.interval_statistics
-      expect(h_act_checks).to be_a(Float)
-      expect(h_pas_checks).to be_a(Float)
-      expect(s_act_checks).to be_a(Float)
-      expect(s_pas_checks).to be_a(Float)
+      i = @icinga2.interval_statistics
+      expect(i).to be_a(Hash)
+      expect(i.count).to be == 4
+      expect(i.dig(:hosts_active_checks)).to be_a(Float)
+      expect(i.dig(:hosts_passive_checks)).to be_a(Float)
+      expect(i.dig(:services_active_checks)).to be_a(Float)
+      expect(i.dig(:services_passive_checks)).to be_a(Float)
     end
+
     it 'service' do
       @icinga2.cib_data
-      ok, warn, crit, unkn, pending, in_downtime, ack = @icinga2.service_statistics
-      expect(ok).to be_a(Fixnum)
-      expect(warn).to be_a(Fixnum)
-      expect(crit).to be_a(Fixnum)
-      expect(unkn).to be_a(Fixnum)
-      expect(pending).to be_a(Fixnum)
-      expect(in_downtime).to be_a(Fixnum)
-      expect(ack).to be_a(Fixnum)
+      s = @icinga2.service_statistics
+      expect(s).to be_a(Hash)
+      expect(s.count).to be == 7
+      expect(s.dig(:ok)).to be_a(Integer)
+      expect(s.dig(:warning)).to be_a(Integer)
+      expect(s.dig(:critical)).to be_a(Integer)
+      expect(s.dig(:unknown)).to be_a(Integer)
+      expect(s.dig(:pending)).to be_a(Integer)
+      expect(s.dig(:in_downtime)).to be_a(Integer)
+      expect(s.dig(:acknowledged)).to be_a(Integer)
     end
+
     it 'host' do
       @icinga2.cib_data
-      up, down, pending, unreachable, in_downtime, ack = @icinga2.host_statistics
-      expect(up).to be_a(Fixnum)
-      expect(down).to be_a(Fixnum)
-      expect(pending).to be_a(Fixnum)
-      expect(unreachable).to be_a(Fixnum)
-      expect(in_downtime).to be_a(Fixnum)
-      expect(ack).to be_a(Fixnum)
+      s = @icinga2.host_statistics
+      expect(s).to be_a(Hash)
+      expect(s.count).to be == 6
+      expect(s.dig(:up)).to be_a(Integer)
+      expect(s.dig(:down)).to be_a(Integer)
+      expect(s.dig(:pending)).to be_a(Integer)
+      expect(s.dig(:unreachable)).to be_a(Integer)
+      expect(s.dig(:in_downtime)).to be_a(Integer)
+      expect(s.dig(:acknowledged)).to be_a(Integer)
     end
+
     it 'work queue' do
       r = @icinga2.work_queue_statistics
       expect(r).to be_a(Hash)
+      expect(r.count).to be >= 1
+      r.each do |_k,v|
+        expect(v).to be_a(Float)
+      end
+#      puts r.value
     end
   end
 
@@ -117,43 +136,54 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
+
     it 'list all hosts' do
       h = @icinga2.hosts
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
+
     it "exists host 'c1-mysql-1'" do
       expect(@icinga2.exists_host?('c1-mysql-1')).to be_truthy
     end
+
     it 'exists_host \'test\'' do
       expect(@icinga2.exists_host?('test')).to be_falsey
     end
+
     it 'count of all hosts' do
       @icinga2.host_objects
       c = @icinga2.hosts_all
       expect(c).to be_a(Integer)
       expect(c).to be >= 1
     end
+
     it 'adjusted' do
       @icinga2.cib_data
       @icinga2.host_objects
-      handled, down = @icinga2.hosts_adjusted
-      expect(handled).to be_a(Fixnum)
-      expect(down).to be_a(Fixnum)
+      a = @icinga2.hosts_adjusted
+      expect(a).to be_a(Hash)
+      expect(a.count).to be == 2
+      expect(a.dig(:handled_problems)).to be_a(Integer)
+      expect(a.dig(:down_adjusted)).to be_a(Integer)
     end
+
     it 'count_hosts_with_problems' do
       expect(@icinga2.count_hosts_with_problems).to be_a(Integer)
     end
+
     it 'list_hosts_with_problems 5' do
       h = @icinga2.list_hosts_with_problems
       expect(h).to be_a(Hash)
-      expect(h.count).to be == 5
+      expect(h.count).to be <= 5
     end
+
     it 'list_hosts_with_problems 15' do
       h = @icinga2.list_hosts_with_problems(15)
       expect(h).to be_a(Hash)
-      expect(h.count).to be == 15
+      expect(h.count).to be <= 15
     end
+
     it 'count all hosts' do
       @icinga2.host_objects
       h = @icinga2.hosts_all
@@ -164,12 +194,12 @@ describe Icinga2 do
     it 'data with host problems' do
       @icinga2.host_objects
       h = @icinga2.host_problems
-      expect(h).to be_a(Array)
+      expect(h).to be_a(Hash)
       expect(h.count).to be == 4
-      expect(h[0]).to be_a(Integer)
-      expect(h[1]).to be_a(Integer)
-      expect(h[2]).to be_a(Integer)
-      expect(h[3]).to be_a(Integer)
+      expect(h.dig(:all)).to be_a(Integer)
+      expect(h.dig(:down)).to be_a(Integer)
+      expect(h.dig(:critical)).to be_a(Integer)
+      expect(h.dig(:unknown)).to be_a(Integer)
     end
   end
 
@@ -177,17 +207,22 @@ describe Icinga2 do
 
     it 'list hostgroup \'linux-servers\'' do
       h = @icinga2.hostgroups(host_group: 'linux-servers')
+      name = h.first.dig('attrs','__name')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
+      expect(name).to be == 'linux-servers'
     end
+
     it 'list all hostgroups' do
       h = @icinga2.hostgroups
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
+
     it 'exists hostgroup \'linux-servers\'' do
       expect(@icinga2.exists_hostgroup?('linux-servers')).to be_truthy
     end
+
     it 'exists hostgroup \'test\'' do
       expect(@icinga2.exists_hostgroup?('test')).to be_falsey
     end
@@ -200,53 +235,72 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
+
     it 'list all services' do
       h = @icinga2.services
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
+
     it "exists service check 'ssh' for host 'c1-mysql-1'" do
       expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'ssh' )).to be_truthy
     end
-    it "exists service check 'hdb' for host '#{'c1-mysql-1'}'" do
+
+    it "exists service check 'hdb' for host 'c1-mysql-1'" do
       expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'hdb' )).to be_falsey
     end
+
     it 'count of all services with default parameters' do
       c = @icinga2.service_objects
       expect(c).to be_a(Array)
       expect(c.count).to be >= 1
     end
+
     it 'count of all services with \'attr\' and \'joins\' as parameter' do
-      c = @icinga2.service_objects( attrs: ['name', 'state'], joins: ['host.name','host.state'] )
+      c = @icinga2.service_objects( attrs: %w[name state], joins: ['host.name','host.state'] )
       expect(c).to be_a(Array)
       expect(c.count).to be >= 1
     end
+
     it 'adjusted' do
       @icinga2.cib_data
       @icinga2.service_objects
       a = @icinga2.services_adjusted
-      expect(a).to be_a(Array)
+      expect(a).to be_a(Hash)
       expect(a.count).to be == 3
-      expect(a[0]).to be_a(Fixnum)
-      expect(a[1]).to be_a(Fixnum)
-      expect(a[2]).to be_a(Fixnum)
+      expect(a.dig(:warning)).to be_a(Integer)
+      expect(a.dig(:critical)).to be_a(Integer)
+      expect(a.dig(:unknown)).to be_a(Integer)
     end
+
     it 'count of services with problems' do
       expect(@icinga2.count_services_with_problems).to be_a(Integer)
     end
+
     it 'count of services with problems' do
       expect(@icinga2.count_services_with_problems).to be_a(Integer)
     end
+
     it 'list_services_with_problems 5' do
       h = @icinga2.list_services_with_problems
-      expect(h).to be_a(Array)
-      expect(h.count).to be <= 5
+      expect(h).to be_a(Hash)
+      expect(h.count).to be == 2
+      expect(h.dig(:services_with_problems)).to be_a(Array)
+      expect(h.dig(:services_with_problems).count).to be <= 5
+      expect(h.dig(:services_with_problems_and_severity)).to be_a(Hash)
+      expect(h.dig(:services_with_problems_and_severity).count).to be <= 5
     end
+
     it 'list_services_with_problems 15' do
       h = @icinga2.list_services_with_problems(15)
-      expect(h).to be_a(Array)
-      expect(h.count).to be <= 15
+      expect(h).to be_a(Hash)
+      expect(h.count).to be == 2
+      expect(h.dig(:services_with_problems)).to be_a(Array)
+      expect(h.dig(:services_with_problems).count).to be <= 15
+      expect(h.dig(:services_with_problems_and_severity)).to be_a(Hash)
+      expect(h.dig(:services_with_problems_and_severity).count).to be <= 15
     end
+
     it 'count of all services' do
       @icinga2.cib_data
       @icinga2.service_objects
@@ -257,12 +311,12 @@ describe Icinga2 do
       @icinga2.cib_data
       @icinga2.service_objects
       s = @icinga2.service_problems_handled
-      expect(s).to be_a(Array)
+      expect(s).to be_a(Hash)
       expect(s.count).to be == 4
-      expect(s[0]).to be_a(Integer)
-      expect(s[1]).to be_a(Integer)
-      expect(s[2]).to be_a(Integer)
-      expect(s[3]).to be_a(Integer)
+      expect(s.dig(:all)).to be_a(Integer)
+      expect(s.dig(:critical)).to be_a(Integer)
+      expect(s.dig(:warning)).to be_a(Integer)
+      expect(s.dig(:unknown)).to be_a(Integer)
     end
 
   end
@@ -274,14 +328,17 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
+
     it 'list servicegroup \'disk\'' do
       h = @icinga2.servicegroups(service_group: 'disk')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
+
     it 'exists servicegroup \'disk\'' do
       expect(@icinga2.exists_servicegroup?('disk')).to be_truthy
     end
+
     it 'exists servicegroup \'test\'' do
       expect(@icinga2.exists_servicegroup?('test')).to be_falsey
     end
@@ -296,6 +353,7 @@ describe Icinga2 do
       expect(h).to be_a(Hash)
       expect(status_code).to be == 200
     end
+
     it "enable notification for host 'c1-mysql-1' and all services" do
       h = @icinga2.enable_service_notification( 'c1-mysql-1' )
       status_code = h[:status]
@@ -318,6 +376,7 @@ describe Icinga2 do
       expect(h).to be_a(Hash)
       expect(status_code).to be == 200
     end
+
     it 'list downtimes' do
       h = @icinga2.downtimes
       expect(h).to be_a(Array)

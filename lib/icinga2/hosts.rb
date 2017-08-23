@@ -256,9 +256,14 @@ module Icinga2
     # @example
     #    @icinga.cib_data
     #    @icinga.host_objects
-    #    handled, down = @icinga.hosts_adjusted
+    #    handled, down = @icinga.hosts_adjusted.values
     #
-    # @return [Array] (handled_problems, down_adjusted)
+    #    h = @icinga.hosts_adjusted
+    #    down = h.dig(:down_adjusted)
+    #
+    # @return [Hash]
+    #    * handled_problems
+    #    * down_adjusted
     #
     def hosts_adjusted
 
@@ -272,7 +277,10 @@ module Icinga2
       handled_problems = @hosts_problems_down + @hosts_problems_critical + @hosts_problems_unknown
       down_adjusted    = @hosts_down - handled_problems
 
-      [handled_problems, down_adjusted]
+      {
+        handled_problems: handled_problems.to_i,
+        down_adjusted: down_adjusted.to_i
+      }
     end
 
     # return count of hosts with problems
@@ -348,9 +356,16 @@ module Icinga2
     #
     # @example
     #    @icinga.host_objects
-    #    @icinga.hosts_problems
+    #    all, down, critical, unknown = @icinga.host_problems.values
     #
-    # @return [Array] (problems_all, problems_down, problems_critical, problems_unknown)
+    #    p = @icinga.host_problems
+    #    down = h.dig(:down)
+    #
+    # @return [Hash]
+    #    * all
+    #    * down
+    #    * critical
+    #    * unknown
     #
     def host_problems
 
@@ -359,7 +374,12 @@ module Icinga2
       problems_critical = @hosts_problems_critical.nil?  ? 0 : @hosts_problems_critical
       problems_unknown  = @hosts_problems_unknown.nil?   ? 0 : @hosts_problems_unknown
 
-      [problems_all,problems_down,problems_critical,problems_unknown]
+      {
+        all: problems_all.to_i,
+        down: problems_down.to_i,
+        critical: problems_critical.to_i,
+        unknown: problems_unknown.to_i
+      }
     end
 
     protected

@@ -61,7 +61,11 @@
 ### Example
     @icinga.cib_data
     @icinga.service_objects
-    warning, critical, unknown = @icinga.services_adjusted
+    warning, critical, unknown = @icinga.services_adjusted.values
+
+or
+    s = @icinga.services_adjusted
+    unknown = s.dig(:unknown)
 
 
 ## <a name="count-services-with-problems"></a>count services with problems
@@ -76,7 +80,8 @@
 
 ### Example
     @icinga.list_services_with_problems
-    @icinga.list_services_with_problems( 10 )
+    @icinga.list_services_with_problems(10)
+    problems, problems_and_severity = @icinga.list_services_with_problems(10).values
 
 
 ## <a name="update-host"></a>update host
@@ -94,61 +99,17 @@
     @icinga.services_all
 
 
-## <a name="count-service-problems"></a>count all services with problems (critical, warning, unknown state)
-    services_problems
+## <a name="count-all-services-handled"></a>count all services with handled problems
+    service_problems_handled
 
 ### Example
+    @icinga.cib_data
     @icinga.service_objects
-    @icinga.services_problems
+    all, critical, warning, unknown = @icinga.service_problems_handled.values
 
-
-## <a name="count-critical-services"></a>count services with critical state
-    services_critical
-
-### Example
-    @icinga.service_objects
-    @icinga.services_critical
-
-
-## <a name="count-critical-services"></a>count services with warning state
-    services_warning
-
-### Example
-    @icinga.service_objects
-    @icinga.services_warning
-
-
-## <a name="count-unknown-services"></a>count services with unknown state
-    services_unknown
-
-### Example
-    @icinga.service_objects
-    @icinga.services_unknown
-
-
-## <a name="count-handled-critical-services"></a>count handled (acknowledged or downtimed) services with critical state
-    services_handled_critical
-
-### Example
-    @icinga.service_objects
-    @icinga.services_handled_critical
-
-
-## <a name="count-handled-warning-services"></a>count handled (acknowledged or downtimed) services with warning state
-    services_handled_warning
-
-### Example
-    @icinga.service_objects
-    @icinga.services_handled_warning
-
-
-## <a name="count-handled-unknown-services"></a>handled (acknowledged or downtimed) services with unknown state
-    services_handled_unknown
-
-### Example
-    @icinga.service_objects
-    @icinga.services_handled_unknown
-
+or
+    p = @icinga.service_problems_handled
+    warning = p.dig(:warning)
 
 
 ## <a name=""></a>(protected) calculate a service severity

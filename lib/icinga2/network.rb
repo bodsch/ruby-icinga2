@@ -56,8 +56,7 @@ module Icinga2
       rescue RestClient::NotFound => e
 
         message = format( 'not found (request %s)', url )
-
-        $stderr.puts( message )
+#         $stderr.puts( message )
 
         return {
           status: 404,
@@ -74,7 +73,7 @@ module Icinga2
         else
 
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
+#           $stderr.puts( message )
 
           return {
             status: 500,
@@ -168,15 +167,7 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        unless( results.nil? )
-
-          result = {
-            status: results.dig('code').to_i,
-            name: results.dig('name'),
-            message: results.dig('status')
-          }
-
-        end
+        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
 
       rescue RestClient::ExceptionWithResponse => e
 
@@ -187,16 +178,16 @@ module Icinga2
 
         if( !results.nil? )
 
-          result = result.first
+#           result = result.first
 
-          result = {
+          return {
             status: results.dig('code').to_i,
             name: results.dig('name'),
             message: results.dig('status'),
             error: results.dig('errors')
           }
         else
-          result = {
+          return {
             status: error.dig( 'error' ).to_i,
             message: error.dig( 'status' )
           }
@@ -270,13 +261,8 @@ module Icinga2
         data    = JSON.parse( data )
         results = data.dig('results').first
 
-        unless( results.nil? )
-          result = {
-            status: results.dig('code').to_i,
-            name: results.dig('name'),
-            message: results.dig('status')
-          }
-        end
+        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+
       rescue RestClient::ExceptionWithResponse => e
 
         error  = e.response ? e.response : nil
@@ -287,7 +273,6 @@ module Icinga2
         return { status: error.dig('error').to_i, message: error.dig('status'), error: results } if( results.nil? )
 
         if( results.is_a?( Hash ) && results.count != 0 )
-
 #          result = result.first
           return {
             status: results.dig('code').to_i,
@@ -365,18 +350,10 @@ module Icinga2
 
         if( data )
 
-          data    = JSON.parse( data ) #.body )
+          data    = JSON.parse( data )
           results = data.dig('results').first
 
-          unless( results.nil? )
-
-            result = {
-              status: results.dig('code').to_i,
-              name: results.dig('name'),
-              message: results.dig('status')
-            }
-
-          end
+          return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
         end
 
       rescue RestClient::ExceptionWithResponse => e
@@ -387,14 +364,13 @@ module Icinga2
 
         results = error.dig('results')
 
-        result =
         if( results.nil? )
-          {
+          return {
             status: error.dig( 'error' ).to_i,
             message: error.dig( 'status' )
           }
         else
-          {
+          return {
             status: results.dig('code').to_i,
             name: results.dig('name'),
             message: results.dig('status')

@@ -81,7 +81,11 @@ module Icinga2
 
       objects = JSON.parse(objects) if objects.is_a?(String)
 
-      f = objects.select { |t| t.dig('attrs','state') == state && ( !t.dig('attrs','downtime_depth').nil? && t.dig('attrs','downtime_depth').zero?) && ( !t.dig('attrs','acknowledgement').nil? && t.dig('attrs','acknowledgement').zero? ) }
+      f = objects.select do |t|
+        t.dig('attrs','state') == state && \
+            ( !t.dig('attrs','downtime_depth').nil? && t.dig('attrs','downtime_depth').zero?) && \
+            ( !t.dig('attrs','acknowledgement').nil? && t.dig('attrs','acknowledgement').zero? )
+      end
 
       f.size
     end
