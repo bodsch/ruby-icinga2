@@ -10,7 +10,7 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] :host
-    # @option params [String] :services
+    # @option params [Hash] :attrs
     #
     # @todo
     #  this function is not operable
@@ -22,16 +22,22 @@ module Icinga2
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
-      # TODO
-      puts 'add_services() ToDo'
+      # TODO - WIP
+      puts 'WIP'
 
       host_name = params.dig(:host)
-      services  = params.dig(:services)
+      templates = params.dig(:templates) || ['generic-service']
+      attrs     = params.dig(:vars)
 
-      services.each do |s,v|
+      raise ArgumentError.new('Missing host') if( host_name.nil? )
+
+      raise ArgumentError.new('Missing attrs') if( attrs.nil? )
+      raise ArgumentError.new('only Hash are allowed') unless( attrs.is_a?(Hash) )
+
+      attrs.each do |s,v|
 
         payload = {
-          'templates' => [ 'generic-service' ],
+          'templates' => templates,
           'attrs'     => update_host( v, host_name )
         }
 
@@ -40,12 +46,12 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        Network.put(
-          url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
-          headers: @headers,
-          options: @options,
-          payload: payload
-        )
+#         Network.put(
+#           url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
+#           headers: @headers,
+#           options: @options,
+#           payload: payload
+#         )
       end
 
     end
@@ -308,36 +314,6 @@ module Icinga2
       }
     end
 
-    # update host
-    #
-    # @param [Hash] hash
-    # @param [String] host
-    #
-    # @todo
-    #  this function are not operable
-    #  need help, time or beer
-    #
-    # @return [Hash]
-    #
-    def update_host( hash, host )
-
-      hash.each do |k, v|
-
-        if( k == 'host' && v.is_a?( String ) )
-          v.replace( host )
-
-        elsif( v.is_a?( Hash ) )
-          update_host( v, host )
-
-        elsif( v.is_a?(Array) )
-
-          v.flatten.each { |x| update_host( x, host ) if x.is_a?( Hash ) }
-        end
-      end
-
-      hash
-    end
-
     # returns a counter of all services
     #
     # @example
@@ -460,6 +436,39 @@ module Icinga2
       end
 
       severity
+    end
+
+    private
+    # update host
+    #
+    # @param [Hash] hash
+    # @param [String] host
+    #
+    # @todo
+    #  this function are not operable
+    #  need help, time or beer
+    #
+    # @api protected
+    #
+    # @return [Hash]
+    #
+    def update_host( hash, host )
+
+      hash.each do |k, v|
+
+        if( k == 'host' && v.is_a?( String ) )
+          v.replace( host )
+
+        elsif( v.is_a?( Hash ) )
+          update_host( v, host )
+
+        elsif( v.is_a?(Array) )
+
+          v.flatten.each { |x| update_host( x, host ) if x.is_a?( Hash ) }
+        end
+      end
+
+      hash
     end
 
   end

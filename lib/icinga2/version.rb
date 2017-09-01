@@ -11,9 +11,9 @@ module Icinga2
     # minor part of version
     MINOR = 8
     # tiny part of version
-    TINY  = 1
+    TINY  = 95
     # patch part
-    PATCH = 2
+    PATCH = 1
 
   end
 

@@ -74,6 +74,34 @@ unless( i.nil? )
   puts format( '= uptime: %s', i.uptime )
   puts ''
 
+
+
+
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+  puts ' ==> SERVICES'
+  puts ''
+  i.add_services(
+    host: 'icinga2',
+    vars: {
+      attrs: {
+        check_command: 'ping4',
+        check_interval: 10,
+        retry_interval: 30
+             }
+    }
+
+  )
+  puts ''
+  puts ' ------------------------------------------------------------- '
+  puts ''
+
+end
+
+
+def old
+
   puts ' ------------------------------------------------------------- '
   puts ''
   puts ' ==> HOSTS'
