@@ -14,7 +14,7 @@ describe Icinga2 do
 
     config = {
       icinga: {
-        host: 'localhost',
+        host: '192.168.33.5',
         api: {
           port: 5665,
           user: 'root',
@@ -26,6 +26,13 @@ describe Icinga2 do
     }
 
     @icinga2  = Icinga2::Client.new( config )
+  end
+
+  describe 'Available' do
+
+    it 'available' do
+      expect(@icinga2.available?).to be_truthy
+    end
   end
 
   describe 'Information' do
@@ -317,6 +324,46 @@ describe Icinga2 do
       expect(s.dig(:critical)).to be_a(Integer)
       expect(s.dig(:warning)).to be_a(Integer)
       expect(s.dig(:unknown)).to be_a(Integer)
+    end
+
+    it 'list all unhandled service' do
+
+      s = @icinga2.unhandled_services
+      expect(s).to be_a(Array)
+      expect(s.count).to be >= 0
+    end
+
+    it 'add service' do
+      data = {
+        host: 'icinga2',
+        service_name: 'new_ping4',
+        vars: {
+          attrs: {
+            check_command: 'ping4',
+            check_interval: 10,
+            retry_interval: 30
+          }
+        }
+      }
+
+      s = @icinga2.add_services( data )
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'delete service' do
+
+      s = @icinga2.delete_service(
+        host: 'icinga2',
+        service_name: 'new_ping4',
+        cascade: true
+      )
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
     end
 
   end

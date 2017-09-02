@@ -370,10 +370,19 @@ module Icinga2
             message: error.dig( 'status' )
           }
         else
+
+          results = results.first if( results.is_a?(Array) )
+#          puts results
+#          puts results.first.dig('code')
+#           result_code = results.dig('code').to_i
+#           result_name = results.dig('name')
+#           result_status = results.dig('status')
+
           return {
             status: results.dig('code').to_i,
             name: results.dig('name'),
-            message: results.dig('status')
+            message: results.dig('status'),
+            error: results.dig('errors')
           }
         end
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e

@@ -202,7 +202,6 @@ module Icinga2
 
     end
 
-
     # return Icinga2 Application data
     #
     # @example
@@ -320,6 +319,22 @@ module Icinga2
         headers: @headers,
         options: @options
       )
+    end
+
+    # check the availability of a Icinga network connect
+    #
+    # @example
+    #    @icinga.available?
+    #
+    # @return [Bool]
+    #
+    def available?
+
+      data = application_data
+
+      return true unless( data.nil? )
+
+      false
     end
 
     # return Icinga2 version and revision

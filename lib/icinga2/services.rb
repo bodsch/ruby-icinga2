@@ -10,75 +10,151 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] :host
-    # @option params [Hash] :attrs
+    # @option params [String] :service_name
+    # @option params [Array] :templates
+    # @option params [Hash] :vars
     #
-    # @todo
-    #  this function is not operable
-    #  need help, time or beer
+    # @example
+    #    @icinga.add_services(
+    #      host: 'icinga2',
+    #      service_name: 'ping4',
+    #      vars: {
+    #        attrs: {
+    #          check_command: 'ping4',
+    #          check_interval: 10,
+    #          retry_interval: 30
+    #        }
+    #      }
+    #    )
     #
     # @return [Hash]
+    #    * status
+    #    * message
     #
     def add_services( params = {} )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
-      # TODO - WIP
-      puts 'WIP'
-
-      host_name = params.dig(:host)
-      templates = params.dig(:templates) || ['generic-service']
-      attrs     = params.dig(:vars)
+      host_name    = params.dig(:host)
+      service_name = params.dig(:service_name)
+      templates    = params.dig(:templates) || ['generic-service']
+      vars         = params.dig(:vars)
 
       raise ArgumentError.new('Missing host') if( host_name.nil? )
+      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
+      raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
+      raise ArgumentError.new('Missing vars') if( vars.nil? )
+      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
-      raise ArgumentError.new('Missing attrs') if( attrs.nil? )
-      raise ArgumentError.new('only Hash are allowed') unless( attrs.is_a?(Hash) )
+      # validate
+      needed_values = %w(check_command check_interval retry_interval)
 
-      attrs.each do |s,v|
+      attrs = vars.dig(:attrs)
+
+      validate_check_command  = attrs.select { |k,v| k == 'check_command'.to_sym }.size
+      validate_check_interval = attrs.select { |k,v| k == 'check_interval'.to_sym }.size
+      validate_retry_interval = attrs.select { |k,v| k == 'retry_interval'.to_sym }.size
+
+      if( validate_check_command == 0 )
+        raise 'Error in attrs, expected \'check_command\' but was not found'
+      elsif( validate_check_interval == 0 )
+        raise 'Error in attrs, expected \'check_interval\' but was not found'
+      elsif( validate_retry_interval == 0 )
+        raise 'Error in attrs, expected \'retry_interval\' but was not found'
+      end
+
+      payload = ''
+
+      vars.each do |s,v|
 
         payload = {
           'templates' => templates,
           'attrs'     => update_host( v, host_name )
         }
-
-        logger.debug( s )
-        logger.debug( v.to_json )
-
-        logger.debug( JSON.pretty_generate( payload ) )
-
-#         Network.put(
-#           url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
-#           headers: @headers,
-#           options: @options,
-#           payload: payload
-#         )
       end
+
+      logger.debug( format('Adding service %s for host %s', service_name, host_name) )
+      logger.debug( 'with the following data:' )
+      logger.debug( JSON.pretty_generate( payload ) )
+
+      Network.put(
+        url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ),
+        headers: @headers,
+        options: @options,
+        payload: payload
+      )
 
     end
 
-    # return all unhandled services
+    # delete a service
     #
     # @param [Hash] params
+    # @option params [String] :host host name for the service
+    # @option params [String] :service_name
+    # @option params [Bool] :cascade (false) delete service also when other objects depend on it
     #
-    # @todo
-    #  this function is not operable
-    #  need help, time or beer
+    # @example
+    #   @icinga.delete_service(host: 'foo', service_name: 'ping4')
+    #   @icinga.delete_service(host: 'foo', service_name: 'new_ping4', cascade: true)
     #
-    # @return [Nil]
+    # @return [Hash] result
     #
-    def unhandled_services( params = {} )
+    def delete_service( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      # TODO
-      puts 'unhandled_services() ToDo'
+      host_name    = params.dig(:host)
+      service_name = params.dig(:service_name)
+      cascade      = params.dig(:cascade)
 
-      # taken from https://blog.netways.de/2016/11/18/icinga-2-api-cheat-sheet/
-      # 5) Anzeige aller Services die unhandled sind und weder in Downtime, noch acknowledged sind
-      # /usr/bin/curl -k -s -u 'root:icinga' -H 'X-HTTP-Method-Override: GET' -X POST
-      # 'https://127.0.0.1:5665/objects/services' #
-      # -d '{ "attrs": [ "__name", "state", "downtime_depth", "acknowledgement" ], "filter": "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0" }''' | jq
+      raise ArgumentError.new('Missing host') if( host_name.nil? )
+      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
 
+      if( ! cascade.nil? && ( ! cascade.is_a?(TrueClass) && ! cascade.is_a?(FalseClass) ) )
+        raise ArgumentError.new('cascade can only be true or false')
+      end
+
+      url = format( '%s/objects/services/%s!%s%s', @icinga_api_url_base, host_name, service_name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
+
+      Network.delete(
+        url: url,
+        headers: @headers,
+        options: @options
+      )
+
+    end
+
+
+    # return all unhandled services
+    #
+    # @example
+    #    @icinga.unhandled_services
+    #
+    # @return [Hash]
+    #
+    def unhandled_services
+
+      payload = {}
+
+      filter = "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0"
+      attrs  = %w[__name name state acknowledgement downtime_depth last_check]
+
+      payload['attrs']  = attrs unless  attrs.nil?
+      payload['filter'] = filter unless filter.nil?
+
+      data = Network.api_data(
+        url: format( '%s/objects/services', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload
+      )
+
+      status  = data.dig(:status)
+
+      if( status.nil? )
+        data.dig('results')
+      end
     end
 
     # return services
