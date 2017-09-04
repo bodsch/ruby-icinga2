@@ -17,12 +17,17 @@ module Icinga2
     # @example
     #    @icinga.add_services(
     #      host: 'icinga2',
-    #      service_name: 'ping4',
+    #      service_name: 'http2',
     #      vars: {
     #        attrs: {
-    #          check_command: 'ping4',
+    #          check_command: 'http',
     #          check_interval: 10,
-    #          retry_interval: 30
+    #          retry_interval: 30,
+    #          vars: {
+    #            http_address: '127.0.0.1',
+    #            http_url: '/access/index',
+    #            http_port: 80
+    #          }
     #        }
     #      }
     #    )
@@ -73,9 +78,9 @@ module Icinga2
         }
       end
 
-      logger.debug( format('Adding service %s for host %s', service_name, host_name) )
-      logger.debug( 'with the following data:' )
-      logger.debug( JSON.pretty_generate( payload ) )
+#       logger.debug( format('Adding service %s for host %s', service_name, host_name) )
+#       logger.debug( 'with the following data:' )
+#       logger.debug( JSON.pretty_generate( payload ) )
 
       Network.put(
         url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ),
@@ -94,8 +99,8 @@ module Icinga2
     # @option params [Bool] :cascade (false) delete service also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_service(host: 'foo', service_name: 'ping4')
-    #   @icinga.delete_service(host: 'foo', service_name: 'new_ping4', cascade: true)
+    #   @icinga.delete_service(host: 'foo', service_name: 'http2')
+    #   @icinga.delete_service(host: 'foo', service_name: 'http2', cascade: true)
     #
     # @return [Hash] result
     #
@@ -128,6 +133,27 @@ module Icinga2
     # modify an service
     #
     # @param [Hash] params
+    # @option params [String] :service_name
+    # @option params [Hash] :vars
+    #
+    # @example
+    #    @icinga.modify_service(
+    #      service_name: 'http2',
+    #      vars: {
+    #        attrs: {
+    #          check_interval: 60,
+    #          retry_interval: 10,
+    #          vars: {
+    #            http_url: '/access/login'     ,
+    #            http_address: '10.41.80.63'
+    #          }
+    #        }
+    #      }
+    #    )
+    #
+    # @return [Hash]
+    #    * status
+    #    * message
     #
     def modify_service( params )
 
@@ -139,29 +165,11 @@ module Icinga2
       templates     = params.dig(:templates) || ['generic-service']
       vars          = params.dig(:vars)
       service_name  = params.dig(:service_name)
-      filter        = params.dig(:filter)
 
       raise ArgumentError.new('Missing service_name') if( service_name.nil? )
       raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
       raise ArgumentError.new('Missing vars') if( vars.nil? )
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
-
-      # validate
-#       needed_values = %w(check_command check_interval retry_interval)
-#
-#       attrs = vars.dig(:attrs)
-#
-#       validate_check_command  = attrs.select { |k,v| k == 'check_command'.to_sym }.size
-#       validate_check_interval = attrs.select { |k,v| k == 'check_interval'.to_sym }.size
-#       validate_retry_interval = attrs.select { |k,v| k == 'retry_interval'.to_sym }.size
-#
-#       if( validate_check_command == 0 )
-#         raise 'Error in attrs, expected \'check_command\' but was not found'
-#       elsif( validate_check_interval == 0 )
-#         raise 'Error in attrs, expected \'check_interval\' but was not found'
-#       elsif( validate_retry_interval == 0 )
-#         raise 'Error in attrs, expected \'retry_interval\' but was not found'
-#       end
 
       payload = ''
 
@@ -169,28 +177,22 @@ module Icinga2
 
         payload = {
           'templates' => templates,
-          'attrs'     => v # update_host( v, 'icinga2' )
+          'attrs'     => v
         }
       end
 
-      unless( filter.nil? )
+      payload['filter'] = format( 'service.name=="%s"', service_name )
 
-      payload['filter'] = filter unless filter.nil?
+#       logger.debug( format('modify service %s ', service_name ) )
+#       logger.debug( 'with the following data:' )
+#       logger.debug( JSON.pretty_generate( payload ) )
 
-      filter = format( 'service.name==%s&%s', service_name, filter )
-
-      logger.debug( format('modify service %s ', service_name ) )
-      logger.debug( 'with the following data:' )
-      logger.debug( JSON.pretty_generate( payload ) )
-#      logger.debug( 'use filter:' )
-#logger.debug( JSON.pretty_generate( payload ) )
-
-#       Network.post(
-#         url: format( '%s/objects/services', @icinga_api_url_base ),
-#         headers: @headers,
-#         options: @options,
-#         payload: payload
-#       )
+      Network.post(
+        url: format( '%s/objects/services', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload
+      )
 
     end
 

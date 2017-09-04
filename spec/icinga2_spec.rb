@@ -336,12 +336,17 @@ describe Icinga2 do
     it 'add service' do
       data = {
         host: 'icinga2',
-        service_name: 'new_ping4',
+        service_name: 'new_http',
         vars: {
           attrs: {
-            check_command: 'ping4',
+            check_command: 'http',
             check_interval: 10,
-            retry_interval: 30
+            retry_interval: 30,
+            vars: {
+              http_address: '127.0.0.1',
+              http_url: '/access/index',
+              http_port: 80
+            }
           }
         }
       }
@@ -353,11 +358,33 @@ describe Icinga2 do
       expect(status_code).to be == 200
     end
 
+    it 'modify service' do
+
+      data = {
+        service_name: 'new_http',
+        vars: {
+          attrs: {
+            check_interval: 60,
+            retry_interval: 10,
+            vars: {
+              http_url: '/access/login'     ,
+              http_address: '10.41.80.63'
+            }
+          }
+        }
+      }
+      s = @icinga2.modify_service( data )
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
     it 'delete service' do
 
       s = @icinga2.delete_service(
         host: 'icinga2',
-        service_name: 'new_ping4',
+        service_name: 'new_http',
         cascade: true
       )
       status_code = s[:status]
