@@ -125,6 +125,76 @@ module Icinga2
 
     end
 
+    # modify an service
+    #
+    # @param [Hash] params
+    #
+    def modify_service( params )
+
+      puts '=> WIP'
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      templates     = params.dig(:templates) || ['generic-service']
+      vars          = params.dig(:vars)
+      service_name  = params.dig(:service_name)
+      filter        = params.dig(:filter)
+
+      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
+      raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
+      raise ArgumentError.new('Missing vars') if( vars.nil? )
+      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
+
+      # validate
+#       needed_values = %w(check_command check_interval retry_interval)
+#
+#       attrs = vars.dig(:attrs)
+#
+#       validate_check_command  = attrs.select { |k,v| k == 'check_command'.to_sym }.size
+#       validate_check_interval = attrs.select { |k,v| k == 'check_interval'.to_sym }.size
+#       validate_retry_interval = attrs.select { |k,v| k == 'retry_interval'.to_sym }.size
+#
+#       if( validate_check_command == 0 )
+#         raise 'Error in attrs, expected \'check_command\' but was not found'
+#       elsif( validate_check_interval == 0 )
+#         raise 'Error in attrs, expected \'check_interval\' but was not found'
+#       elsif( validate_retry_interval == 0 )
+#         raise 'Error in attrs, expected \'retry_interval\' but was not found'
+#       end
+
+      payload = ''
+
+      vars.each do |s,v|
+
+        payload = {
+          'templates' => templates,
+          'attrs'     => v # update_host( v, 'icinga2' )
+        }
+      end
+
+      unless( filter.nil? )
+
+      payload['filter'] = filter unless filter.nil?
+
+      filter = format( 'service.name==%s&%s', service_name, filter )
+
+      logger.debug( format('modify service %s ', service_name ) )
+      logger.debug( 'with the following data:' )
+      logger.debug( JSON.pretty_generate( payload ) )
+#      logger.debug( 'use filter:' )
+#logger.debug( JSON.pretty_generate( payload ) )
+
+#       Network.post(
+#         url: format( '%s/objects/services', @icinga_api_url_base ),
+#         headers: @headers,
+#         options: @options,
+#         payload: payload
+#       )
+
+    end
+
+
 
     # return all unhandled services
     #
@@ -536,6 +606,7 @@ module Icinga2
           v.replace( host )
 
         elsif( v.is_a?( Hash ) )
+
           update_host( v, host )
 
         elsif( v.is_a?(Array) )

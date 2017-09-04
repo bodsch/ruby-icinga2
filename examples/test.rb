@@ -44,6 +44,8 @@ config = {
 
 i = Icinga2::Client.new( config )
 
+puts i.available?
+
 unless( i.nil? )
 
   # run tests ...
@@ -82,17 +84,44 @@ unless( i.nil? )
   puts ''
   puts ' ==> SERVICES'
   puts ''
-  i.add_services(
+
+  puts i.add_services(
     host: 'icinga2',
+    service_name: 'new_http',
     vars: {
       attrs: {
-        check_command: 'ping4',
+        check_command: 'http',
         check_interval: 10,
-        retry_interval: 30
-             }
+        retry_interval: 30,
+        vars: {
+          http_address: '127.0.0.1',
+          http_url: '/access/index',
+          http_port: 80
+        }
+      }
     }
-
   )
+
+  puts i.modify_service(
+    service_name: 'new_http',
+    vars: {
+      attrs: {
+        check_interval: 60,
+        retry_interval: 10,
+        vars: {
+          http_url: '/access/login'
+        }
+      }
+    }
+  )
+
+
+  puts i.delete_service(
+    host: 'icinga2',
+    service_name: 'new_http',
+    cascade: true
+  )
+
   puts ''
   puts ' ------------------------------------------------------------- '
   puts ''
