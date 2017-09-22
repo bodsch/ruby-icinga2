@@ -26,9 +26,9 @@ Gem::Specification.new do |s|
 
 #  s.required_ruby_version = '~> 2.3'
 
-  s.add_dependency('rest-client', '~> 1.0', '<= 2.0.2')
-  s.add_dependency('openssl', '~> 1.0', '<= 2.0.3')
-  s.add_dependency('json', '~> 1.0', '< 2.0')
+  s.add_dependency('rest-client', '~> 2.0', '<= 2.0.2')
+  s.add_dependency('openssl', '~> 2.0', '<= 2.0.5')
+  s.add_dependency('json', '~> 1.8', '< 2.1')
 
 
   s.add_development_dependency('rspec', '~> 0')
