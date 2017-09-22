@@ -2,8 +2,16 @@
 
 Ruby Class for the Icinga2 API
 
+|                             | build status                                                                             | Dependency Status |
+| :-------------------------- | :-------------------------------------------------------                                 | : ----------
+| **latest stable (0.8.1.2)** | [![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg?branch=v0.8.1.2)][travis] |  |
+| **Master**                  | [![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg?branch=master)][travis]   |  [![Dependency Status](https://gemnasium.com/badges/github.com/bodsch/ruby-icinga2.svg)][gemnasium]| **Master**                  | [![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg?branch=master)][travis]   | [![total Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2?type=total&metric=true&label=downloads-total)][gem-downloads] | [![Dependency Status](https://gemnasium.com/badges/github.com/bodsch/ruby-icinga2.svg)][gemnasium]
 
+[![Gem Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2?0.8.1.2)][gem-downloads] [![total Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2?type=total&metric=true&label=downloads-total)][gem-downloads]
 
+[travis]: https://travis-ci.org/bodsch/ruby-icinga2
+[gem-downloads]: http://ruby-gem-downloads-badge.herokuapp.com/icinga2
+[gemnasium]: https://gemnasium.com/github.com/bodsch/ruby-icinga2
 
 ## Requirements
 
