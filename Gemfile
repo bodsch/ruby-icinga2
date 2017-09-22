@@ -9,7 +9,6 @@ group :tools do
   gem 'rspec'
   gem 'rspec_junit_formatter'
   gem 'openssl'
-  gem 'coveralls', require: false
 end
 
 # gem 'rake'

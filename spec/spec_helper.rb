@@ -1,9 +1,6 @@
 
 # frozen_string_literal: true
 # require 'pry'
-require 'coveralls'
-Coveralls.wear!
-
 require 'rspec'
 require 'icinga2'
 
