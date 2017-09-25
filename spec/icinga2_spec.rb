@@ -19,13 +19,12 @@ describe Icinga2 do
           port: 5665,
           user: 'root',
           password: 'icinga'
-        },
-        cluster: false,
-        satellite: nil
+        }
       }
     }
 
-    @icinga2  = Icinga2::Client.new( config )
+    @test_host = 'icinga2-default'
+    @icinga2   = Icinga2::Client.new( config )
   end
 
   describe 'Available' do
@@ -343,15 +342,14 @@ describe Icinga2 do
     end
 
     it 'list all unhandled service' do
-
       s = @icinga2.unhandled_services
       expect(s).to be_a(Array)
       expect(s.count).to be >= 0
     end
 
-    it 'add service' do
+    it 'add service \'new_http\' to host \'c1-mysql-1\'' do
       data = {
-        host: 'icinga2',
+        host: 'c1-mysql-1',
         service_name: 'new_http',
         vars: {
           attrs: {
@@ -371,10 +369,15 @@ describe Icinga2 do
       status_code = s[:status]
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
-      expect(status_code).to be == 200
+
+      if(status_code != 200)
+        expect(s[:message]).to be_a(String)
+      else
+        expect(status_code).to be == 200
+      end
     end
 
-    it 'modify service' do
+    it 'modify service \'new_http\'' do
 
       data = {
         service_name: 'new_http',
@@ -383,23 +386,24 @@ describe Icinga2 do
             check_interval: 60,
             retry_interval: 10,
             vars: {
-              http_url: '/access/login'     ,
+              http_url: '/access/login',
               http_address: '10.41.80.63'
             }
           }
         }
       }
       s = @icinga2.modify_service( data )
+
       status_code = s[:status]
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
       expect(status_code).to be == 200
     end
 
-    it 'delete service' do
+    it 'delete service \'new_http\' from \'c1-mysql-1\'' do
 
       s = @icinga2.delete_service(
-        host: 'icinga2',
+        host: 'c1-mysql-1',
         service_name: 'new_http',
         cascade: true
       )

@@ -161,7 +161,7 @@ module Icinga2
       raise ArgumentError.new('Missing vars') if( vars.nil? )
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
-      payload = ''
+      payload = {}
 
       vars.each do |_s,v|
 
@@ -256,7 +256,7 @@ module Icinga2
     # @option params [String] :service
     #
     # @example
-    #    @icinga.exists_service?(host: 'icinga2', service: 'users' )
+    #    @icinga.exists_service?(host: 'icinga2', service: 'users')
     #
     # @return [Bool]
     #

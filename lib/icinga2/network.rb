@@ -165,6 +165,7 @@ module Icinga2
         )
 
         data    = JSON.parse( data )
+
         results = data.dig('results').first
 
         return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
@@ -177,9 +178,6 @@ module Icinga2
         results = error.dig( 'results' )
 
         if( !results.nil? )
-
-#           result = result.first
-
           return {
             status: results.dig('code').to_i,
             name: results.dig('name'),
@@ -372,11 +370,6 @@ module Icinga2
         else
 
           results = results.first if( results.is_a?(Array) )
-#          puts results
-#          puts results.first.dig('code')
-#           result_code = results.dig('code').to_i
-#           result_name = results.dig('name')
-#           result_status = results.dig('status')
 
           return {
             status: results.dig('code').to_i,
