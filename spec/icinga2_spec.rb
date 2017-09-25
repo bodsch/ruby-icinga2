@@ -14,7 +14,7 @@ describe Icinga2 do
 
     config = {
       icinga: {
-        host: '192.168.33.5',
+        host: ENV.fetch( 'ICINGA_HOST', 'localhost' ),
         api: {
           port: 5665,
           user: 'root',
