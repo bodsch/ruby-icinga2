@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
       s.required_ruby_version = '~> 2.3'
     end
 
-    if( RUBY_VERSION <= '2.1' )
+    if( RUBY_VERSION < '2.3' )
       s.add_dependency('ruby_dig')
     end
 
