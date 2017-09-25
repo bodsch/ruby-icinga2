@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'ruby_dig' if RUBY_VERSION < '2.1.0'
+require 'ruby_dig' if RUBY_VERSION < '2.2'
 
 require 'rest-client'
 require 'openssl'
