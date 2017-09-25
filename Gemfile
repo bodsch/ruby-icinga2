@@ -8,7 +8,11 @@ group :tools do
   gem 'rubocop-checkstyle_formatter'
   gem 'rspec'
   gem 'rspec_junit_formatter'
-  gem 'openssl'
+
+#  install_if RUBY_VERSION => '2.3' do
+#    gem 'openssl'
+#  end
+#   gem 'openssl'
 end
 
 # gem 'rake'

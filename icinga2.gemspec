@@ -24,12 +24,15 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/bodsch/ruby-icinga2'
   s.license     = 'LGPL-2.1+'
 
-#  s.required_ruby_version = '~> 2.3'
+  # for Ruby >  2.1
+  s.required_ruby_version = '~> 2.1'
+  s.add_dependency('rest-client', '~> 2.0')
+  s.add_dependency('openssl', '~> 2.0')
+  s.add_dependency('json', '~> 2.1')
 
-  s.add_dependency('rest-client', '~> 2.0', '<= 2.0.2')
-  s.add_dependency('openssl', '~> 2.0', '<= 2.0.5')
-  s.add_dependency('json', '~> 1.8', '< 2.1')
-
+  # for Ruby < 2.0
+  # s.required_ruby_version = '~> 2.0'
+  # s.add_dependency('rest-client', '< 2')
 
   s.add_development_dependency('rspec', '~> 0')
   s.add_development_dependency('rspec-nc', '~> 0')
