@@ -14,18 +14,24 @@ describe Icinga2 do
 
     config = {
       icinga: {
-        host: 'localhost',
+        host: ENV.fetch( 'ICINGA_HOST', 'localhost' ),
         api: {
           port: 5665,
           user: 'root',
           password: 'icinga'
-        },
-        cluster: false,
-        satellite: nil
+        }
       }
     }
 
-    @icinga2  = Icinga2::Client.new( config )
+    @test_host = 'icinga2-default'
+    @icinga2   = Icinga2::Client.new( config )
+  end
+
+  describe 'Available' do
+
+    it 'available' do
+      expect(@icinga2.available?).to be_truthy
+    end
   end
 
   describe 'Information' do
@@ -307,6 +313,22 @@ describe Icinga2 do
       expect(@icinga2.services_all).to be_a(Integer)
     end
 
+    it 'services with problems' do
+      @icinga2.cib_data
+      @icinga2.service_objects
+      a = @icinga2.service_problems
+      expect(a).to be_a(Hash)
+      expect(a.count).to be == 7
+      expect(a.dig(:ok)).to be_a(Integer)
+      expect(a.dig(:warning)).to be_a(Integer)
+      expect(a.dig(:critical)).to be_a(Integer)
+      expect(a.dig(:unknown)).to be_a(Integer)
+      expect(a.dig(:pending)).to be_a(Integer)
+      expect(a.dig(:in_downtime)).to be_a(Integer)
+      expect(a.dig(:acknowledged)).to be_a(Integer)
+    end
+
+
     it 'data with handled (acknowledged or downtimed) service problems' do
       @icinga2.cib_data
       @icinga2.service_objects
@@ -317,6 +339,78 @@ describe Icinga2 do
       expect(s.dig(:critical)).to be_a(Integer)
       expect(s.dig(:warning)).to be_a(Integer)
       expect(s.dig(:unknown)).to be_a(Integer)
+    end
+
+    it 'list all unhandled service' do
+      s = @icinga2.unhandled_services
+      expect(s).to be_a(Array)
+      expect(s.count).to be >= 0
+    end
+
+    it 'add service \'new_http\' to host \'c1-mysql-1\'' do
+      data = {
+        host: 'c1-mysql-1',
+        service_name: 'new_http',
+        vars: {
+          attrs: {
+            check_command: 'http',
+            check_interval: 10,
+            retry_interval: 30,
+            vars: {
+              http_address: '127.0.0.1',
+              http_url: '/access/index',
+              http_port: 80
+            }
+          }
+        }
+      }
+
+      s = @icinga2.add_services( data )
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+
+      if(status_code != 200)
+        expect(s[:message]).to be_a(String)
+      else
+        expect(status_code).to be == 200
+      end
+    end
+
+    it 'modify service \'new_http\'' do
+
+      data = {
+        service_name: 'new_http',
+        vars: {
+          attrs: {
+            check_interval: 60,
+            retry_interval: 10,
+            vars: {
+              http_url: '/access/login',
+              http_address: '10.41.80.63'
+            }
+          }
+        }
+      }
+      s = @icinga2.modify_service( data )
+
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'delete service \'new_http\' from \'c1-mysql-1\'' do
+
+      s = @icinga2.delete_service(
+        host: 'c1-mysql-1',
+        service_name: 'new_http',
+        cascade: true
+      )
+      status_code = s[:status]
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
     end
 
   end
