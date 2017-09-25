@@ -52,35 +52,27 @@ module Icinga2
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
       # validate
-      needed_values = %w(check_command check_interval retry_interval)
+      # needed_values = %w[check_command check_interval retry_interval]
 
       attrs = vars.dig(:attrs)
 
-      validate_check_command  = attrs.select { |k,v| k == 'check_command'.to_sym }.size
-      validate_check_interval = attrs.select { |k,v| k == 'check_interval'.to_sym }.size
-      validate_retry_interval = attrs.select { |k,v| k == 'retry_interval'.to_sym }.size
+      validate_check_command  = attrs.select { |k,_v| k == 'check_command'.to_sym }.size
+      validate_check_interval = attrs.select { |k,_v| k == 'check_interval'.to_sym }.size
+      validate_retry_interval = attrs.select { |k,_v| k == 'retry_interval'.to_sym }.size
 
-      if( validate_check_command == 0 )
-        raise 'Error in attrs, expected \'check_command\' but was not found'
-      elsif( validate_check_interval == 0 )
-        raise 'Error in attrs, expected \'check_interval\' but was not found'
-      elsif( validate_retry_interval == 0 )
-        raise 'Error in attrs, expected \'retry_interval\' but was not found'
-      end
+      raise 'Error in attrs, expected \'check_command\' but was not found' if( validate_check_command.zero? )
+      raise 'Error in attrs, expected \'check_interval\' but was not found' if( validate_check_interval.zero? )
+      raise 'Error in attrs, expected \'retry_interval\' but was not found' if( validate_retry_interval.zero? )
 
       payload = ''
 
-      vars.each do |s,v|
+      vars.each do |_s,v|
 
         payload = {
           'templates' => templates,
           'attrs'     => update_host( v, host_name )
         }
       end
-
-#       logger.debug( format('Adding service %s for host %s', service_name, host_name) )
-#       logger.debug( 'with the following data:' )
-#       logger.debug( JSON.pretty_generate( payload ) )
 
       Network.put(
         url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ),
@@ -157,8 +149,6 @@ module Icinga2
     #
     def modify_service( params )
 
-      puts '=> WIP'
-
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
@@ -173,7 +163,7 @@ module Icinga2
 
       payload = ''
 
-      vars.each do |s,v|
+      vars.each do |_s,v|
 
         payload = {
           'templates' => templates,
@@ -183,20 +173,13 @@ module Icinga2
 
       payload['filter'] = format( 'service.name=="%s"', service_name )
 
-#       logger.debug( format('modify service %s ', service_name ) )
-#       logger.debug( 'with the following data:' )
-#       logger.debug( JSON.pretty_generate( payload ) )
-
       Network.post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload
       )
-
     end
-
-
 
     # return all unhandled services
     #
@@ -209,7 +192,7 @@ module Icinga2
 
       payload = {}
 
-      filter = "service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0"
+      filter = 'service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0'
       attrs  = %w[__name name state acknowledgement downtime_depth last_check]
 
       payload['attrs']  = attrs unless  attrs.nil?
@@ -224,9 +207,7 @@ module Icinga2
 
       status  = data.dig(:status)
 
-      if( status.nil? )
-        data.dig('results')
-      end
+      data.dig('results') if( status.nil? )
     end
 
     # return services
