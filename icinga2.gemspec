@@ -26,13 +26,22 @@ Gem::Specification.new do |s|
 
   begin
 
-    if( RUBY_VERSION >= '2.0' && RUBY_VERSION <= '2.1')
+    if( RUBY_VERSION >= '2.0' )
       s.required_ruby_version = '~> 2.0'
+    elsif( RUBY_VERSION <= '2.1' )
+      s.required_ruby_version = '~> 2.1'
+    elsif( RUBY_VERSION <= '2.2' )
+      s.required_ruby_version = '~> 2.2'
+    elsif( RUBY_VERSION <= '2.3' )
+      s.required_ruby_version = '~> 2.3'
+    end
+
+    if( RUBY_VERSION <= '2.1' )
       s.add_dependency('ruby_dig')
     end
 
     if( RUBY_VERSION >= '2.3' )
-      puts "Installing openssl because Ruby #{RUBY_VERSION}"
+#      puts "Installing openssl because Ruby #{RUBY_VERSION}"
 
       s.add_dependency('openssl', '~> 2.0')
     else
