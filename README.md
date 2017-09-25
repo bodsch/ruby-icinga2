@@ -17,9 +17,9 @@ Ruby Class for the Icinga2 API
 
 ## Requirements
 
-* ruby version  ~> 2.3
+* ruby version  ~> 2.0
 * rest-client ~> 2.0
-* openssl ~> 2.0
+* openssl ~> 2.0 (only with ruby 2.3)
 * json  ~> 2.1
 
 ## install
