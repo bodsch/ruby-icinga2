@@ -314,6 +314,22 @@ describe Icinga2 do
       expect(@icinga2.services_all).to be_a(Integer)
     end
 
+    it 'services with problems' do
+      @icinga2.cib_data
+      @icinga2.service_objects
+      a = @icinga2.service_problems
+      expect(a).to be_a(Hash)
+      expect(a.count).to be == 7
+      expect(a.dig(:ok)).to be_a(Integer)
+      expect(a.dig(:warning)).to be_a(Integer)
+      expect(a.dig(:critical)).to be_a(Integer)
+      expect(a.dig(:unknown)).to be_a(Integer)
+      expect(a.dig(:pending)).to be_a(Integer)
+      expect(a.dig(:in_downtime)).to be_a(Integer)
+      expect(a.dig(:acknowledged)).to be_a(Integer)
+    end
+
+
     it 'data with handled (acknowledged or downtimed) service problems' do
       @icinga2.cib_data
       @icinga2.service_objects

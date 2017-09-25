@@ -44,8 +44,6 @@ config = {
 
 i = Icinga2::Client.new( config )
 
-puts i.available?
-
 unless( i.nil? )
 
   # run tests ...
@@ -54,6 +52,9 @@ unless( i.nil? )
 
   puts ''
   puts ' ============================================================= '
+  puts '= icinga2 available'
+  puts i.available?
+  puts ''
   puts '= icinga2 status'
   puts i.status_data
   puts ''
@@ -76,61 +77,7 @@ unless( i.nil? )
   puts format( '= uptime: %s', i.uptime )
   puts ''
 
-
-
-
   puts ''
-  puts ' ------------------------------------------------------------- '
-  puts ''
-  puts ' ==> SERVICES'
-  puts ''
-
-  puts i.add_services(
-    host: 'icinga2',
-    service_name: 'new_http',
-    vars: {
-      attrs: {
-        check_command: 'http',
-        check_interval: 10,
-        retry_interval: 30,
-        vars: {
-          http_address: '127.0.0.1',
-          http_url: '/access/index',
-          http_port: 80
-        }
-      }
-    }
-  )
-
-  puts i.modify_service(
-    service_name: 'new_http',
-    vars: {
-      attrs: {
-        check_interval: 60,
-        retry_interval: 10,
-        vars: {
-          http_url: '/access/login'
-        }
-      }
-    }
-  )
-
-
-  puts i.delete_service(
-    host: 'icinga2',
-    service_name: 'new_http',
-    cascade: true
-  )
-
-  puts ''
-  puts ' ------------------------------------------------------------- '
-  puts ''
-
-end
-
-
-def old
-
   puts ' ------------------------------------------------------------- '
   puts ''
   puts ' ==> HOSTS'
@@ -141,15 +88,18 @@ def old
 
   p, a = i.hosts_adjusted
 
-  puts format( '= host handled problems : %d', p )
-  puts format( '= host down adjusted    : %d', a )
+  puts format( '= host handled problems : %s', p )
+  puts format( '= host down adjusted    : %s', a )
 
   puts '= host objects'
+
+  all, down, critical, unknown = i.host_problems.values
+
   puts format( '= count of all hosts : %d', i.hosts_all )
-  puts format( '= hosts with problems: %d', i.hosts_problems )
-  puts format( '= hosts are down     : %d', i.hosts_down )
-  puts format( '= hosts are critical : %d', i.hosts_critical )
-  puts format( '= hosts are unknown  : %d', i.hosts_unknown )
+  puts format( '= hosts with problems: %s', i.list_hosts_with_problems )
+  puts format( '= hosts are down     : %d', down )
+  puts format( '= hosts are critical : %d', critical )
+  puts format( '= hosts are unknown  : %d', unknown )
   puts format( '= count hosts w. problems: %d', i.count_hosts_with_problems )
 
   ['icinga2', 'bp-foo'].each do |h|
@@ -170,8 +120,10 @@ def old
   puts ''
   puts '= list all Hosts'
   puts i.hosts
+  puts ''
   puts ' = delete Host'
   puts i.delete_host( host: 'foo' )
+  puts ''
   puts ' = add Host'
   puts i.add_host(
      host: 'foo',
@@ -213,22 +165,28 @@ def old
   puts ''
   puts ' ==> SERVICES'
   puts ''
+  i.cib_data
   i.service_objects
 
-  warning, critical, unknown = i.services_adjusted
-
+  all, warning, critical, unknown, pending, in_downtime, acknowledged = i.service_problems.values
   puts format( '= count of all services: %d', i.services_all )
-  puts format( '= services critical: %d', i.services_critical)
-  puts format( '= services warning: %d', i.services_warning)
-  puts format( '= services unknown: %d', i.services_unknown)
+  puts format( '= services warning: %d', warning)
+  puts format( '= services critical: %d', critical)
+  puts format( '= services unknown: %d', unknown)
+  puts format( '= services in downtime: %d', in_downtime)
+  puts format( '= services acknowledged: %d', acknowledged)
+
   puts ''
-  puts format( '= services handled warning problems: %d', i.services_handled_critical)
-  puts format( '= services handled critical problems: %d', i.services_handled_critical)
-  puts format( '= services handled unknown problems: %d', i.services_handled_unknown)
+  all, warning, critical, unknown = i.service_problems_handled.values
+  puts format( '= services handled warning problems: %d', warning)
+  puts format( '= services handled critical problems: %d', critical)
+  puts format( '= services handled unknown problems: %d', unknown)
   puts ''
+  warning, critical, unknown = i.services_adjusted.values
   puts format( '= services adjusted warning: %d',  warning)
   puts format( '= services adjusted critical: %d', critical)
   puts format( '= services adjusted unknown: %d',  unknown)
+
   puts ''
   puts '= check if service \'users\' on host \'icinga2\' exists'
   puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
@@ -251,6 +209,52 @@ def old
   puts ''
   puts '= list all Services'
   puts i.services
+  puts ''
+  puts '= add Service'
+  puts i.add_services(
+    host: 'icinga2',
+    service_name: 'new_http',
+    vars: {
+      attrs: {
+        check_command: 'http',
+        check_interval: 10,
+        retry_interval: 30,
+        vars: {
+          http_address: '127.0.0.1',
+          http_url: '/access/index',
+          http_port: 80
+        }
+      }
+    }
+  )
+  puts ''
+  puts '= list new named Service \'new_http\' from Host \'icinga2\''
+  puts i.services( host: 'icinga2', service: 'new_http' )
+  puts ''
+  puts '= modify named Service \'new_http\' from Host \'icinga2\''
+  puts JSON.pretty_generate  i.modify_service(
+    service_name: 'new_http',
+    vars: {
+      attrs: {
+        check_interval: 60,
+        retry_interval: 10,
+        vars: {
+          http_url: '/access/login'     ,
+          http_address: '10.41.80.63'
+        }
+      }
+    }
+  )
+  puts ''
+  puts '= list modified named Service \'new_http\' from Host \'icinga2\''
+  puts  JSON.pretty_generate i.services( host: 'icinga2', service: 'new_http' )
+  puts ''
+  puts '= delete named Service \'new_http\' from Host \'icinga2\''
+  puts i.delete_service(
+    host: 'icinga2',
+    service_name: 'new_http',
+    cascade: true
+  )
   puts ''
   puts ' ------------------------------------------------------------- '
   puts ''

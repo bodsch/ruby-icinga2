@@ -456,12 +456,51 @@ module Icinga2
       @services_all
     end
 
+    # returns data with service problems
+    #
+    # @example
+    #    @icinga.cib_data
+    #    all, warning, critical, unknown, pending, in_downtime, acknowledged = @icinga.service_problems.values
+    #
+    #    p = @icinga.service_problems
+    #    warning = p.dig(:warning)
+    #
+    # @return [Hash]
+    #    * ok
+    #    * warning
+    #    * critical
+    #    * unknown
+    #    * pending
+    #    * in_downtime
+    #    * acknowledged
+    #
+    def service_problems
+
+      services_ok           = @services_ok.nil?           ? 0 : @services_ok
+      services_warning      = @services_warning.nil?      ? 0 : @services_warning
+      services_critical     = @services_critical.nil?     ? 0 : @services_critical
+      services_unknown      = @services_unknown.nil?      ? 0 : @services_unknown
+      services_pending      = @services_pending.nil?      ? 0 : @services_pending
+      services_in_downtime  = @services_in_downtime.nil?  ? 0 : @services_in_downtime
+      services_acknowledged = @services_acknowledged.nil? ? 0 : @services_acknowledged
+
+      {
+        ok: services_ok.to_i,
+        warning: services_critical.to_i,
+        critical: services_warning.to_i,
+        unknown: services_unknown.to_i,
+        pending: services_pending.to_i,
+        in_downtime: services_in_downtime.to_i,
+        acknowledged: services_acknowledged.to_i
+      }
+    end
+
     # returns data with service problems they be handled (acknowledged or in downtime)
     #
     # @example
     #    @icinga.cib_data
     #    @icinga.service_objects
-    #    all, critical, warning, unknown = @icinga.service_problems_handled.values
+    #    all, warning, critical, unknown = @icinga.service_problems_handled.values
     #
     #    p = @icinga.service_problems_handled
     #    warning = p.dig(:warning)
@@ -481,8 +520,8 @@ module Icinga2
 
       {
         all: problems_all.to_i,
-        critical: problems_critical.to_i,
         warning: problems_warning.to_i,
+        critical: problems_critical.to_i,
         unknown: problems_unknown.to_i
       }
 
