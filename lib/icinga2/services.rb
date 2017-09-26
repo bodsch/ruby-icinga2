@@ -392,6 +392,8 @@ module Icinga2
       service_data = service_objects
       service_data = JSON.parse(service_data) if service_data.is_a?(String)
 
+      return 0 if( service_data.nil? )
+
       f = service_data.select { |t| t.dig('attrs','state') != 0 && t.dig('attrs','downtime_depth').zero? && t.dig('attrs','acknowledgement').zero? }
 
       f.size

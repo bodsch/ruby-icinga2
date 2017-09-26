@@ -217,6 +217,14 @@ module Icinga2
         options: @options
       )
 
+      # version and revision
+      @version = ''
+      @revision = ''
+      #   - node_name
+      @node_name = ''
+      #   - start_time
+      @start_time = Time.now()
+
       return nil if( data.nil? )
 
       app_data = data.dig('icingaapplication','app')
@@ -247,6 +255,35 @@ module Icinga2
         headers: @headers,
         options: @options
       )
+
+      @uptime  = ''
+
+      #   - avg_latency / avg_execution_time
+      @avg_latency        = 0.to_f
+      @avg_execution_time = 0.to_f
+
+      #   - hosts
+      @hosts_up           = 0
+      @hosts_down         = 0
+      @hosts_pending      = 0
+      @hosts_unreachable  = 0
+      @hosts_in_downtime  = 0
+      @hosts_acknowledged = 0
+
+      #   - services
+      @services_ok           = 0
+      @services_warning      = 0
+      @services_critical     = 0
+      @services_unknown      = 0
+      @services_pending      = 0
+      @services_in_downtime  = 0
+      @services_acknowledged = 0
+
+      #   - check stats
+      @hosts_active_checks_1min     = 0.to_f
+      @hosts_passive_checks_1min    = 0.to_f
+      @services_active_checks_1min  = 0.to_f
+      @services_passive_checks_1min = 0.to_f
 
       unless( data.nil? )
 
