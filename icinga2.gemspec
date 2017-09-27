@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version     = Icinga2::VERSION
   s.date        = '2017-09-25'
   s.summary     = 'Icinga2 API'
-  s.description = 'Ruby Class for the Icinga2 API'
+  s.description = 'An enhanced Ruby gem to communicate with Icinga2 API'
   s.authors     = ['Bodo Schulz']
   s.email       = 'bodo@boone-schulz.de'
 
