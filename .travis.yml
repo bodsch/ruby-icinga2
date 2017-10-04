@@ -18,7 +18,17 @@ before_install:
   - gem install bundler
   - gem update bundler
   - docker pull bodsch/docker-icinga2:1708-33.1
-  - docker run --rm --detach --publish=5665:5665 --env ICINGA_MASTER=icinga2 --env ICINGA_CLUSTER=true --env ICINGA_API_USERS=root:icinga --env DEMO_DATA=true --hostname=icinga2 bodsch/docker-icinga2:1708-33.1
+  - |
+    docker run \
+    --rm \
+    --detach \
+    --publish=5665:5665 \
+    --env ICINGA_MASTER=icinga2 \
+    --env ICINGA_CLUSTER=true \
+    --env ICINGA_API_USERS=root:icinga \
+    --env DEMO_DATA=true \
+    --hostname=icinga2 \
+    bodsch/docker-icinga2:1708-33.1
   - docker ps
   - sleep 20s
 
