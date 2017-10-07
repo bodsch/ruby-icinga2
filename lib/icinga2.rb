@@ -10,6 +10,7 @@ require 'net/http'
 require 'uri'
 
 require_relative 'logging'
+require_relative 'monkey_patches'
 require_relative 'icinga2/version'
 require_relative 'icinga2/network'
 require_relative 'icinga2/statistics'
@@ -216,7 +217,7 @@ module Icinga2
     #
     def application_data
 
-      data = Network.application_data(
+      data = icinga_application_data(
         url: format( '%s/status/IcingaApplication', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -247,7 +248,7 @@ module Icinga2
     #
     def cib_data
 
-      data = Network.application_data(
+      data = icinga_application_data(
         url: format( '%s/status/CIB', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -303,7 +304,9 @@ module Icinga2
     #
     def status_data
 
-      Network.application_data(
+      puts "status_data"
+
+      icinga_application_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -319,7 +322,7 @@ module Icinga2
     #
     def api_listener
 
-      Network.application_data(
+      icinga_application_data(
         url: format( '%s/status/ApiListener', @icinga_api_url_base ),
         headers: @headers,
         options: @options

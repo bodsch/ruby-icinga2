@@ -64,7 +64,7 @@ module Icinga2
         }
       end
 
-      Network.put(
+      put(
         url: format( '%s/objects/users/%s', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options,
@@ -91,7 +91,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing user_name') if( user_name.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options
@@ -122,7 +122,7 @@ module Icinga2
         format( '%s/objects/users/%s', @icinga_api_url_base, user_name )
       end
 
-      data = Network.api_data(
+      data = api_data(
         url: url,
         headers: @headers,
         options: @options

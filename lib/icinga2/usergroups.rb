@@ -33,7 +33,7 @@ module Icinga2
         }
       }
 
-      Network.put(
+      put(
         url: format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group ),
         headers: @headers,
         options: @options,
@@ -60,7 +60,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing user_group') if( user_group.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/usergroups/%s?cascade=1', @icinga_api_url_base, user_group ),
         headers: @headers,
         options: @options
@@ -91,7 +91,7 @@ module Icinga2
         format( '%s/objects/usergroups/%s', @icinga_api_url_base, user_group )
       end
 
-      data = Network.api_data(
+      data = api_data(
         url: url,
         headers: @headers,
         options: @options

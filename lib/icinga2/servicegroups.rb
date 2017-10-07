@@ -30,7 +30,7 @@ module Icinga2
 
       payload = { 'attrs' => { 'display_name' => display_name } }
 
-      Network.put(
+      put(
         url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),
         headers: @headers,
         options: @options,
@@ -57,7 +57,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing service_group') if( service_group.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
         headers: @headers,
         options: @options
@@ -88,7 +88,7 @@ module Icinga2
         format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group )
       end
 
-      data = Network.api_data(
+      data = api_data(
         url: url,
         headers: @headers,
         options: @options

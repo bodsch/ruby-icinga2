@@ -28,7 +28,7 @@ module Icinga2
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
       raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
-      Network.put(
+      put(
         url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options,
@@ -55,7 +55,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
-      Network.delete(
+      delete(
         url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options
@@ -86,7 +86,7 @@ module Icinga2
         format( '%s/objects/hostgroups/%s', @icinga_api_url_base, host_group )
       end
 
-      data = Network.api_data(
+      data = api_data(
         url: url,
         headers: @headers,
         options: @options

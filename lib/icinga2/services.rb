@@ -40,7 +40,7 @@ module Icinga2
 
         logger.debug( JSON.pretty_generate( payload ) )
 
-        Network.put(
+        put(
           url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, s ),
           headers: @headers,
           options: @options,
@@ -103,7 +103,7 @@ module Icinga2
         format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service )
       end
 
-      data = Network.api_data(
+      data = api_data(
         url: url,
         headers: @headers,
         options: @options
@@ -178,7 +178,7 @@ module Icinga2
       payload['filter'] = filter unless filter.nil?
       payload['joins']  = joins unless  joins.nil?
 
-      data = Network.api_data(
+      data = api_data(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -440,8 +440,15 @@ module Icinga2
             256
           end
 
+#         puts JSON.pretty_generate params
+
         # requires joins
         host_attrs = params.dig('joins','host')
+
+#         puts host_attrs
+
+        return 0 if( host_attrs.nil? )
+
         host_state           = host_attrs.dig('state')
         host_acknowledgement = host_attrs.dig('acknowledgement')
         host_downtime_depth  = host_attrs.dig('downtime_depth')

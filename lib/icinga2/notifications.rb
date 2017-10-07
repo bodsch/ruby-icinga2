@@ -131,7 +131,7 @@ module Icinga2
     #
     def notifications
 
-      data = Network.api_data(
+      data = api_data(
         url: format( '%s/objects/notifications', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -163,12 +163,23 @@ module Icinga2
         }
       }
 
-      Network.post(
+      begin
+      d = post(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload
       )
+
+      logger.debug( d.class.to_s )
+      logger.debug( d )
+      rescue => e
+
+        logger.error(e)
+        logger.error( e.backtrace.join("\n") )
+      end
+      d
+
     end
 
     # function for hostgroup notifications
@@ -192,7 +203,7 @@ module Icinga2
         }
       }
 
-      Network.post(
+      post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -221,7 +232,7 @@ module Icinga2
         }
       }
 
-      Network.post(
+      post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,

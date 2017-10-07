@@ -84,9 +84,9 @@ module Icinga2
         payload['attrs']['zone'] = @icinga_satellite
       end
 
-      # logger.debug( JSON.pretty_generate( payload ) )
+      logger.debug( JSON.pretty_generate( payload ) )
 
-      Network.put(
+      put(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options,
@@ -113,7 +113,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing host') if( host.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options
@@ -139,23 +139,21 @@ module Icinga2
     def hosts( params = {} )
 
       host   = params.dig(:host)
-      attrs  = params.dig(:attrs)
-      filter = params.dig(:filter)
-      joins  = params.dig(:joins)
+#       attrs  = params.dig(:attrs)
+#       filter = params.dig(:filter)
+#       joins  = params.dig(:joins)
 
-      payload['attrs']  = attrs  unless attrs.nil?
-      payload['filter'] = filter unless filter.nil?
-      payload['joins']  = joins  unless joins.nil?
+#       payload = {}
+#
+#       payload['attrs']  = attrs  unless attrs.nil?
+#       payload['filter'] = filter unless filter.nil?
+#       payload['joins']  = joins  unless joins.nil?
 
-      data = Network.api_data(
+      api_data(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
     # returns true if the host exists
@@ -175,7 +173,11 @@ module Icinga2
       result = hosts( host: host_name )
       result = JSON.parse( result ) if  result.is_a?( String )
 
-      return true if  !result.nil? && result.is_a?(Array)
+      result = result.first
+# logger.debug(JSON.pretty_generate result)
+# logger.debug('-----')
+
+      return true if( !result.nil? && result.dig('code') == 200 )
 
       false
     end
@@ -216,46 +218,39 @@ module Icinga2
       payload['filter'] = filter unless filter.nil?
       payload['joins']  = joins  unless joins.nil?
 
-      data = Network.api_data(
+      data = api_data(
         url: format( '%s/objects/hosts', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload
       )
 
-      status  = data.dig(:status)
+      all_hosts = data.clone
+      status    = data.first if( data.is_a?(Array))
 
-      if( status.nil? )
+      status  = status.dig('code').to_i
 
-        results = data.dig('results')
+      if( status.is_a?(Integer) && status == 200 )
 
-        unless( results.nil? )
+        unless( all_hosts.nil? )
+          # global var for count of all hosts
+          @hosts_all           = all_hosts.size
+          # global var for count of all host with a problem
+          @hosts_problems      = count_problems(all_hosts)
+          # global var for count of all gost with state HOSTS_DOWN
+          @hosts_problems_down     = count_problems(all_hosts, Icinga2::HOSTS_DOWN)
+          @hosts_problems_critical = count_problems(all_hosts, Icinga2::HOSTS_CRITICAL)
+          @hosts_problems_unknown  = count_problems(all_hosts, Icinga2::HOSTS_UNKNOWN)
 
-          all_hosts = results.clone
-
-          unless( all_hosts.nil? )
-
-            # global var for count of all hosts
-            @hosts_all           = all_hosts.size
-            # global var for count of all host with a problem
-            @hosts_problems      = count_problems(results)
-            # global var for count of all gost with state HOSTS_DOWN
-            @hosts_problems_down     = count_problems(results, Icinga2::HOSTS_DOWN)
-            @hosts_problems_critical = count_problems(results, Icinga2::HOSTS_CRITICAL)
-            @hosts_problems_unknown  = count_problems(results, Icinga2::HOSTS_UNKNOWN)
-
-          end
         end
       end
 
-      results
+      data
     end
 
     # returns adjusted hosts state
     #
     # @example
-    #    @icinga.cib_data
-    #    @icinga.host_objects
     #    handled, down = @icinga.hosts_adjusted.values
     #
     #    h = @icinga.hosts_adjusted
@@ -266,6 +261,25 @@ module Icinga2
     #    * down_adjusted
     #
     def hosts_adjusted
+
+#       puts @hosts_problems_down
+#       puts @hosts_problems_critical
+#       puts @hosts_problems_unknown
+#       puts @hosts_down
+
+      unless( @hosts_problems_down.is_a?(Integer) ||
+          @hosts_problems_critical.is_a?(Integer) ||
+          @hosts_problems_unknown.is_a?(Integer) ||
+          @hosts_down.is_a?(Integer) )
+
+        cib_data
+        host_objects
+      end
+
+#       puts @hosts_problems_down
+#       puts @hosts_problems_critical
+#       puts @hosts_problems_unknown
+#       puts @hosts_down
 
       raise ArgumentError.new('Integer for @hosts_problems_down needed') unless( @hosts_problems_down.is_a?(Integer) )
       raise ArgumentError.new('Integer for @hosts_problems_critical needed') unless( @hosts_problems_critical.is_a?(Integer) )
@@ -319,6 +333,8 @@ module Icinga2
       host_data = host_objects
       host_data = JSON.parse( host_data ) if host_data.is_a?(String)
 
+# logger.debug(host_data)
+
       unless( host_data.nil? )
 
         host_data.each do |h,_v|
@@ -343,12 +359,12 @@ module Icinga2
     # returns a counter of all hosts
     #
     # @example
-    #    @icinga.host_objects
     #    @icinga.hosts_all
     #
     # @return [Integer]
     #
     def hosts_all
+      host_objects if( @hosts_all.nil? || @hosts_all.zero? )
       @hosts_all
     end
 
@@ -368,6 +384,14 @@ module Icinga2
     #    * unknown
     #
     def host_problems
+
+      unless( @hosts_problems.is_a?(Integer) ||
+          @hosts_problems_down.is_a?(Integer) ||
+          @hosts_problems_critical.is_a?(Integer) ||
+          @hosts_problems_unknown.is_a?(Integer) )
+
+        host_objects
+      end
 
       problems_all      = @hosts_problems.nil?           ? 0 : @hosts_problems
       problems_down     = @hosts_problems_down.nil?      ? 0 : @hosts_problems_down

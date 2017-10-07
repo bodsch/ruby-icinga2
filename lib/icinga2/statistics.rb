@@ -148,7 +148,7 @@ module Icinga2
     def work_queue_statistics
 
       stats  = {}
-      data   = Network.api_data(
+      data   = api_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
         options: @options
