@@ -47,6 +47,11 @@
 
 #### Example
     @icinga.delete_service(host: 'foo', service_name: 'ping4')
+<<<<<<< HEAD
+
+    @icinga.delete_service(host: 'foo', service_name: 'new_ping4', cascade: true)
+=======
+>>>>>>> feature/reduce-double-code
 
     @icinga.delete_service(host: 'foo', service_name: 'new_ping4', cascade: true)
 
@@ -54,6 +59,12 @@
 ## <a name="unhandled-services"></a>list unhandled_services
     unhandled_services
 
+<<<<<<< HEAD
+## <a name="unhandled-services"></a>list unhandled_services
+    unhandled_services
+
+=======
+>>>>>>> feature/reduce-double-code
 #### Example
     @icinga.unhandled_services
 
@@ -70,19 +81,6 @@
 
 ### Example
     @icinga.service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
-
-
-## <a name="services-adjusted"></a>adjusted service state
-    services_adjusted
-
-### Example
-    @icinga.cib_data
-    @icinga.service_objects
-    warning, critical, unknown = @icinga.services_adjusted.values
-
-or
-    s = @icinga.services_adjusted
-    unknown = s.dig(:unknown)
 
 
 ## <a name="count-services-with-problems"></a>count services with problems
@@ -109,19 +107,6 @@ or
     @icinga.services_all
 
 
-## <a name="count-all-services-handled"></a>count all services with handled problems
-    service_problems_handled
-
-### Example
-    @icinga.cib_data
-    @icinga.service_objects
-    all, critical, warning, unknown = @icinga.service_problems_handled.values
-
-or
-    p = @icinga.service_problems_handled
-    warning = p.dig(:warning)
-
-
 ## <a name=""></a>(protected) calculate a service severity
     service_severity( params )
 
@@ -134,4 +119,15 @@ or
     update_host( hash, host )
 
 ### Example
+<<<<<<< HEAD
+    service_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
+
+
+
+## <a name=""></a>(private) update host
+    update_host( hash, host )
+
+### Example
+=======
+>>>>>>> feature/reduce-double-code
     update_host( v, host_name )

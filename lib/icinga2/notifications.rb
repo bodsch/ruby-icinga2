@@ -20,6 +20,8 @@ module Icinga2
       raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
       raise ArgumentError.new('missing host') if( host.size.zero? )
 
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
+
       host_notification( name: host, enable_notifications: true )
     end
 
@@ -36,6 +38,8 @@ module Icinga2
 
       raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
       raise ArgumentError.new('missing host') if( host.size.zero? )
+
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
       host_notification( name: host, enable_notifications: false )
     end
@@ -54,6 +58,8 @@ module Icinga2
       raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
       raise ArgumentError.new('missing host') if( host.size.zero? )
 
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
+
       service_notification( name: host, enable_notifications: true )
     end
 
@@ -70,6 +76,8 @@ module Icinga2
 
       raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
       raise ArgumentError.new('missing host') if( host.size.zero? )
+
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
       service_notification( name: host, enable_notifications: false )
     end
@@ -90,13 +98,12 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host       = params.dig(:host)
       host_group = params.dig(:host_group)
-
-      raise ArgumentError.new('Missing host') if( host.nil? )
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
-      hostgroup_notification( host: host, host_group: host_group, enable_notifications: true )
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_hostgroup?( host_group ) == false )
+
+      hostgroup_notification( host_group: host_group, enable_notifications: true )
     end
 
     # disable hostgroup notifications
@@ -115,13 +122,12 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host       = params.dig(:host)
       host_group = params.dig(:host_group)
-
-      raise ArgumentError.new('Missing host') if( host.nil? )
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
-      hostgroup_notification( host: host, host_group: host_group, enable_notifications: false )
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_hostgroup?( host_group ) == false )
+
+      hostgroup_notification( host_group: host_group, enable_notifications: true )
     end
 
     # return all notifications
@@ -131,15 +137,11 @@ module Icinga2
     #
     def notifications
 
-      data = Network.api_data(
+      api_data(
         url: format( '%s/objects/notifications', @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
     protected
@@ -163,7 +165,7 @@ module Icinga2
         }
       }
 
-      Network.post(
+      post(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
@@ -192,7 +194,7 @@ module Icinga2
         }
       }
 
-      Network.post(
+      post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -221,7 +223,7 @@ module Icinga2
         }
       }
 
-      Network.post(
+      post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,

@@ -34,6 +34,13 @@ describe Icinga2 do
     end
   end
 
+  describe 'Available' do
+
+    it 'available' do
+      expect(@icinga2.available?).to be_truthy
+    end
+  end
+
   describe 'Information' do
 
     it 'status_data' do
@@ -128,10 +135,9 @@ describe Icinga2 do
       r = @icinga2.work_queue_statistics
       expect(r).to be_a(Hash)
       expect(r.count).to be >= 1
-      r.each do |_k,v|
+      r.each_value do |v|
         expect(v).to be_a(Float)
       end
-#      puts r.value
     end
   end
 
@@ -164,16 +170,6 @@ describe Icinga2 do
       expect(c).to be >= 1
     end
 
-    it 'adjusted' do
-      @icinga2.cib_data
-      @icinga2.host_objects
-      a = @icinga2.hosts_adjusted
-      expect(a).to be_a(Hash)
-      expect(a.count).to be == 2
-      expect(a.dig(:handled_problems)).to be_a(Integer)
-      expect(a.dig(:down_adjusted)).to be_a(Integer)
-    end
-
     it 'count_hosts_with_problems' do
       expect(@icinga2.count_hosts_with_problems).to be_a(Integer)
     end
@@ -190,22 +186,18 @@ describe Icinga2 do
       expect(h.count).to be <= 15
     end
 
-    it 'count all hosts' do
-      @icinga2.host_objects
-      h = @icinga2.hosts_all
-      expect(h).to be_a(Integer)
-      expect(h).to be >= 1
-    end
 
     it 'data with host problems' do
       @icinga2.host_objects
       h = @icinga2.host_problems
       expect(h).to be_a(Hash)
-      expect(h.count).to be == 4
+      expect(h.count).to be == 6
       expect(h.dig(:all)).to be_a(Integer)
       expect(h.dig(:down)).to be_a(Integer)
       expect(h.dig(:critical)).to be_a(Integer)
       expect(h.dig(:unknown)).to be_a(Integer)
+      expect(h.dig(:handled)).to be_a(Integer)
+      expect(h.dig(:adjusted)).to be_a(Integer)
     end
   end
 
@@ -268,17 +260,6 @@ describe Icinga2 do
       expect(c.count).to be >= 1
     end
 
-    it 'adjusted' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      a = @icinga2.services_adjusted
-      expect(a).to be_a(Hash)
-      expect(a.count).to be == 3
-      expect(a.dig(:warning)).to be_a(Integer)
-      expect(a.dig(:critical)).to be_a(Integer)
-      expect(a.dig(:unknown)).to be_a(Integer)
-    end
-
     it 'count of services with problems' do
       expect(@icinga2.count_services_with_problems).to be_a(Integer)
     end
@@ -314,11 +295,9 @@ describe Icinga2 do
     end
 
     it 'services with problems' do
-      @icinga2.cib_data
-      @icinga2.service_objects
       a = @icinga2.service_problems
       expect(a).to be_a(Hash)
-      expect(a.count).to be == 7
+      expect(a.count).to be == 14
       expect(a.dig(:ok)).to be_a(Integer)
       expect(a.dig(:warning)).to be_a(Integer)
       expect(a.dig(:critical)).to be_a(Integer)
@@ -326,19 +305,86 @@ describe Icinga2 do
       expect(a.dig(:pending)).to be_a(Integer)
       expect(a.dig(:in_downtime)).to be_a(Integer)
       expect(a.dig(:acknowledged)).to be_a(Integer)
+      expect(a.dig(:adjusted_warning)).to be_a(Integer)
+      expect(a.dig(:adjusted_critical)).to be_a(Integer)
+      expect(a.dig(:adjusted_unknown)).to be_a(Integer)
+      expect(a.dig(:handled_all)).to be_a(Integer)
+      expect(a.dig(:handled_warning)).to be_a(Integer)
+      expect(a.dig(:handled_critical)).to be_a(Integer)
+      expect(a.dig(:handled_unknown)).to be_a(Integer)
     end
 
+    it 'list all unhandled service' do
+      s = @icinga2.unhandled_services
+      expect(s).to be_a(Array)
+      expect(s.count).to be >= 0
+    end
 
-    it 'data with handled (acknowledged or downtimed) service problems' do
-      @icinga2.cib_data
-      @icinga2.service_objects
-      s = @icinga2.service_problems_handled
+    it 'add service \'new_http\' to host \'c1-mysql-1\'' do
+      data = {
+        host: 'c1-mysql-1',
+        service_name: 'new_http',
+        vars: {
+          attrs: {
+            check_command: 'http',
+            check_interval: 10,
+            retry_interval: 30,
+            vars: {
+              http_address: '127.0.0.1',
+              http_url: '/access/index',
+              http_port: 80
+            }
+          }
+        }
+      }
+
+      s = @icinga2.add_service( data )
+
+      status_code = s['code']
       expect(s).to be_a(Hash)
-      expect(s.count).to be == 4
-      expect(s.dig(:all)).to be_a(Integer)
-      expect(s.dig(:critical)).to be_a(Integer)
-      expect(s.dig(:warning)).to be_a(Integer)
-      expect(s.dig(:unknown)).to be_a(Integer)
+      expect(status_code).to be_a(Integer)
+
+      if(status_code != 200)
+        expect(s['status']).to be_a(String)
+      else
+        expect(status_code).to be == 200
+      end
+    end
+
+    it 'modify service \'new_http\'' do
+
+      data = {
+        service_name: 'new_http',
+        vars: {
+          attrs: {
+            check_interval: 60,
+            retry_interval: 10,
+            vars: {
+              http_url: '/access/login',
+              http_address: '10.41.80.63'
+            }
+          }
+        }
+      }
+      s = @icinga2.modify_service( data )
+
+      status_code = s['code']
+      expect(s).to be_a(Hash)
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'delete service \'new_http\' from \'c1-mysql-1\'' do
+
+      s = @icinga2.delete_service(
+        host: 'c1-mysql-1',
+        service_name: 'new_http',
+        cascade: true
+      )
+      expect(s).to be_a(Hash)
+      status_code = s['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
     end
 
     it 'list all unhandled service' do
@@ -437,21 +483,59 @@ describe Icinga2 do
       expect(@icinga2.exists_servicegroup?('test')).to be_falsey
     end
 
+    it 'add Servicegroup \'foo\'' do
+      s = @icinga2.add_servicegroup( service_group: 'foo', display_name: 'FOO' )
+      expect(s).to be_a(Hash)
+
+      status_code = s['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'add Servicegroup \'foo\' (again)' do
+      s = @icinga2.add_servicegroup( service_group: 'foo', display_name: 'FOO' )
+      expect(s).to be_a(Hash)
+
+      status_code = s['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 500
+    end
+
+    it 'delete Servicegroup \'foo\'' do
+      s = @icinga2.delete_servicegroup( service_group: 'foo' )
+      expect(s).to be_a(Hash)
+
+      status_code = s['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'delete Servicegroup \'foo\' (again)' do
+      s = @icinga2.delete_servicegroup( service_group: 'foo' )
+      expect(s).to be_a(Hash)
+
+      status_code = s['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 404
+    end
+
+
   end
 
   describe 'Module Notification' do
 
     it "enable notification for host 'c1-mysql-1'" do
       h = @icinga2.enable_host_notification( 'c1-mysql-1' )
-      status_code = h[:status]
+
+      status_code = h['code']
       expect(h).to be_a(Hash)
       expect(status_code).to be == 200
     end
 
     it "enable notification for host 'c1-mysql-1' and all services" do
       h = @icinga2.enable_service_notification( 'c1-mysql-1' )
-      status_code = h[:status]
       expect(h).to be_a(Hash)
+      status_code = h['code']
       expect(status_code).to be == 200
     end
 
@@ -460,13 +544,168 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be_a(Integer)
     end
+
+    it 'enable Notifications for hostgroup' do
+      h = @icinga2.enable_hostgroup_notification( host_group: 'linux-servers')
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+    it 'enable Notifications for hostgroup' do
+      h = @icinga2.disable_hostgroup_notification( host_group: 'linux-servers')
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+  end
+
+  describe 'Module Users' do
+
+    it 'list all users' do
+      h = @icinga2.users
+      expect(h).to be_a(Array)
+      expect(h.count).to be >= 1
+    end
+
+    it 'list named users' do
+      h = @icinga2.users(user_name: 'icingaadmin')
+      expect(h).to be_a(Array)
+      expect(h.count).to be == 1
+    end
+
+    it 'exists user' do
+      expect(@icinga2.exists_user?('icingaadmin')).to be_truthy
+    end
+
+    it 'exists user' do
+      expect(@icinga2.exists_user?('icinga-admin')).to be_falsey
+    end
+
+    it 'add user' do
+      h = @icinga2.add_user(
+        user_name: 'foo',
+        display_name: 'FOO',
+        email: 'foo@bar.com',
+        pager: '0000',
+        groups: ['icingaadmins']
+      )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+    it 'add user (again)' do
+      h = @icinga2.add_user(
+          user_name: 'foo',
+          display_name: 'FOO',
+          email: 'foo@bar.com',
+          pager: '0000',
+          groups: ['icingaadmins']
+      )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 500
+    end
+
+    it 'list named users' do
+      h = @icinga2.users(user_name: 'foo')
+      expect(h).to be_a(Array)
+      expect(h.count).to be == 1
+    end
+
+    it 'delete user' do
+      h = @icinga2.delete_user(user_name: 'foo')
+
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+    it 'delete user (again)' do
+      h = @icinga2.delete_user(user_name: 'foo')
+
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 404
+    end
+  end
+
+  describe 'Module Usergroups' do
+
+    it 'list all usergroups' do
+      h = @icinga2.usergroups
+      expect(h).to be_a(Array)
+      expect(h.count).to be >= 1
+    end
+
+    it 'list named usergroup' do
+      h = @icinga2.usergroups(user_group: 'icingaadmins')
+      expect(h).to be_a(Array)
+      expect(h.count).to be == 1
+    end
+
+    it 'exists usergroup' do
+      expect(@icinga2.exists_usergroup?('icingaadmins')).to be_truthy
+    end
+
+    it 'exists usergroup' do
+      expect(@icinga2.exists_usergroup?('linux-admin')).to be_falsey
+    end
+
+    it 'add usergroup' do
+      h = @icinga2.add_usergroup(user_group: 'foo', display_name: 'FOO' )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+    it 'add usergroup (again)' do
+      h = @icinga2.add_usergroup(user_group: 'foo', display_name: 'FOO' )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 500
+    end
+
+    it 'list named usergroup' do
+      h = @icinga2.usergroups( user_group: 'foo' )
+      expect(h).to be_a(Array)
+      expect(h.count).to be >= 1
+    end
+
+    it 'delete usergroup' do
+      h = @icinga2.delete_usergroup( user_group: 'foo' )
+
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+    it 'delete usergroup (again)' do
+      h = @icinga2.delete_usergroup(user_group: 'foo')
+
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 404
+    end
+
+
   end
 
   describe 'Module Downtimes' do
 
     it "add downtime 'test'" do
-      h = @icinga2.add_downtime( name: 'test', type: 'service', host: 'c1-mysql-1', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
-      status_code = h[:status]
+      h = @icinga2.add_downtime(
+        name: 'test',
+        type: 'service',
+        host: 'c1-mysql-1',
+        comment: 'test downtime',
+        author: 'icingaadmin',
+        start_time: Time.now.to_i,
+        end_time: Time.now.to_i + 20
+      )
+      status_code = h['code']
       expect(h).to be_a(Hash)
       expect(status_code).to be == 200
     end

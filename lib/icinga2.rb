@@ -10,6 +10,7 @@ require 'net/http'
 require 'uri'
 
 require_relative 'logging'
+require_relative 'monkey_patches'
 require_relative 'icinga2/version'
 require_relative 'icinga2/network'
 require_relative 'icinga2/statistics'
@@ -116,6 +117,13 @@ module Icinga2
       @icinga_satellite     = settings.dig(:icinga, :satellite)
       @icinga_notifications = settings.dig(:icinga, :notifications)  || false
 
+      @last_call_timeout    = 320
+      @last_cib_data_called = 0
+      @last_status_data_called = 0
+      @last_application_data_called = 0
+      @last_service_objects_called = 0
+      @last_host_objects_called = 0
+
       @icinga_api_url_base  = format( 'https://%s:%d/v%s', icinga_host, icinga_api_port, icinga_api_version )
 
       _has_cert, @options = cert?(
@@ -127,9 +135,7 @@ module Icinga2
 
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
 
-      return self unless( application_data.nil? )
-
-      nil
+      self
     end
 
     # create a HTTP Header based on a Icinga2 Certificate or an User API Login
@@ -215,19 +221,11 @@ module Icinga2
     #
     def application_data
 
-      data = Network.application_data(
+      data = icinga_application_data(
         url: format( '%s/status/IcingaApplication', @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
-
-      # version and revision
-      @version = ''
-      @revision = ''
-      #   - node_name
-      @node_name = ''
-      #   - start_time
-      @start_time = Time.now()
 
       return nil if( data.nil? )
 
@@ -254,40 +252,13 @@ module Icinga2
     #
     def cib_data
 
-      data = Network.application_data(
+      data = icinga_application_data(
         url: format( '%s/status/CIB', @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
 
-      @uptime  = ''
-
-      #   - avg_latency / avg_execution_time
-      @avg_latency        = 0.to_f
-      @avg_execution_time = 0.to_f
-
-      #   - hosts
-      @hosts_up           = 0
-      @hosts_down         = 0
-      @hosts_pending      = 0
-      @hosts_unreachable  = 0
-      @hosts_in_downtime  = 0
-      @hosts_acknowledged = 0
-
-      #   - services
-      @services_ok           = 0
-      @services_warning      = 0
-      @services_critical     = 0
-      @services_unknown      = 0
-      @services_pending      = 0
-      @services_in_downtime  = 0
-      @services_acknowledged = 0
-
-      #   - check stats
-      @hosts_active_checks_1min     = 0.to_f
-      @hosts_passive_checks_1min    = 0.to_f
-      @services_active_checks_1min  = 0.to_f
-      @services_passive_checks_1min = 0.to_f
+      @last_cib_data_called = Time.now.to_i
 
       unless( data.nil? )
 
@@ -339,7 +310,9 @@ module Icinga2
     #
     def status_data
 
-      Network.application_data(
+      @last_status_data_called = Time.now.to_i
+
+      icinga_application_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -355,7 +328,9 @@ module Icinga2
     #
     def api_listener
 
-      Network.application_data(
+      @last_application_data_called = Time.now.to_i
+
+      icinga_application_data(
         url: format( '%s/status/ApiListener', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -381,7 +356,6 @@ module Icinga2
     # return Icinga2 version and revision
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.version.values
     #
     #    v = @icinga.version
@@ -392,6 +366,9 @@ module Icinga2
     #    * revision
     #
     def version
+
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
+
       version  = @version.nil?  ? 0 : @version
       revision = @revision.nil? ? 0 : @revision
 
@@ -404,12 +381,14 @@ module Icinga2
     # return Icinga2 node_name
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.node_name
     #
     # @return [String]
     #
     def node_name
+
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
+
       return @node_name if( @node_name )
 
       nil
@@ -418,12 +397,14 @@ module Icinga2
     # return Icinga2 start time
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.start_time
     #
     # @return [String]
     #
     def start_time
+
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
+
       return @start_time if( @start_time )
 
       nil
@@ -438,6 +419,9 @@ module Icinga2
     # @return [String]
     #
     def uptime
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+
       return @uptime if( @uptime )
 
       nil

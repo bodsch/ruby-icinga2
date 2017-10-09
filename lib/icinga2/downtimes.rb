@@ -79,7 +79,7 @@ module Icinga2
         'filter'      => filter
       }
 
-      Network.post(
+      post(
         url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -96,15 +96,11 @@ module Icinga2
     #
     def downtimes
 
-      data = Network.api_data(
+      api_data(
         url: format( '%s/objects/downtimes'   , @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
   end

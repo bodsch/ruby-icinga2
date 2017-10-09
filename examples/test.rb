@@ -50,6 +50,7 @@ unless( i.nil? )
   #
   #
 
+<<<<<<< HEAD
   puts ''
   puts ' ============================================================= '
   puts '= icinga2 available'
@@ -58,25 +59,36 @@ unless( i.nil? )
   puts '= icinga2 status'
   puts i.status_data
   puts ''
+=======
+  begin
+    puts ''
+    puts ' ============================================================= '
+    puts '= icinga2 status'
+    puts i.status_data
+    puts ''
 
-  puts '= icinga2 application data'
-  puts i.application_data
-  puts ''
-  puts '= CIB'
-  puts i.cib_data
-  puts ''
-  puts '= API Listener'
-  puts i.api_listener
-  puts ''
+    puts '= icinga2 application data'
+    puts i.application_data
+    puts ''
+    puts '= CIB'
+    puts i.cib_data
+    puts ''
+    puts '= API Listener'
+    puts i.api_listener
+    puts ''
 
-  v, r = i.version
-  l, e = i.average_statistics
-  puts format( '= version: %s, revision %s', v, r )
-  puts format( '= avg_latency: %s, avg_execution_time %s', l, e )
-  puts format( '= start time: %s', i.start_time )
-  puts format( '= uptime: %s', i.uptime )
-  puts ''
+    v, r = i.version.values
+    l, e = i.average_statistics.values
+    puts format( '= version: %s, revision %s', v, r )
+    puts format( '= avg_latency: %s, avg_execution_time %s', l, e )
+    puts format( '= start time: %s', i.start_time )
+    puts format( '= uptime: %s', i.uptime )
+    puts ''
+>>>>>>> feature/reduce-double-code
 
+
+
+<<<<<<< HEAD
   puts ''
   puts ' ------------------------------------------------------------- '
   puts ''
@@ -386,6 +398,182 @@ unless( i.nil? )
   puts ''
   puts ' ------------------------------------------------------------- '
   puts ''
+=======
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> SERVICES'
+#   puts ''
+#   i.service_objects
+#
+#   warning, critical, unknown = i.services_adjusted
+#
+#   puts format( '= count of all services: %d', i.services_all )
+#   puts format( '= services critical: %d', i.services_critical)
+#   puts format( '= services warning: %d', i.services_warning)
+#   puts format( '= services unknown: %d', i.services_unknown)
+#   puts ''
+#   puts format( '= services handled warning problems: %d', i.services_handled_critical)
+#   puts format( '= services handled critical problems: %d', i.services_handled_critical)
+#   puts format( '= services handled unknown problems: %d', i.services_handled_unknown)
+#   puts ''
+#   puts format( '= services adjusted warning: %d',  warning)
+#   puts format( '= services adjusted critical: %d', critical)
+#   puts format( '= services adjusted unknown: %d',  unknown)
+#   puts ''
+#   puts '= check if service \'users\' on host \'icinga2\' exists'
+#   puts i.exists_service?( host: 'icinga2', service: 'users' )  ? 'true' : 'false'
+#   puts ''
+#   puts '= get service Objects'
+#   puts i.service_objects
+#   puts ''
+#   puts '= Services with problems'
+#   puts i.count_services_with_problems
+#   puts ''
+#   puts '= Problem Services'
+#   a,b = i.list_services_with_problems
+#   puts a
+#   puts b
+#   puts ''
+#   puts i.list_services_with_problems(10)
+#   puts ''
+#   puts '= list named Service \'ping4\' from Host \'icinga2\''
+#   puts i.services( host: 'icinga2', service: 'ping4' )
+#   puts ''
+#   puts '= list all Services'
+#   puts i.services
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> SERVICEGROUPS'
+#   puts ''
+#   puts 'check if Servicegroup \'disk\' exists'
+#   puts i.exists_servicegroup?( 'disk' ) ? 'true' : 'false'
+#   puts 'check if Servicegroup \'foo\' exists'
+#   puts i.exists_servicegroup?( 'foo' ) ? 'true' : 'false'
+#   puts ''
+#   puts 'list named Servicegroup \'foo\''
+#   puts i.servicegroups( service_group: 'foo' )
+#   puts 'list named Servicegroup \'disk\''
+#   puts i.servicegroups( service_group: 'disk' )
+#   puts ''
+#   puts 'list all Servicegroup'
+#   puts i.servicegroups
+#   puts ''
+#   puts 'add Servicegroup \'foo\''
+#   puts i.add_servicegroup( service_group: 'foo', display_name: 'FOO' )
+#   puts ''
+#   puts 'delete Servicegroup \'foo\''
+#   puts i.delete_servicegroup( service_group: 'foo' )
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> USERS'
+#   puts ''
+#   puts 'check if User \'icingaadmin\' exists'
+#   puts i.exists_user?( 'icingaadmin' ) ? 'true' : 'false'
+#   puts ''
+#   puts 'list named User \'icingaadmin\''
+#   puts i.users( user_name: 'icingaadmin' )
+#   puts ''
+#   puts 'list all User'
+#   puts i.users
+#   puts ''
+#   puts 'add User \'foo\''
+#   puts i.add_user( user_name: 'foo', display_name: 'FOO', email: 'foo@bar.com', pager: '0000', groups: ['icingaadmins'] )
+#   puts ''
+#   puts 'delete User \'foo\''
+#   puts i.delete_user( user_name: 'foo' )
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> USERGROUPS'
+#   puts ''
+#   puts 'check if Usergroup \'icingaadmins\' exists'
+#   puts i.exists_usergroup?( 'icingaadmins' ) ? 'true' : 'false'
+#   puts ''
+#   puts 'list named Usergroup \'icingaadmins\''
+#   puts i.usergroups( user_group: 'icingaadmins' )
+#   puts ''
+#   puts 'list all Usergroup'
+#   puts i.usergroups
+#   puts ''
+#   puts 'add Usergroup \'foo\''
+#   puts i.add_usergroup( user_group: 'foo', display_name: 'FOO' )
+#   puts ''
+#   puts 'delete Usergroup \'foo\''
+#   puts i.delete_usergroup( user_group: 'foo' )
+#   puts ''
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> DOWNTIMES'
+#   puts ''
+#   puts 'add Downtime \'test\''
+#   puts i.add_downtime( name: 'test', type: 'service', host: 'foo', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+#   puts ''
+#   puts 'list all Downtimes'
+#   puts i.downtimes
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> NOTIFICATIONS'
+#   puts ''
+#   puts 'list all Notifications'
+#   puts i.notifications
+#   puts ''
+#   puts 'enable Notifications for host'
+#   puts i.enable_host_notification( 'icinga2' )
+#   puts ''
+#   puts 'disable Notifications for host'
+#   puts i.disable_host_notification( 'icinga2' )
+#   puts ''
+#   puts 'enable Notifications for host and services'
+#   puts i.enable_service_notification('icinga2')
+#   puts ''
+#   puts 'disable Notifications for host and services'
+#   puts i.disable_service_notification( 'icinga2' )
+#   puts ''
+#   puts 'enable Notifications for hostgroup'
+#   puts i.enable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
+#   puts ''
+#   puts 'disable Notifications for hostgroup'
+#   puts i.disable_hostgroup_notification( host: 'icinga2', host_group: 'linux-servers')
+#   puts ''
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+#   puts ' ==> WORK QUEUE STATISTICS'
+#   puts ''
+#   puts 'work queue statistics'
+#   puts i.work_queue_statistics
+#   puts ''
+#   puts ' ------------------------------------------------------------- '
+#   puts ''
+>>>>>>> feature/reduce-double-code
 
 
 #   # examples from: https://github.com/saurabh-hirani/icinga2-api-examples
@@ -418,6 +606,10 @@ unless( i.nil? )
 #     filter: "\"windows-servers\" in host.groups"
 #   )
 
+    rescue => e
+      $stderr.puts( e )
+      $stderr.puts( e.backtrace.join("\n") )
+    end
 end
 
 
