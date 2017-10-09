@@ -29,7 +29,7 @@ module Logging
 
       logger                 = Logger.new(STDOUT)
       logger.progname        = classname
-      logger.level           = Logger::DEBUG
+      logger.level           = Logger::UNKNOWN
       logger.datetime_format = '%Y-%m-%d %H:%M:%S::%3N'
       logger.formatter       = proc do |severity, datetime, progname, msg|
         "[#{datetime.strftime( logger.datetime_format )}] #{severity.ljust(5)} : #{progname} - #{msg}\n"

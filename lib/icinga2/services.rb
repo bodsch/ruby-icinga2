@@ -6,7 +6,7 @@ module Icinga2
   # namespace for service handling
   module Services
 
-    # add services
+    # add service
     #
     # @param [Hash] params
     # @option params [String] :host
@@ -15,7 +15,7 @@ module Icinga2
     # @option params [Hash] :vars
     #
     # @example
-    #    @icinga.add_services(
+    #    @icinga.add_service(
     #      host: 'icinga2',
     #      service_name: 'http2',
     #      vars: {
@@ -36,7 +36,7 @@ module Icinga2
     #    * status
     #    * message
     #
-    def add_services( params = {} )
+    def add_service( params = {} )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
@@ -66,7 +66,7 @@ module Icinga2
 
       payload = ''
 
-      vars.each do |_s,v|
+      vars.each_value do |v|
 
         payload = {
           'templates' => templates,
@@ -162,7 +162,7 @@ module Icinga2
 
       payload = {}
 
-      vars.each do |_s,v|
+      vars.each_value do |v|
 
         payload = {
           'templates' => templates,
@@ -197,14 +197,12 @@ module Icinga2
       payload['attrs']  = attrs unless  attrs.nil?
       payload['filter'] = filter unless filter.nil?
 
-      data = api_data(
+      api_data(
         url: format( '%s/objects/services', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
         payload: payload
       )
-
-      data if( data.dig('code').nil? )
     end
 
     # return services
@@ -272,9 +270,9 @@ module Icinga2
       result = JSON.parse( result ) if  result.is_a?( String )
       result = result.first if( result.is_a?(Array) )
 
-      return true if( !result.nil? && result.dig('code') == 200 )
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      false
+      true
     end
 
     # returns service objects
@@ -318,15 +316,11 @@ module Icinga2
         payload: payload
       )
 
-      all_services = data.clone
-      status       = data.first if( data.is_a?(Array))
+      @last_service_objects_called = Time.now.to_i
 
-      status  = status.dig('code').to_i
-
-      if( status.is_a?(Integer) && status == 200 )
-
+      if( !data.nil? && data.is_a?(Array) )
+        all_services = data.clone
         unless( all_services.nil? )
-
           @services_all              = all_services.size
           @services_problems         = count_problems(all_services)
           @services_handled_warning  = count_problems(all_services, Icinga2::SERVICE_STATE_WARNING)
@@ -353,19 +347,11 @@ module Icinga2
     #
     def services_adjusted
 
-      unless( @services_warning.is_a?(Integer) ||
-          @services_critical.is_a?(Integer) ||
-          @services_unknown.is_a?(Integer) )
+      puts 'function services_adjusted is obsolete'
+      puts 'Please use service_problems()'
 
-        cib_data
-      end
-
-      unless( @services_handled_warning.is_a?(Integer) ||
-          @services_handled_critical.is_a?(Integer) ||
-          @services_handled_unknown.is_a?(Integer) )
-
-        service_objects
-      end
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+      service_objects if((Time.now.to_i - @last_service_objects_called).to_i > @last_call_timeout)
 
       service_warning          = @services_warning.nil?          ? 0 : @services_warning
       service_critical         = @services_critical.nil?         ? 0 : @services_critical
@@ -428,7 +414,7 @@ module Icinga2
 
       unless( services_data.nil? )
 
-        services_data.each do |s,_v|
+        services_data.each_key do |s|
 
           name  = s.dig('name')
           state = s.dig('attrs','state')
@@ -439,7 +425,7 @@ module Icinga2
 
         if( services_with_problems.count != 0 )
           services_with_problems.sort.reverse!
-          services_with_problems = services_with_problems.keys[1..max_items].each { |k,_v| services_with_problems_and_severity[k] = services_with_problems[k] }
+          services_with_problems = services_with_problems.keys[1..max_items].each_key { |k| services_with_problems_and_severity[k] = services_with_problems[k] }
         end
       end
 
@@ -459,14 +445,17 @@ module Icinga2
     # @return [Integer]
     #
     def services_all
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+      service_objects if((Time.now.to_i - @last_service_objects_called).to_i > @last_call_timeout)
+
       @services_all
     end
 
     # returns data with service problems
     #
     # @example
-    #    @icinga.cib_data
-    #    all, warning, critical, unknown, pending, in_downtime, acknowledged = @icinga.service_problems.values
+    #    all, warning, critical, unknown, pending, in_downtime, acknowledged, adjusted_warning, adjusted_critical, adjusted_unknown = @icinga.service_problems.values
     #
     #    p = @icinga.service_problems
     #    warning = p.dig(:warning)
@@ -482,13 +471,25 @@ module Icinga2
     #
     def service_problems
 
-      services_ok           = @services_ok.nil?           ? 0 : @services_ok
-      services_warning      = @services_warning.nil?      ? 0 : @services_warning
-      services_critical     = @services_critical.nil?     ? 0 : @services_critical
-      services_unknown      = @services_unknown.nil?      ? 0 : @services_unknown
-      services_pending      = @services_pending.nil?      ? 0 : @services_pending
-      services_in_downtime  = @services_in_downtime.nil?  ? 0 : @services_in_downtime
-      services_acknowledged = @services_acknowledged.nil? ? 0 : @services_acknowledged
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+      service_objects if((Time.now.to_i - @last_service_objects_called).to_i > @last_call_timeout)
+
+      services_ok               = @services_ok.nil?               ? 0 : @services_ok
+      services_warning          = @services_warning.nil?          ? 0 : @services_warning
+      services_critical         = @services_critical.nil?         ? 0 : @services_critical
+      services_unknown          = @services_unknown.nil?          ? 0 : @services_unknown
+      services_pending          = @services_pending.nil?          ? 0 : @services_pending
+      services_in_downtime      = @services_in_downtime.nil?      ? 0 : @services_in_downtime
+      services_acknowledged     = @services_acknowledged.nil?     ? 0 : @services_acknowledged
+      services_handled_all      = @services_handled.nil?          ? 0 : @services_handled
+      services_handled_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
+      services_handled_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
+      services_handled_unknown  = @services_handled_unknown.nil?  ? 0 : @services_handled_unknown
+
+      # calculate service problems adjusted by handled problems
+      services_adjusted_warning  = services_warning  - services_handled_warning
+      services_adjusted_critical = services_critical - services_handled_critical
+      services_adjusted_unknown  = services_unknown  - services_handled_unknown
 
       {
         ok: services_ok.to_i,
@@ -497,16 +498,22 @@ module Icinga2
         unknown: services_unknown.to_i,
         pending: services_pending.to_i,
         in_downtime: services_in_downtime.to_i,
-        acknowledged: services_acknowledged.to_i
+        acknowledged: services_acknowledged.to_i,
+        adjusted_warning: services_adjusted_warning.to_i,
+        adjusted_critical: services_adjusted_critical.to_i,
+        adjusted_unknown: services_adjusted_unknown.to_i,
+        handled_all: services_handled_all.to_i,
+        handled_warning: services_handled_warning.to_i,
+        handled_critical: services_handled_critical.to_i,
+        handled_unknown: services_handled_unknown.to_i
       }
     end
 
     # returns data with service problems they be handled (acknowledged or in downtime)
     #
     # @example
-    #    @icinga.cib_data
     #    @icinga.service_objects
-    #    all, critical, warning, unknown = @icinga.service_problems_handled.values
+    #    all, warning, critical, unknown = @icinga.service_problems_handled.values
     #
     #    p = @icinga.service_problems_handled
     #    warning = p.dig(:warning)
@@ -519,6 +526,11 @@ module Icinga2
     #
     def service_problems_handled
 
+      puts 'function service_problems_handled is obsolete'
+      puts 'Please use service_problems()'
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+
       problems_all      = @services_handled.nil?          ? 0 : @services_handled
       problems_critical = @services_handled_critical.nil? ? 0 : @services_handled_critical
       problems_warning  = @services_handled_warning.nil?  ? 0 : @services_handled_warning
@@ -526,8 +538,8 @@ module Icinga2
 
       {
         all: problems_all.to_i,
-        critical: problems_critical.to_i,
         warning: problems_warning.to_i,
+        critical: problems_critical.to_i,
         unknown: problems_unknown.to_i
       }
 
@@ -590,12 +602,8 @@ module Icinga2
             256
           end
 
-#         puts JSON.pretty_generate params
-
         # requires joins
         host_attrs = params.dig('joins','host')
-
-#         puts host_attrs
 
         return 0 if( host_attrs.nil? )
 

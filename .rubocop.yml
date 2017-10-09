@@ -54,3 +54,6 @@ Style/RaiseArgs:
 Layout:
   Enabled: False
 
+RescueWithoutErrorClass:
+  Enabled: False
+

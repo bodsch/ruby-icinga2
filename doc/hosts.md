@@ -50,19 +50,6 @@
     @icinga.host_objects(attrs: ['name', 'state'])
 
 
-## <a name="hosts-adjusted"></a>adjusted hosts state
-    hosts_adjusted
-
-### Example
-    @icinga.cib_data
-    @icinga.host_objects
-    warning, critical, unknown = @icinga.hosts_adjusted.values
-
-or
-    h = @icinga.hosts_adjusted
-    down = h.dig(:down_adjusted)
-
-
 ## <a name="count-hosts-with-problems"></a>count of hosts with problems
     count_hosts_with_problems
 
@@ -82,7 +69,6 @@ or
     hosts_all
 
 ### Example
-    @icinga.host_objects
     @icinga.hosts_all
 
 
@@ -90,10 +76,10 @@ or
     host_problems
 
 ### Example
-    @icinga.host_objects
-    all, down, critical, unknown = @icinga.host_problems.values
+    all, down, critical, unknown, handled, adjusted = @icinga.host_problems.values
 
 or
+
     p = @icinga.host_problems
     down = h.dig(:down)
 

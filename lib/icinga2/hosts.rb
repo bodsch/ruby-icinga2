@@ -84,7 +84,7 @@ module Icinga2
         payload['attrs']['zone'] = @icinga_satellite
       end
 
-      logger.debug( JSON.pretty_generate( payload ) )
+      # logger.debug( JSON.pretty_generate( payload ) )
 
       put(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
@@ -171,15 +171,12 @@ module Icinga2
       raise ArgumentError.new('Missing host_name') if( host_name.size.zero? )
 
       result = hosts( host: host_name )
-      result = JSON.parse( result ) if  result.is_a?( String )
+      result = JSON.parse( result ) if( result.is_a?(String) )
       result = result.first if( result.is_a?(Array) )
 
-# logger.debug(JSON.pretty_generate result)
-# logger.debug('-----')
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      return true if( !result.nil? && result.dig('code') == 200 )
-
-      false
+      true
     end
 
     # returns host objects
@@ -224,12 +221,11 @@ module Icinga2
         payload: payload
       )
 
-      all_hosts = data.clone
-      status    = data.first if( data.is_a?(Array))
+      @last_host_objects_called = Time.now.to_i
 
-      status  = status.dig('code').to_i
+      if( !data.nil? && data.is_a?(Array) )
 
-      if( status.is_a?(Integer) && status == 200 )
+        all_hosts = data.clone
 
         unless( all_hosts.nil? )
           # global var for count of all hosts
@@ -248,6 +244,7 @@ module Icinga2
     end
 
     # returns adjusted hosts state
+    # OBSOLETE
     #
     # @example
     #    handled, down = @icinga.hosts_adjusted.values
@@ -261,24 +258,11 @@ module Icinga2
     #
     def hosts_adjusted
 
-#       puts @hosts_problems_down
-#       puts @hosts_problems_critical
-#       puts @hosts_problems_unknown
-#       puts @hosts_down
+      puts 'function hosts_adjusted() is obsolete'
+      puts 'Please use host_problems()'
 
-      unless( @hosts_problems_down.is_a?(Integer) ||
-          @hosts_problems_critical.is_a?(Integer) ||
-          @hosts_problems_unknown.is_a?(Integer) ||
-          @hosts_down.is_a?(Integer) )
-
-        cib_data
-        host_objects
-      end
-
-#       puts @hosts_problems_down
-#       puts @hosts_problems_critical
-#       puts @hosts_problems_unknown
-#       puts @hosts_down
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+      host_objects if((Time.now.to_i - @last_host_objects_called).to_i > @last_call_timeout)
 
       raise ArgumentError.new('Integer for @hosts_problems_down needed') unless( @hosts_problems_down.is_a?(Integer) )
       raise ArgumentError.new('Integer for @hosts_problems_critical needed') unless( @hosts_problems_critical.is_a?(Integer) )
@@ -336,7 +320,7 @@ module Icinga2
 
       unless( host_data.nil? )
 
-        host_data.each do |h,_v|
+        host_data.each_key do |h|
           name  = h.dig('name')
           state = h.dig('attrs','state')
 
@@ -349,7 +333,7 @@ module Icinga2
       # get the count of problems
       #
       if( host_problems.count != 0 )
-        host_problems.keys[1..max_items].each { |k,_v| host_problems_severity[k] = host_problems[k] }
+        host_problems.keys[1..max_items].each_key { |k| host_problems_severity[k] = host_problems[k] }
       end
 
       host_problems_severity
@@ -371,7 +355,7 @@ module Icinga2
     #
     # @example
     #    @icinga.host_objects
-    #    all, down, critical, unknown = @icinga.host_problems.values
+    #    all, down, critical, unknown, handled, adjusted = @icinga.host_problems.values
     #
     #    p = @icinga.host_problems
     #    down = h.dig(:down)
@@ -384,24 +368,31 @@ module Icinga2
     #
     def host_problems
 
-      unless( @hosts_problems.is_a?(Integer) ||
-          @hosts_problems_down.is_a?(Integer) ||
-          @hosts_problems_critical.is_a?(Integer) ||
-          @hosts_problems_unknown.is_a?(Integer) )
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+      host_objects if((Time.now.to_i - @last_host_objects_called).to_i > @last_call_timeout)
 
-        host_objects
-      end
+      raise ArgumentError.new('Integer for @hosts_problems_down needed') unless( @hosts_problems_down.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_problems_critical needed') unless( @hosts_problems_critical.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_problems_unknown needed') unless( @hosts_problems_unknown.is_a?(Integer) )
+      raise ArgumentError.new('Integer for @hosts_down needed') unless( @hosts_down.is_a?(Integer) )
 
       problems_all      = @hosts_problems.nil?           ? 0 : @hosts_problems
       problems_down     = @hosts_problems_down.nil?      ? 0 : @hosts_problems_down
       problems_critical = @hosts_problems_critical.nil?  ? 0 : @hosts_problems_critical
       problems_unknown  = @hosts_problems_unknown.nil?   ? 0 : @hosts_problems_unknown
 
+      # calculate host problems adjusted by handled problems
+      # count togther handled host problems
+      problems_handled  = @hosts_problems_down + @hosts_problems_critical + @hosts_problems_unknown
+      problems_adjusted = @hosts_down - problems_handled
+
       {
         all: problems_all.to_i,
         down: problems_down.to_i,
         critical: problems_critical.to_i,
-        unknown: problems_unknown.to_i
+        unknown: problems_unknown.to_i,
+        handled: problems_handled.to_i,
+        adjusted: problems_adjusted.to_i
       }
     end
 

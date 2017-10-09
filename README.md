@@ -17,7 +17,7 @@ Ruby Class for the Icinga2 API
 
 ## Requirements
 
-* ruby version  ~> 2.0
+* ruby version  => 2.1
 * rest-client ~> 2.0
 * openssl ~> 2.0 (only with ruby 2.3)
 * json  ~> 2.1
@@ -67,7 +67,6 @@ supports the following API Calls:
     * [list hosts](doc/hosts.md#list-hosts)
     * [check if host exists](doc/hosts.md#host-exists)
     * [list host objects](doc/hosts.md#list-host-objects)
-    * [adjusted hosts state](doc/hosts.md#hosts-adjusted)
     * [count of hosts with problems](doc/hosts.md#count-hosts-with-problems)
     * [list of hosts with problems](doc/hosts.md#list-hosts-with-problems)
     * [count of all hosts](doc/hosts.md#count-all-hosts)
@@ -81,20 +80,18 @@ supports the following API Calls:
     * [check if hostgroup exists](doc/hostgroups.md#usergroup-exists)
 
   - [Services](doc/services.md)
-    * [add service](doc/services.md#add-service) (**this function is not operable yet!**)
-    * [delete service](doc/services.md#delete-service) (**not yet implemented**)
-    * [add service](doc/services.md#add-service) (**this function is not operable yet!**)
-    * [list unhandled services](doc/services.md#unhandled-services) (**not yet implemented**)
+    * [add service](doc/services.md#add-service)
+    * [delete service](doc/services.md#delete-service)
+    * [list unhandled services](doc/services.md#unhandled-services)
     * [list services](doc/services.md#list-services)
     * [check if service exists](doc/services.md#service-exists)
     * [list service objects](doc/services.md#list-service-objects)
-    * [adjusted service state](doc/services.md#services-adjusted)
     * [count services with problems](doc/services.md#count-services-with-problems)
     * [list of services with problems](doc/services.md#list-services-with-problems)
-    * [update host](doc/services.md#update-host) (**this function is not operable yet!**)
     * [count of all services](doc/services.md#count-all-services)
     * [count all services with handled problems](doc/services.md#count-all-services-handled)
     * calculate service severity (protected)
+    * update host (private)
 
   - [Servicegroups](doc/servicegroups.md)
     * [add servicegroup](doc/servicegroups.md#add-servicegroup)
@@ -131,8 +128,8 @@ supports the following API Calls:
     #$ gem build icinga2.gemspec
     Successfully built RubyGem
     Name: icinga2
-    Version: 0.6.0
-    File: icinga2-0.6.0.gem
+    Version: 0.9.0
+    File: icinga2-0.9.0.gem
 
 ## install gem
 

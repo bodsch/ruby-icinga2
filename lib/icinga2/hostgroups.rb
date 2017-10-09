@@ -108,12 +108,12 @@ module Icinga2
       raise ArgumentError.new('Missing host_group') if( host_group.size.zero? )
 
       result = hostgroups(host_group: host_group)
-      result = JSON.parse( result ) if  result.is_a?( String )
-      result = result.first
+      result = JSON.parse( result ) if( result.is_a?(String) )
+      result = result.first if( result.is_a?(Array) )
 
-      return true if( !result.nil? && result.dig('code') == 200 )
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      false
+      true
     end
 
   end

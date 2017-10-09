@@ -117,6 +117,13 @@ module Icinga2
       @icinga_satellite     = settings.dig(:icinga, :satellite)
       @icinga_notifications = settings.dig(:icinga, :notifications)  || false
 
+      @last_call_timeout    = 320
+      @last_cib_data_called = 0
+      @last_status_data_called = 0
+      @last_application_data_called = 0
+      @last_service_objects_called = 0
+      @last_host_objects_called = 0
+
       @icinga_api_url_base  = format( 'https://%s:%d/v%s', icinga_host, icinga_api_port, icinga_api_version )
 
       _has_cert, @options = cert?(
@@ -128,9 +135,7 @@ module Icinga2
 
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
 
-      return self unless( application_data.nil? )
-
-      nil
+      self
     end
 
     # create a HTTP Header based on a Icinga2 Certificate or an User API Login
@@ -207,7 +212,6 @@ module Icinga2
 
     end
 
-
     # return Icinga2 Application data
     #
     # @example
@@ -253,6 +257,8 @@ module Icinga2
         headers: @headers,
         options: @options
       )
+
+      @last_cib_data_called = Time.now.to_i
 
       unless( data.nil? )
 
@@ -304,6 +310,8 @@ module Icinga2
     #
     def status_data
 
+      @last_status_data_called = Time.now.to_i
+
       icinga_application_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
@@ -320,6 +328,8 @@ module Icinga2
     #
     def api_listener
 
+      @last_application_data_called = Time.now.to_i
+
       icinga_application_data(
         url: format( '%s/status/ApiListener', @icinga_api_url_base ),
         headers: @headers,
@@ -327,10 +337,25 @@ module Icinga2
       )
     end
 
+    # check the availability of a Icinga network connect
+    #
+    # @example
+    #    @icinga.available?
+    #
+    # @return [Bool]
+    #
+    def available?
+
+      data = application_data
+
+      return true unless( data.nil? )
+
+      false
+    end
+
     # return Icinga2 version and revision
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.version.values
     #
     #    v = @icinga.version
@@ -342,9 +367,7 @@ module Icinga2
     #
     def version
 
-      unless( @version.is_a?(Integer) || @revision.is_a?(Integer) )
-        application_data
-      end
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
 
       version  = @version.nil?  ? 0 : @version
       revision = @revision.nil? ? 0 : @revision
@@ -358,12 +381,14 @@ module Icinga2
     # return Icinga2 node_name
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.node_name
     #
     # @return [String]
     #
     def node_name
+
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
+
       return @node_name if( @node_name )
 
       nil
@@ -372,12 +397,14 @@ module Icinga2
     # return Icinga2 start time
     #
     # @example
-    #    @icinga.application_data
     #    @icinga.start_time
     #
     # @return [String]
     #
     def start_time
+
+      application_data if((Time.now.to_i - @last_application_data_called).to_i > @last_call_timeout)
+
       return @start_time if( @start_time )
 
       nil
@@ -392,6 +419,9 @@ module Icinga2
     # @return [String]
     #
     def uptime
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+
       return @uptime if( @uptime )
 
       nil

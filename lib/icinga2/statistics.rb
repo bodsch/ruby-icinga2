@@ -21,11 +21,7 @@ module Icinga2
     #
     def average_statistics
 
-      unless( @avg_latency.is_a?(Integer) ||
-          @avg_execution_time.is_a?(Integer)   )
-
-        cib_data
-      end
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       avg_latency        = @avg_latency.nil?        ? 0 : @avg_latency
       avg_execution_time = @avg_execution_time.nil? ? 0 : @avg_execution_time
@@ -52,13 +48,7 @@ module Icinga2
     #
     def interval_statistics
 
-      unless( @hosts_active_checks_1min.is_a?(Integer) ||
-          @hosts_passive_checks_1min.is_a?(Integer) ||
-          @services_active_checks_1min.is_a?(Integer) ||
-          @services_passive_checks_1min.is_a?(Integer) )
-
-        cib_data
-      end
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       # take a look into https://github.com/Icinga/pkg-icinga2-debian/blob/master/lib/icinga/cib.cpp
 
@@ -94,16 +84,7 @@ module Icinga2
     #
     def service_statistics
 
-      unless( @services_ok.is_a?(Integer) ||
-          @services_warning.is_a?(Integer) ||
-          @services_critical.is_a?(Integer) ||
-          @services_unknown.is_a?(Integer) ||
-          @services_pending.is_a?(Integer) ||
-          @services_in_downtime.is_a?(Integer) ||
-          @services_in_downtime.is_a?(Integer) )
-
-        cib_data
-      end
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       services_ok           = @services_ok.nil?           ? 0 : @services_ok
       services_warning      = @services_warning.nil?      ? 0 : @services_warning
@@ -111,7 +92,7 @@ module Icinga2
       services_unknown      = @services_unknown.nil?      ? 0 : @services_unknown
       services_pending      = @services_pending.nil?      ? 0 : @services_pending
       services_in_downtime  = @services_in_downtime.nil?  ? 0 : @services_in_downtime
-      services_acknowledged = @services_in_downtime.nil? ? 0 : @services_acknowledged
+      services_acknowledged = @services_acknowledged.nil? ? 0 : @services_acknowledged
 
       {
         ok: services_ok.to_i,
@@ -142,15 +123,7 @@ module Icinga2
     #
     def host_statistics
 
-      unless( @hosts_up.is_a?(Integer) ||
-          @hosts_down.is_a?(Integer) ||
-          @hosts_pending.is_a?(Integer) ||
-          @hosts_unreachable.is_a?(Integer) ||
-          @hosts_in_downtime.is_a?(Integer) ||
-          @hosts_acknowledged.is_a?(Integer) )
-
-        cib_data
-      end
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       hosts_up           = @hosts_up.nil?           ? 0 : @hosts_up
       hosts_down         = @hosts_down.nil?         ? 0 : @hosts_down
@@ -188,7 +161,7 @@ module Icinga2
 
       return stats if data.nil?
 
-      if( data.dig('code').nil? )
+      if( data.is_a?(Array) )
 
         json_rpc_data  = data.find { |k| k['name'] == 'ApiListener' }
         graphite_data  = data.find { |k| k['name'] == 'GraphiteWriter' }

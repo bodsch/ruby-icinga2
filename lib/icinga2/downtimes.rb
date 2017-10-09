@@ -96,15 +96,11 @@ module Icinga2
     #
     def downtimes
 
-      data = api_data(
+      api_data(
         url: format( '%s/objects/downtimes'   , @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
   end

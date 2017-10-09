@@ -88,15 +88,14 @@ module Icinga2
         format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group )
       end
 
-      data = api_data(
+      api_data(
         url: url,
         headers: @headers,
         options: @options
       )
 
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
+#      return data.dig('results') if( data.dig(:status).nil? )
+#      nil
     end
 
     # checks if the servicegroup exists
@@ -113,13 +112,13 @@ module Icinga2
       raise ArgumentError.new('only String are allowed') unless( service_group.is_a?(String) )
       raise ArgumentError.new('Missing service_group') if( service_group.size.zero? )
 
-
       result = servicegroups( service_group: service_group )
       result = JSON.parse( result ) if  result.is_a?( String )
+      result = result.first if( result.is_a?(Array) )
 
-      return true if  !result.nil? && result.is_a?(Array)
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      false
+      true
     end
 
   end
