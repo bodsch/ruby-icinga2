@@ -416,7 +416,7 @@ module Icinga2
 
       unless( services_data.nil? )
 
-        services_data.each_key do |s|
+        services_data.each do |s|
 
           name  = s.dig('name')
           state = s.dig('attrs','state')
@@ -427,7 +427,7 @@ module Icinga2
 
         if( services_with_problems.count != 0 )
           services_with_problems.sort.reverse!
-          services_with_problems = services_with_problems.keys[1..max_items].each_key { |k| services_with_problems_and_severity[k] = services_with_problems[k] }
+          services_with_problems = services_with_problems.keys[1..max_items].each { |k| services_with_problems_and_severity[k] = services_with_problems[k] }
         end
       end
 

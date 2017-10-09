@@ -47,8 +47,7 @@ module Icinga2
 
         data = JSON.parse( data ) if( data.is_a?(String) )
         data = data.deep_string_keys
-
-        data.dig('results') if( data.is_a?(Hash) )
+        data = data.dig('results') if( data.is_a?(Hash) )
 
         return data
 
@@ -90,6 +89,8 @@ module Icinga2
 
         data = api_data( url: url, headers: headers, options: options )
         data = data.first if( data.is_a?(Array) )
+
+        data
 
         return data.dig('status') unless( data.nil? )
 
@@ -336,10 +337,8 @@ module Icinga2
       rescue RestClient::Unauthorized
 
         return {
-          'results' => [{
             'code' => 401,
             'status' => format('Not authorized to connect \'%s\' - wrong username or password?', @icinga_api_url_base)
-          }]
         }
 
       rescue RestClient::NotFound

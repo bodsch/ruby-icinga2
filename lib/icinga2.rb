@@ -227,9 +227,21 @@ module Icinga2
         options: @options
       )
 
+      #puts '---'
+      #puts data
+      #puts data.class.to_s
+      #puts '---'
+
       return nil if( data.nil? )
+#      return data if( data.is_a?(Hash) && data.dig('code').to_i != 200 )
+#puts '.'
 
       app_data = data.dig('icingaapplication','app')
+
+      #puts '---'
+      #puts app_data
+      #puts app_data.class.to_s
+      #puts '---'
 
       # version and revision
       @version, @revision = parse_version(app_data.dig('version'))
@@ -258,9 +270,11 @@ module Icinga2
         options: @options
       )
 
-      @last_cib_data_called = Time.now.to_i
+      return nil if( data.nil? )
 
-      unless( data.nil? )
+      @last_cib_data_called = 0 #Time.now.to_i
+
+      if( data.is_a?(Hash))
 
         cib_data = data.clone
 
@@ -268,7 +282,6 @@ module Icinga2
         #   - uptime
         uptime   = cib_data.dig('uptime').round(2)
         @uptime  = Time.at(uptime).utc.strftime('%H:%M:%S')
-
         #   - avg_latency / avg_execution_time
         @avg_latency        = cib_data.dig('avg_latency').round(2)
         @avg_execution_time = cib_data.dig('avg_execution_time').round(2)

@@ -320,7 +320,7 @@ module Icinga2
 
       unless( host_data.nil? )
 
-        host_data.each_key do |h|
+        host_data.each do |h,_v|
           name  = h.dig('name')
           state = h.dig('attrs','state')
 
@@ -333,7 +333,7 @@ module Icinga2
       # get the count of problems
       #
       if( host_problems.count != 0 )
-        host_problems.keys[1..max_items].each_key { |k| host_problems_severity[k] = host_problems[k] }
+        host_problems.keys[1..max_items].each { |k| host_problems_severity[k] = host_problems[k] }
       end
 
       host_problems_severity

@@ -411,8 +411,8 @@ describe Icinga2 do
         }
       }
 
-      s = @icinga2.add_services( data )
-      status_code = s[:status]
+      s = @icinga2.add_service( data )
+      status_code = s['code']
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
 
@@ -440,7 +440,7 @@ describe Icinga2 do
       }
       s = @icinga2.modify_service( data )
 
-      status_code = s[:status]
+      status_code = s['code']
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
       expect(status_code).to be == 200
@@ -453,7 +453,7 @@ describe Icinga2 do
         service_name: 'new_http',
         cascade: true
       )
-      status_code = s[:status]
+      status_code = s['code']
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
       expect(status_code).to be == 200
