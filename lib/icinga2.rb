@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'ruby_dig' if RUBY_VERSION < '2.3'
+
 require 'rest-client'
 require 'openssl'
 
@@ -125,7 +127,9 @@ module Icinga2
 
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
 
-      self
+      return self unless( application_data.nil? )
+
+      nil
     end
 
     # create a HTTP Header based on a Icinga2 Certificate or an User API Login

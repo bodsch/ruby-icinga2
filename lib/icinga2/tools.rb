@@ -14,7 +14,7 @@ module Icinga2
     # @return [Bool]
     #
     def object_has_been_checked?( object )
-      object.dig('attrs', 'last_check').positive?
+      object.dig('attrs', 'last_check') > 0
     end
 
     # parse version string and extract version and revision

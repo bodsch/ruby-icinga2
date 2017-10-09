@@ -11,10 +11,9 @@ module Icinga2
     # minor part of version
     MINOR = 9
     # tiny part of version
-    TINY  = 0
+    TINY  = 95
     # patch part
-    PATCH = 0
-
+    PATCH = 5
   end
 
   # Current version of gem.

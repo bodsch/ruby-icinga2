@@ -74,6 +74,7 @@ module Icinga2
 
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
 #           $stderr.puts( message )
+          raise message
 
           return {
             status: 500,
@@ -201,7 +202,8 @@ module Icinga2
         else
 
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
+#           $stderr.puts( message )
+          raise message
 
           return {
             status: 500,
@@ -296,7 +298,8 @@ module Icinga2
         else
 
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
+#          $stderr.puts( message )
+          raise message
 
           return {
             status: 500,
@@ -388,7 +391,8 @@ module Icinga2
         else
 
           message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
+#           $stderr.puts( message )
+          raise message
 
           return {
             status: 500,
