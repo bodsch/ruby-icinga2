@@ -4,7 +4,7 @@
 # 07.10.2017 - Bodo Schulz
 #
 #
-# Examples for Hosts
+# Examples for Hostgroups
 
 # -----------------------------------------------------------------------------
 
@@ -54,79 +54,32 @@ unless( i.nil? )
 
     puts ' ------------------------------------------------------------- '
     puts ''
-    puts ' ==> HOSTS'
+
+    puts ' ==> USERGROUPS'
     puts ''
 
-    puts format( '= count of all hosts   : %d', i.hosts_all )
-    puts format( '= count_hosts_with_problems: %d', i.count_hosts_with_problems)
-    puts ''
-
-    all, down, critical, unknown, handled, adjusted = i.host_problems.values
-
-    puts '= hosts with problems'
-    puts format( '  - all     : %d', all )
-    puts format( '  - down    : %d', down )
-    puts format( '  - critical: %d', critical )
-    puts format( '  - unknown : %d', unknown )
-    puts format( '  - handled : %d', handled )
-    puts format( '  - adjusted: %d', adjusted )
-    puts ''
-
-    puts ''
-    ['c1-mysql-1', 'bp-foo'].each do |h|
-
-      e = i.exists_host?( h ) ? 'true' : 'false'
-      puts format( '= check if Host \'%s\' exists : %s', h, e )
+    ['icingaadmins', 'linux-admins'].each do |h|
+      e = i.exists_usergroup?( h ) ? 'true' : 'false'
+      puts format( '= check if Usergroup \'%s\' exists : %s', h, e )
     end
-
     puts ''
 
-    puts '= 5 Hosts with Problem '
-    puts i.list_hosts_with_problems
+    puts '= add Usergroup \'foo\''
+    puts i.add_usergroup( user_group: 'foo', display_name: 'FOO' )
     puts ''
 
-    ['c1-mysql-1', 'bp-foo'].each do |h|
-      puts format('= list named Hosts \'%s\'', h )
-      puts i.hosts( host: h )
-      puts ''
-    end
-
-    puts ' = add Host \'foo\''
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
+    puts 'list named Usergroup \'foo\''
+    puts i.usergroups( user_group: 'foo' )
     puts ''
 
-    puts ' = add Host \'foo\' (again)'
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
+    puts '= delete Usergroup \'foo\''
+    puts i.delete_usergroup( user_group: 'foo' )
     puts ''
 
-    puts ' = delete Host \'foo\''
-    puts i.delete_host( host: 'foo' )
-    puts ''
 
-    puts ' = delete Host \'foo\' (again)'
-    puts i.delete_host( host: 'foo' )
+    puts 'list all Usergroup'
+    puts i.usergroups
     puts ''
-
-    puts '= list all Hosts'
-    #puts i.hosts
-    puts ''
-
-    puts '= list named Hosts \'c1-mysql-1\''
-    #puts i.hosts(host: 'c1-mysql-1')
-    puts ''
-
     puts ' ------------------------------------------------------------- '
     puts ''
 

@@ -63,6 +63,7 @@ unless( i.nil? )
     puts format( '= avg_latency: %s, avg_execution_time %s', l, e )
     puts format( '= start time: %s', i.start_time )
     puts format( '= uptime: %s', i.uptime )
+    puts format( '= node name: %s', i.node_name )
     puts ''
 
     puts '= icinga2 status'

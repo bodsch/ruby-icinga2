@@ -4,7 +4,7 @@
 # 07.10.2017 - Bodo Schulz
 #
 #
-# Examples for Hosts
+# Examples for Hostgroups
 
 # -----------------------------------------------------------------------------
 
@@ -54,77 +54,44 @@ unless( i.nil? )
 
     puts ' ------------------------------------------------------------- '
     puts ''
-    puts ' ==> HOSTS'
+
+    puts ' ==> NOTIFICATIONS'
     puts ''
-
-    puts format( '= count of all hosts   : %d', i.hosts_all )
-    puts format( '= count_hosts_with_problems: %d', i.count_hosts_with_problems)
-    puts ''
-
-    all, down, critical, unknown, handled, adjusted = i.host_problems.values
-
-    puts '= hosts with problems'
-    puts format( '  - all     : %d', all )
-    puts format( '  - down    : %d', down )
-    puts format( '  - critical: %d', critical )
-    puts format( '  - unknown : %d', unknown )
-    puts format( '  - handled : %d', handled )
-    puts format( '  - adjusted: %d', adjusted )
-    puts ''
-
-    puts ''
-    ['c1-mysql-1', 'bp-foo'].each do |h|
-
-      e = i.exists_host?( h ) ? 'true' : 'false'
-      puts format( '= check if Host \'%s\' exists : %s', h, e )
-    end
-
-    puts ''
-
-    puts '= 5 Hosts with Problem '
-    puts i.list_hosts_with_problems
+    puts '= list all Notifications'
+    puts i.notifications
     puts ''
 
     ['c1-mysql-1', 'bp-foo'].each do |h|
-      puts format('= list named Hosts \'%s\'', h )
-      puts i.hosts( host: h )
-      puts ''
+      puts format( '= enable Notifications for \'%s\'', h )
+      puts i.enable_host_notification( h )
     end
-
-    puts ' = add Host \'foo\''
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
     puts ''
 
-    puts ' = add Host \'foo\' (again)'
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
+    ['c1-mysql-1', 'bp-foo'].each do |h|
+      puts format( '= disable Notifications for \'%s\'', h )
+      puts i.disable_host_notification( h )
+    end
     puts ''
 
-    puts ' = delete Host \'foo\''
-    puts i.delete_host( host: 'foo' )
+    ['c1-mysql-1', 'bp-foo'].each do |h|
+      puts format( '= enable Notifications for \'%s\' and they services', h )
+      puts i.enable_service_notification( h )
+    end
     puts ''
 
-    puts ' = delete Host \'foo\' (again)'
-    puts i.delete_host( host: 'foo' )
+    ['c1-mysql-1', 'bp-foo'].each do |h|
+      puts format( '= disable Notifications for \'%s\' and they services', h )
+      puts i.disable_service_notification( h )
+    end
     puts ''
 
-    puts '= list all Hosts'
-    #puts i.hosts
+    puts '= enable Notifications for hostgroup'
+    puts i.enable_hostgroup_notification( host_group: 'linux-servers')
     puts ''
 
-    puts '= list named Hosts \'c1-mysql-1\''
-    #puts i.hosts(host: 'c1-mysql-1')
+
+    puts '= disable Notifications for hostgroup'
+    puts i.disable_hostgroup_notification( host_group: 'linux-servers')
     puts ''
 
     puts ' ------------------------------------------------------------- '
