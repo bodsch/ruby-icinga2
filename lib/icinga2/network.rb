@@ -33,9 +33,6 @@ module Icinga2
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
-      max_retries = 10
-      retried     = 0
-
       if( payload )
         raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
         headers['X-HTTP-Method-Override'] = 'GET'
@@ -212,7 +209,7 @@ module Icinga2
           results = data
         end
 
-        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+        return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
 
       rescue => e
 
@@ -337,7 +334,7 @@ module Icinga2
           results = data
         end
 
-        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+        return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
 
       rescue => e
 
@@ -464,7 +461,7 @@ module Icinga2
           results = data
         end
 
-        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+        return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
 
       rescue => e
         logger.error(e)
@@ -549,7 +546,7 @@ module Icinga2
       logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{options}, #{data} )" )
 
       raise ArgumentError.new('client must be an RestClient::Resource') unless( client.is_a?(RestClient::Resource) )
-      raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w(GET POST PUT DELETE).include?(method) )
+      raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w[GET POST PUT DELETE].include?(method) )
 
       unless( data.nil? )
         raise ArgumentError.new(format('data must be an Hash (%s)', data.class.to_s)) unless( data.is_a?(Hash) )
@@ -569,7 +566,7 @@ module Icinga2
           response = client.patch( data, headers )
         when 'PUT'
           # response = @api_instance[endpoint].put( data, @headers )
-          client.put( data.to_json, headers ) do |response, req, result|
+          client.put( data.to_json, headers ) do |response, req, _result|
 
             @req           = req
             @response_raw  = response
@@ -584,44 +581,15 @@ module Icinga2
 
             case response.code
             when 200
-#               response_raw  = response
-#               response_body = response.body
-#               response_code = response.code.to_i
-              response_body = JSON.parse(@response_body) if @response_body.is_a?(String)
-
-#             logger.debug('----------------------------')
-#             logger.debug(@response_body)
-#             logger.debug('----------------------------')
-
-            return @response_body
-#               return {
-#                 'status' => @response_code,
-#                 'message' => response_body.dig('results').nil? ? 'Successful' : response_body.dig('results')
-#               }
+              return @response_body
             when 400
-#               response_raw  = response
-#               response_body = response.body
-#               response_code = response.code.to_i
               raise RestClient::BadRequest
             when 404
-
-#               @req           = req
-#               @response_raw  = response
-#               @response_body = response.body
-#               @response_code = response.code.to_i
               raise RestClient::NotFound
             when 500
-
               raise RestClient::InternalServerError
             else
-
-#               logger.debug('----------------------------')
-#               logger.debug(@response_raw)
-#               logger.debug(@response_body)
-#               logger.debug(@response_code)
-#               logger.debug('----------------------------')
-
-              response.return #!(@req, result)
+              response.return
             end
           end
 
@@ -672,9 +640,9 @@ module Icinga2
       rescue RestClient::NotFound
 
         return {
-          'results': [{
-          'code' => 404,
-          'status' => 'Object not Found'
+          'results' => [{
+            'code' => 404,
+            'status' => 'Object not Found'
           }]
         }
 
@@ -689,7 +657,7 @@ module Icinga2
 
         results = response_body.dig('results')
         results = results.first if( results.is_a?(Array) )
-        status  = results.dig('status').gsub('.','')
+        status  = results.dig('status')
         errors  = results.dig('errors')
         errors  = errors.first if( errors.is_a?(Array) )
         errors  = errors.sub(/ \'.*\'/,'')
@@ -699,9 +667,9 @@ module Icinga2
 #         logger.debug(errors.class.to_s)
 
         return {
-          'results': [{
-          'code' => 500,
-          'status' => format('%s (%s)', status, errors)
+          'results' => [{
+            'code' => 500,
+            'status' => format('%s (%s)', status, errors).delete('.')
           }]
         }
 
@@ -719,10 +687,12 @@ module Icinga2
 #           $stderr.puts( message )
           raise message
 
-          return {
-            status: 500,
-            message: message
-          }
+#           return {
+#             'results' => [{
+#               'code' => 500,
+#               'status' => message
+#             }]
+#           }
         end
 
       rescue RestClient::ExceptionWithResponse => e

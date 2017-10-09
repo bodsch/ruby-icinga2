@@ -10,7 +10,6 @@ module Icinga2
     # return statistic data for latency and execution_time
     #
     # @example
-    #    @icinga.cib_data
     #    latency, execution_time = @icinga.average_statistics.values
     #
     #    h = @icinga.average_statistics
@@ -21,6 +20,13 @@ module Icinga2
     #    * execution_time (Float)
     #
     def average_statistics
+
+      unless( @avg_latency.is_a?(Integer) ||
+          @avg_execution_time.is_a?(Integer)   )
+
+        cib_data
+      end
+
       avg_latency        = @avg_latency.nil?        ? 0 : @avg_latency
       avg_execution_time = @avg_execution_time.nil? ? 0 : @avg_execution_time
 
@@ -33,7 +39,6 @@ module Icinga2
     # return statistic data for intervall data
     #
     # @example
-    #    @icinga.cib_data
     #    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = @icinga.interval_statistics.values
     #
     #    i = @icinga.interval_statistics
@@ -46,6 +51,14 @@ module Icinga2
     #    * services_passive_checks (Float)
     #
     def interval_statistics
+
+      unless( @hosts_active_checks_1min.is_a?(Integer) ||
+          @hosts_passive_checks_1min.is_a?(Integer) ||
+          @services_active_checks_1min.is_a?(Integer) ||
+          @services_passive_checks_1min.is_a?(Integer) )
+
+        cib_data
+      end
 
       # take a look into https://github.com/Icinga/pkg-icinga2-debian/blob/master/lib/icinga/cib.cpp
 
@@ -65,7 +78,6 @@ module Icinga2
     # return statistic data for services
     #
     # @example
-    #    @icinga.cib_data
     #    ok, warning, critical, unknown, pending, in_downtime, ack = @icinga.service_statistics.values
     #
     #    s = @icinga.service_statistics
@@ -82,13 +94,24 @@ module Icinga2
     #
     def service_statistics
 
+      unless( @services_ok.is_a?(Integer) ||
+          @services_warning.is_a?(Integer) ||
+          @services_critical.is_a?(Integer) ||
+          @services_unknown.is_a?(Integer) ||
+          @services_pending.is_a?(Integer) ||
+          @services_in_downtime.is_a?(Integer) ||
+          @services_in_downtime.is_a?(Integer) )
+
+        cib_data
+      end
+
       services_ok           = @services_ok.nil?           ? 0 : @services_ok
       services_warning      = @services_warning.nil?      ? 0 : @services_warning
       services_critical     = @services_critical.nil?     ? 0 : @services_critical
       services_unknown      = @services_unknown.nil?      ? 0 : @services_unknown
       services_pending      = @services_pending.nil?      ? 0 : @services_pending
       services_in_downtime  = @services_in_downtime.nil?  ? 0 : @services_in_downtime
-      services_acknowledged = @services_acknowledged.nil? ? 0 : @services_acknowledged
+      services_acknowledged = @services_in_downtime.nil? ? 0 : @services_acknowledged
 
       {
         ok: services_ok.to_i,
@@ -104,7 +127,6 @@ module Icinga2
     # return statistic data for hosts
     #
     # @example
-    #    @icinga.cib_data
     #    up, down, pending, unreachable, in_downtime, ack = @icinga.host_statistics.values
     #
     #    h = @icinga.host_statistics
@@ -119,6 +141,16 @@ module Icinga2
     #    * acknowledged (Integer)
     #
     def host_statistics
+
+      unless( @hosts_up.is_a?(Integer) ||
+          @hosts_down.is_a?(Integer) ||
+          @hosts_pending.is_a?(Integer) ||
+          @hosts_unreachable.is_a?(Integer) ||
+          @hosts_in_downtime.is_a?(Integer) ||
+          @hosts_acknowledged.is_a?(Integer) )
+
+        cib_data
+      end
 
       hosts_up           = @hosts_up.nil?           ? 0 : @hosts_up
       hosts_down         = @hosts_down.nil?         ? 0 : @hosts_down
@@ -156,12 +188,11 @@ module Icinga2
 
       return stats if data.nil?
 
-      if( data.dig(:status).nil? )
-        results = data.dig('results')
+      if( data.dig('code').nil? )
 
-        json_rpc_data  = results.find { |k| k['name'] == 'ApiListener' }
-        graphite_data  = results.find { |k| k['name'] == 'GraphiteWriter' }
-        ido_mysql_data = results.find { |k| k['name'] == 'IdoMysqlConnection' }
+        json_rpc_data  = data.find { |k| k['name'] == 'ApiListener' }
+        graphite_data  = data.find { |k| k['name'] == 'GraphiteWriter' }
+        ido_mysql_data = data.find { |k| k['name'] == 'IdoMysqlConnection' }
 
         json_rpc_data  = json_rpc_data.dig('status', 'api', 'json_rpc') unless( json_rpc_data.nil? )
         graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')       unless( graphite_data.nil? )

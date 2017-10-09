@@ -304,8 +304,6 @@ module Icinga2
     #
     def status_data
 
-      puts "status_data"
-
       icinga_application_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
@@ -343,6 +341,11 @@ module Icinga2
     #    * revision
     #
     def version
+
+      unless( @version.is_a?(Integer) || @revision.is_a?(Integer) )
+        application_data
+      end
+
       version  = @version.nil?  ? 0 : @version
       revision = @revision.nil? ? 0 : @revision
 

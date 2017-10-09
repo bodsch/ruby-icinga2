@@ -172,8 +172,8 @@ module Icinga2
 
       result = hosts( host: host_name )
       result = JSON.parse( result ) if  result.is_a?( String )
+      result = result.first if( result.is_a?(Array) )
 
-      result = result.first
 # logger.debug(JSON.pretty_generate result)
 # logger.debug('-----')
 
@@ -208,7 +208,6 @@ module Icinga2
 #       raise ArgumentError.new('only Array for joins are allowed') unless( joins.is_a?(Hash) )
 
       payload = {}
-      results = nil
 
       if( attrs.nil? )
         attrs = %w[name state acknowledgement downtime_depth last_check]
