@@ -52,33 +52,17 @@ unless( i.nil? )
 
   begin
 
-    i.cib_data
-
     puts ' ------------------------------------------------------------- '
     puts ''
 
-    v, r = i.version.values
-    l, e = i.average_statistics.values
-    puts format( '= version: %s, revision %s', v, r )
-    puts format( '= avg_latency: %s, avg_execution_time %s', l, e )
-    puts format( '= start time: %s', i.start_time )
-    puts format( '= uptime: %s', i.uptime )
-    puts format( '= node name: %s', i.node_name )
-    puts ''
-
-    puts '= icinga2 status'
-    puts i.status_data
-    puts ''
-
-    puts '= icinga2 application data'
-    puts i.application_data
-    puts ''
-    puts '= CIB'
-    puts i.cib_data
-    puts ''
-    puts '= API Listener'
-    puts i.api_listener
-    puts ''
+#   puts ' ==> DOWNTIMES'
+#   puts ''
+#   puts 'add Downtime \'test\''
+#   puts i.add_downtime( name: 'test', type: 'service', host: 'foo', comment: 'test downtime', author: 'icingaadmin', start_time: Time.now.to_i, end_time: Time.now.to_i + 20 )
+#   puts ''
+#   puts 'list all Downtimes'
+#   puts i.downtimes
+#   puts ''
 
     puts ' ------------------------------------------------------------- '
     puts ''
