@@ -1,12 +1,11 @@
 # ruby-icinga2
 
-Ruby Class for the Icinga2 API
+An enhanced ruby gem to communicate with Icinga2 API
 
 [![Gem Version](https://badge.fury.io/rb/icinga2.svg)](https://badge.fury.io/rb/icinga2)
 
-[![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg?branch=v0.8.1.2)][travis]
-[![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg?branch=master)][travis]
-[![Gem Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2?0.8.1.2)][gem-downloads]
+[![Build Status](https://travis-ci.org/bodsch/ruby-icinga2.svg)][travis]
+[![Gem Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2)][gem-downloads]
 [![total Downloads](http://ruby-gem-downloads-badge.herokuapp.com/icinga2?type=total&metric=true&label=downloads-total)][gem-downloads]
 [![Dependency Status](https://gemnasium.com/badges/github.com/bodsch/ruby-icinga2.svg)][gemnasium]
 
@@ -17,16 +16,17 @@ Ruby Class for the Icinga2 API
 
 ## Requirements
 
-* ruby version  => 2.1
+* ruby version  => 2.0
 * rest-client ~> 2.0
-* openssl ~> 2.0 (only with ruby 2.3)
 * json  ~> 2.1
+* openssl ~> 2.0 (only with ruby >= 2.3)
+* ruby_dig (only with ruby < 2.3)
 
-## install
+## Install
 
     gem install icinga2
 
-## usage
+## Usage
 
 create an instance
 
@@ -37,13 +37,52 @@ create an instance
           :port => icingaApiPort,
           :user => icingaApiUser,
           :pass => icingaApiPass
-        },
-        :cluster   => icingaCluster,
-        :satellite => icingaSatellite,
+        }
       }
     }
 
     @icinga = Icinga::Client.new( config )
+
+### Use the examples
+
+You can use the [Icinga Vagrant-Box](https://github.com/Icinga/icinga-vagrant) from the Icinga Team or
+my own [Docker Container](https://hub.docker.com/r/bodsch/docker-icinga2/) as Datasource.
+
+**Remember** Change the exported Environment Variables to your choosed Datasource!
+
+you can find many examples under the directory `examples`:
+
+    #$ export ICINGA_HOST=localhost ; export ICINGA_API_USER=root ; export ICINGA_API_PASSWORD=icinga
+    #$ ruby examples/informations.rb
+    #$ ruby examples/statistics.rb
+    #$ ruby examples/users.rb
+
+and so on.
+
+### Test via CLI
+
+    #$ irb
+    2.3.0 :001 > require 'icinga2'
+     => true
+    2.3.0 :002 > config = { :icinga => { :host => 'localhost', :api => { :user => 'root', :pass => 'icinga' } } }
+     => {:icinga=>{:host=>"localhost", :api=>{:user=>"root", :pass=>"icinga"}}}
+    2.3.0 :003 > i = Icinga2::Client.new( config )
+
+
+## Create a own gem file
+
+    #$ gem build icinga2.gemspec
+    Successfully built RubyGem
+    Name: icinga2
+    Version: 0.9.0
+    File: icinga2-0.9.0.gem
+
+## Install local gem
+
+    #$ gem install icinga2
+    Successfully installed icinga2-0.9.0
+    1 gem installed
+
 
 ## Status
 
@@ -121,34 +160,6 @@ supports the following API Calls:
     * [statistic data for services](doc/statistics.md#stats-services)
     * [statistic data for hosts](doc/statistics.md#stats-hosts)
     * [queue statistics from the api](doc/statistics.md#stats-work-queue)
-
-
-## create a own gem File
-
-    #$ gem build icinga2.gemspec
-    Successfully built RubyGem
-    Name: icinga2
-    Version: 0.9.0
-    File: icinga2-0.9.0.gem
-
-## install gem
-
-    #$ gem install icinga2
-    Successfully installed icinga2-0.6.0
-    1 gem installed
-
-## test via CLI
-
-    #$ irb
-    2.3.0 :001 > require 'icinga2'
-     => true
-    2.3.0 :002 > config = { :icinga => { :host => 'localhost', :api => { :user => 'root', :pass => 'icinga' } } }
-     => {:icinga=>{:host=>"localhost", :api=>{:user=>"root", :pass=>"icinga"}}}
-    2.3.0 :003 > i = Icinga2::Client.new( config )
-
-## test via example
-    #$ export ICINGA_HOST=localhost ; export ICINGA_API_USER=root ; export ICINGA_API_PASSWORD=icinga
-    #$ ruby examples/test.rb
 
 
 

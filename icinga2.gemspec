@@ -7,9 +7,9 @@ Gem::Specification.new do |s|
 
   s.name        = 'icinga2'
   s.version     = Icinga2::VERSION
-  s.date        = '2017-09-25'
+  s.date        = '2017-10-10'
   s.summary     = 'Icinga2 API'
-  s.description = 'Ruby Class for the Icinga2 API'
+  s.description = 'An enhanced ruby gem to communicate with Icinga2 API'
   s.authors     = ['Bodo Schulz']
   s.email       = 'bodo@boone-schulz.de'
 
@@ -37,7 +37,7 @@ Gem::Specification.new do |s|
     end
 
     if( RUBY_VERSION < '2.3' )
-      s.add_dependency('ruby_dig')
+      s.add_dependency('ruby_dig', '~> 0')
     end
 
     if( RUBY_VERSION >= '2.3' )
