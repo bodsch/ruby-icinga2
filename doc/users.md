@@ -6,8 +6,8 @@ creates an Icinga2 User.
 
 `params` are an `Hash` with following Parameters:
 
-| Parameter              | Type    | Example | Description
-| :--------------------  | :-----: | :-----: | :-----------   |
+| Parameter              | Type    | Example                  | Description
+| :--------------------  | :-----: | :-----                   | :-----------
 | `user_name`            | String  | `foo`                    | User they will be created
 | `display_name`         | String  | `User Foo`               | the displayed Name
 | `email`                | String  | `foo@bar.tld`            | the Email for this Users
@@ -37,8 +37,8 @@ delete an Icinga2 User.
 `params` is an `Hash` with following Parameters:
 
 | Parameter              | Type    | Example | Description
-| :--------------------  | :-----: | :-----: | :-----------   |
-| `user_name`            | String  | `foo`                    | User they will be deleted
+| :--------------------  | :-----: | :-----  | :-----------
+| `user_name`            | String  | `foo`   | User they will be deleted
 
 The result are an `Hash`
 
@@ -55,8 +55,8 @@ returns all or a named user.
 the optional `params` is an `Hash` with following Parameters:
 
 | Parameter              | Type    | Example | Description
-| :--------------------  | :-----: | :-----: | :-----------   |
-| `user_name`            | String  | `foo`                    | User they will be deleted
+| :--------------------  | :-----: | :-----  | :-----------
+| `user_name`            | String  | `foo`   | User they will be listed
 
 The result are an `Hash`
 
