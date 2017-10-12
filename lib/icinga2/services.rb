@@ -125,6 +125,7 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] :service_name
+    # @option params [Array] :templates
     # @option params [Hash] :vars
     #
     # @example
@@ -238,10 +239,6 @@ module Icinga2
         headers: @headers,
         options: @options
       )
-
-#       return data.dig('results') if( data.dig(:status).nil? )
-
-#       nil
     end
 
     # returns true if the service exists
@@ -440,8 +437,6 @@ module Icinga2
     # returns a counter of all services
     #
     # @example
-    #    @icinga.cib_data
-    #    @icinga.service_objects
     #    @icinga.services_all
     #
     # @return [Integer]
@@ -634,10 +629,6 @@ module Icinga2
     #
     # @param [Hash] hash
     # @param [String] host
-    #
-    # @todo
-    #  this function are not operable
-    #  need help, time or beer
     #
     # @api protected
     #
