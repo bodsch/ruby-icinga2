@@ -26,21 +26,21 @@ module Icinga2
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
-      display_name = params.dig(:display_name)
-      notes = params.dig(:notes)
-      notes_url = params.dig(:notes_url)
-      action_url = params.dig(:action_url)
+      display_name  = params.dig(:display_name)
+      notes         = params.dig(:notes)
+      notes_url     = params.dig(:notes_url)
+      action_url    = params.dig(:action_url)
 
-      ignore = params.dig(:ignore)
-      assgin = params.dig(:assign)
+#      ignore = params.dig(:ignore)
+#      assgin = params.dig(:assign)
 
       raise ArgumentError.new('Missing service_group') if( service_group.nil? )
       raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
       payload = { 'attrs' => { 'display_name' => display_name } }
 
-      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
-      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
+#      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
+#      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
 
       payload['attrs']['notes']      ||= notes      unless(notes.nil?)
       payload['attrs']['notes_url']  ||= notes_url  unless(notes_url.nil?)
