@@ -113,6 +113,8 @@ module Icinga2
     #
     def users( params = {} )
 
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+
       user_name = params.dig(:user_name)
 
       url =

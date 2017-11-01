@@ -34,13 +34,6 @@ describe Icinga2 do
     end
   end
 
-  describe 'Available' do
-
-    it 'available' do
-      expect(@icinga2.available?).to be_truthy
-    end
-  end
-
   describe 'Information' do
 
     it 'status_data' do

@@ -370,10 +370,12 @@ module Icinga2
 
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
-        raise format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url ) if( retried >= max_retries )
+        # TODO
+        # ist hier ein raise sinnvoll?
+        raise format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, @icinga_api_url_base ) if( retried >= max_retries )
 
         retried += 1
-        $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
+        $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", @icinga_api_url_base, e, retried, max_retries))
         sleep(3)
         retry
 

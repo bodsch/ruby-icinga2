@@ -58,6 +58,10 @@ module Icinga2
       raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
       raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )
 
+      # TODO
+      # check if host_name exists!
+
+
       if( !host_name.nil? )
 
         filter = format( 'host.name=="%s"', host_name )
