@@ -11,6 +11,9 @@ module Icinga2
     # @param [Hash] params
     # @option params [String] :service_group servicegroup to create
     # @option params [String] :display_name the displayed name
+    # @option params [String] :notes
+    # @option params [String] :notes_url
+    # @option params [String] :action_url
     #
     # @example
     #   @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
@@ -24,11 +27,24 @@ module Icinga2
 
       service_group = params.dig(:service_group)
       display_name = params.dig(:display_name)
+      notes = params.dig(:notes)
+      notes_url = params.dig(:notes_url)
+      action_url = params.dig(:action_url)
+
+      ignore = params.dig(:ignore)
+      assgin = params.dig(:assign)
 
       raise ArgumentError.new('Missing service_group') if( service_group.nil? )
       raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
       payload = { 'attrs' => { 'display_name' => display_name } }
+
+      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
+      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
+
+      payload['attrs']['notes']      ||= notes      unless(notes.nil?)
+      payload['attrs']['notes_url']  ||= notes_url  unless(notes_url.nil?)
+      payload['attrs']['action_url'] ||= action_url unless(action_url.nil?)
 
       put(
         url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),
@@ -93,9 +109,6 @@ module Icinga2
         headers: @headers,
         options: @options
       )
-
-#      return data.dig('results') if( data.dig(:status).nil? )
-#      nil
     end
 
     # checks if the servicegroup exists
