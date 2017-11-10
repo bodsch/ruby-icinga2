@@ -126,8 +126,8 @@ unless( i.nil? )
   puts ''
   puts ' = add Host'
   puts i.add_host(
-     host: 'foo',
-     fqdn: 'foo.bar.com',
+     name: 'foo',
+     address: 'foo.bar.com',
      display_name: 'test node',
      max_check_attempts: 5,
      notes: 'test node'
