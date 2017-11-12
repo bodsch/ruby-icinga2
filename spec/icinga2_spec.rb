@@ -160,7 +160,7 @@ describe Icinga2 do
           description: 'spec test',
           os: 'Docker',
           partitions: {
-            '/': {
+            '/' => {
               crit: '95%',
               warn: '90%'
             }

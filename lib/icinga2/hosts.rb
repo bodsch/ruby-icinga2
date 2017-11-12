@@ -31,7 +31,7 @@ module Icinga2
     #        description: 'host foo',
     #        os: 'Linux',
     #        partitions: {
-    #          '/': {
+    #          '/' => {
     #            crit: '95%',
     #            warn: '90%'
     #          }
@@ -163,7 +163,7 @@ module Icinga2
     #        description: 'schould be delete ASAP',
     #        os: 'Linux',
     #        partitions: {
-    #          '/': {
+    #          '/' => {
     #            crit: '98%',
     #            warn: '95%'
     #          }
