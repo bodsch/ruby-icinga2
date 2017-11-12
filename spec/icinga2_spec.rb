@@ -148,6 +148,88 @@ describe Icinga2 do
       expect(h.count).to be >= 1
     end
 
+    it 'create host \'foo\'' do
+      options = {
+        host: 'foo',
+        fqdn: 'foo.bar.com',
+        display_name: 'test node',
+        max_check_attempts: 5,
+        notes: 'test node',
+        vars: {
+          zone: 'icinga-satellite',
+          description: 'spec test',
+          os: 'Docker',
+          partitions: {
+            '/': {
+              crit: '95%',
+              warn: '90%'
+            }
+          }
+        }
+      }
+      h = @icinga2.add_host(options)
+
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+
+    it 'modify host \'foo\' with merge' do
+      options = {
+        host: 'foo',
+        display_name: 'test node (changed)',
+        max_check_attempts: 10,
+        notes: 'spec test',
+        vars: {
+          description: 'changed at ...',
+        },
+        merge_vars: true
+      }
+      h = @icinga2.modify_host(options)
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+
+#       # check values
+#       h = @icinga2.hosts(host: 'foo')
+#       h = h.first
+#       puts JSON.pretty_generate h
+#       display_name = h['attrs']['display_name']
+#       expect(display_name).to be_a(String)
+#       max_check_attempts = h['attrs']['max_check_attempts']
+#       expect(max_check_attempts).to be_a(Float)
+    end
+
+    it 'modify host \'foo\' without merge' do
+      options = {
+        host: 'foo',
+        display_name: 'test node (changed)',
+        max_check_attempts: 10,
+        notes: 'spec test',
+        vars: {
+          description: 'changed only the description',
+        }
+      }
+      h = @icinga2.modify_host(options)
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+
+    it 'delete host \'foo\'' do
+      h = @icinga2.delete_host( host: 'foo' )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+
     it "exists host 'c1-mysql-1'" do
       expect(@icinga2.exists_host?('c1-mysql-1')).to be_truthy
     end

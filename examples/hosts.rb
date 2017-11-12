@@ -92,23 +92,57 @@ unless( i.nil? )
     end
 
     puts ' = add Host \'foo\''
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
+
+    options = {
+      host: 'foo',
+      fqdn: 'foo.bar.com',
+      display_name: 'test node',
+      max_check_attempts: 5,
+      notes: 'test node',
+      vars: {
+        description: 'spec test',
+        os: 'Docker',
+        partitions: {
+          '/': {
+            crit: '95%',
+            warn: '90%'
+          }
+        }
+      }
+    }
+
+    puts i.add_host(options)
     puts ''
 
     puts ' = add Host \'foo\' (again)'
-    puts i.add_host(
-       host: 'foo',
-       fqdn: 'foo.bar.com',
-       display_name: 'test node',
-       max_check_attempts: 5,
-       notes: 'test node'
-    )
+    puts i.add_host(options)
+    puts ''
+
+    puts ' = modify Host \'foo\' with merge vars'
+    options = {
+      host: 'foo',
+      display_name: 'test node (changed)',
+      max_check_attempts: 10,
+      notes: 'spec test',
+      vars: {
+        description: 'changed at ...',
+      },
+      merge_vars: true
+    }
+    puts i.modify_host(options)
+    puts ''
+
+    puts ' = modify Host \'foo\' with overwrite vars'
+    options = {
+      host: 'foo',
+      display_name: 'test node (changed)',
+      max_check_attempts: 10,
+      notes: 'spec test',
+      vars: {
+        description: 'change and overwrite vars',
+      }
+    }
+    puts i.modify_host(options)
     puts ''
 
     puts ' = delete Host \'foo\''
