@@ -5,8 +5,8 @@
 
 ### Example
     param = {
-      host: 'foo',
-      fqdn: 'foo.bar.com',
+      name 'foo',
+      address: 'foo.bar.com',
       display_name: 'test node',
       max_check_attempts: 5,
       notes: 'test node'
