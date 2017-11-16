@@ -5,8 +5,8 @@
 
 ### Example
     param = {
-      host: 'foo',
-      fqdn: 'foo.bar.com',
+      name 'foo',
+      address: 'foo.bar.com',
       display_name: 'test node',
       max_check_attempts: 5,
       notes: 'test node'
@@ -18,7 +18,7 @@
     delete_host( params )
 
 ### Example
-    @icinga.delete_host(host: 'foo')
+    @icinga.delete_host(name: 'foo')
 
 
 ## <a name="list-hosts"></a>list hosts
@@ -27,7 +27,7 @@
     hosts( params )
 
 #### Example
-    @icinga.host(host: 'icinga2')
+    @icinga.host(name: 'icinga2')
 
 ### list all hosts
     hosts
