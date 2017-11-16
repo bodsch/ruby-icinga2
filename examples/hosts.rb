@@ -146,11 +146,11 @@ unless( i.nil? )
     puts ''
 
     puts ' = delete Host \'foo\''
-    puts i.delete_host( host: 'foo' )
+    puts i.delete_host( name: 'foo' )
     puts ''
 
     puts ' = delete Host \'foo\' (again)'
-    puts i.delete_host( host: 'foo' )
+    puts i.delete_host( name: 'foo' )
     puts ''
 
     puts '= list all Hosts'

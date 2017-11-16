@@ -8,8 +8,8 @@ module Icinga2
     # add host
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :fqdn
+    # @option params [String] :name
+    # @option params [String] :address
     # @option params [String] :display_name
     # @option params [Bool] :enable_notifications (false)
     # @option params [Integer] :max_check_attempts (3)
@@ -22,8 +22,8 @@ module Icinga2
     #
     # @example
     #    param = {
-    #      host: 'foo',
-    #      fqdn: 'foo.bar.com',
+    #      name: 'foo',
+    #      address: 'foo.bar.com',
     #      display_name: 'test node',
     #      max_check_attempts: 5,
     #      notes: 'test node',
@@ -45,60 +45,127 @@ module Icinga2
     #
     def add_host( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('only Hash is allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host               = params.dig(:host)
-      fqdn               = params.dig(:fqdn)
-      display_name       = params.dig(:display_name) || host
-      notifications      = params.dig(:enable_notifications) || false
-      max_check_attempts = params.dig(:max_check_attempts) || 3
-      check_interval     = params.dig(:check_interval) || 60
-      retry_interval     = params.dig(:retry_interval) || 45
-      notes              = params.dig(:notes)
-      notes_url          = params.dig(:notes_url)
-      action_url         = params.dig(:action_url)
-      vars               = params.dig(:vars) || {}
+      action_url = params.dig(:action_url)
+      address = params.dig(:address)
+      address6 = params.dig(:address6)
+      check_command = params.dig(:check_command)
+      check_interval = params.dig(:check_interval)
+      check_period = params.dig(:check_period)
+      check_timeout = params.dig(:check_timeout)
+      command_endpoint = params.dig(:command_endpoint)
+      display_name = params.dig(:display_name)
+      enable_active_checks = params.dig(:enable_active_checks)
+      enable_event_handler = params.dig(:enable_event_handler)
+      enable_flapping = params.dig(:enable_flapping) || false
+      enable_notifications = params.dig(:enable_notifications)
+      enable_passive_checks = params.dig(:enable_passive_checks)
+      enable_perfdata = params.dig(:enable_perfdata)
+      event_command = params.dig(:event_command)
+      flapping_threshold = params.dig(:flapping_threshold)
+      groups = params.dig(:groups)
+      icon_image = params.dig(:icon_image)
+      icon_image_alt = params.dig(:icon_image_alt)
+      max_check_attempts = params.dig(:max_check_attempts)
+      name = params.dig(:name)
+      notes = params.dig(:notes)
+      notes_url = params.dig(:notes_url)
+      retry_interval = params.dig(:retry_interval)
+      templates = params.dig(:templates)
+      vars = params.dig(:vars) || {}
+      volatile = params.dig(:volatile)
 
-      raise ArgumentError.new('Missing host') if( host.nil? )
-      raise ArgumentError.new('only true or false for notifications are allowed') unless( notifications.is_a?(TrueClass) || notifications.is_a?(FalseClass) )
-      raise ArgumentError.new('only Integer for max_check_attempts are allowed') unless( max_check_attempts.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for check_interval are allowed') unless( check_interval.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for retry_interval are allowed') unless( retry_interval.is_a?(Integer) )
-      raise ArgumentError.new('only String for notes are allowed') unless( notes.is_a?(String) || notes.nil? )
-      raise ArgumentError.new('only String for notes_url are allowed') unless( notes_url.is_a?(String) || notes_url.nil? )
+      raise ArgumentError.new('missing name') if( name.nil? )
+
+      %w[action_url
+         address
+         address6
+         check_command
+         check_period
+         command_endpoint
+         display_name
+         event_command
+         icon_image
+         icon_image_alt
+         name
+         notes
+         notes_url].each do |attr|
+        raise ArgumentError.new("only String for #{attr} is allowed") unless( eval(attr).is_a?(String) || eval(attr).nil? )
+      end
+
+      %w[check_interval
+         flapping_threshold
+         max_check_attempts
+         retry_interval].each do |attr|
+        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(Integer) || eval(attr).nil? )
+      end
+
+      %w[enable_active_checks
+         enable_event_handler
+         enable_flapping
+         enable_notifications
+         enable_passive_checks
+         enable_perfdata
+         volatile].each do |attr|
+        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(TrueClass) || eval(attr).is_a?(FalseClass) || eval(attr).nil? )
+      end
+
+      %w[groups templates].each do |attr|
+        raise ArgumentError.new("only Array for #{attr} is allowed") unless( eval(attr).is_a?(Array) || eval(attr).nil? )
+      end
+
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
-      if( fqdn.nil? )
+      if( address.nil? )
         # build FQDN
-        fqdn = Socket.gethostbyname( host ).first
+        address = Socket.gethostbyname( name ).first
       end
 
       payload = {
-        'templates' => [ 'generic-host' ],
+        'templates' => templates,
         'attrs'     => {
-          'address'              => fqdn,
-          'display_name'         => display_name,
-          'max_check_attempts'   => max_check_attempts.to_i,
-          'check_interval'       => check_interval.to_i,
-          'retry_interval'       => retry_interval.to_i,
-          'enable_notifications' => notifications,
-          'action_url'           => action_url,
-          'notes'                => notes,
-          'notes_url'            => notes_url
+          'action_url' => action_url,
+          'address' => address,
+          'address6' => address6,
+          'check_period' => check_period,
+          'check_command' => check_command,
+          'check_interval' => check_interval,
+          'check_timeout' => check_timeout,
+          'command_endpoint' => command_endpoint,
+          'display_name' => display_name,
+          'enable_active_checks' => enable_active_checks,
+          'enable_event_handler' => enable_event_handler,
+          'enable_flapping' => enable_flapping,
+          'enable_notifications' => enable_notifications,
+          'enable_passive_checks' => enable_passive_checks,
+          'enable_perfdata' => enable_perfdata,
+          'event_command' => event_command,
+          'flapping_threshold' => flapping_threshold,
+          'groups' => groups,
+          'icon_image' => icon_image,
+          'icon_image_alt' => icon_image_alt,
+          'max_check_attempts' => max_check_attempts,
+          'notes' => notes,
+          'notes_url' => notes_url,
+          'retry_interval' => retry_interval,
+          'volatile' => volatile
         }
       }
 
-      payload['attrs']['vars'] = vars unless  vars.empty?
+      payload['attrs']['vars'] = vars unless vars.empty?
 
       if( @icinga_cluster == true && !@icinga_satellite.nil? )
         payload['attrs']['zone'] = @icinga_satellite
       end
 
       # logger.debug( JSON.pretty_generate( payload ) )
+      payload.reject!{ |_k, v| v.nil? }
+      payload['attrs'].reject!{ |_k, v| v.nil? }
 
       put(
-        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload
@@ -108,10 +175,10 @@ module Icinga2
     # delete a host
     #
     # @param [Hash] params
-    # @option params [String] :host host to delete
+    # @option params [String] :name host to delete
     #
     # @example
-    #   @icinga.delete_host(host: 'foo')
+    #   @icinga.delete_host(name: 'foo')
     #
     # @return [Hash] result
     #
@@ -120,9 +187,9 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host = params.dig(:host)
+      host = params.dig(:name)
 
-      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing name') if( host.nil? )
 
       delete(
         url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
@@ -256,7 +323,7 @@ module Icinga2
     # return hosts
     #
     # @param [Hash] params
-    # @option params [String] :host
+    # @option params [String] :name
     # @option params [String] :attrs
     # @option params [String] :filter
     # @option params [String] :joins
@@ -271,7 +338,7 @@ module Icinga2
     #
     def hosts( params = {} )
 
-      host   = params.dig(:host)
+      host   = params.dig(:name)
 #       attrs  = params.dig(:attrs)
 #       filter = params.dig(:filter)
 #       joins  = params.dig(:joins)
