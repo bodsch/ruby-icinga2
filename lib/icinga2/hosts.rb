@@ -73,9 +73,10 @@ module Icinga2
       notes = params.dig(:notes)
       notes_url = params.dig(:notes_url)
       retry_interval = params.dig(:retry_interval)
-      templates = params.dig(:templates)
+      templates = params.dig(:templates) || [ 'generic-host' ]
       vars = params.dig(:vars) || {}
       volatile = params.dig(:volatile)
+      zone = params.dig(:zone)
 
       raise ArgumentError.new('missing name') if( name.nil? )
 
@@ -91,7 +92,8 @@ module Icinga2
          icon_image_alt
          name
          notes
-         notes_url].each do |attr|
+         notes_url
+         zone].each do |attr|
         raise ArgumentError.new("only String for #{attr} is allowed") unless( eval(attr).is_a?(String) || eval(attr).nil? )
       end
 
@@ -118,10 +120,7 @@ module Icinga2
 
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
 
-      if( address.nil? )
-        # build FQDN
-        address = Socket.gethostbyname( name ).first
-      end
+      address = Socket.gethostbyname( name ).first if( address.nil? )
 
       payload = {
         'templates' => templates,
@@ -150,17 +149,15 @@ module Icinga2
           'notes' => notes,
           'notes_url' => notes_url,
           'retry_interval' => retry_interval,
-          'volatile' => volatile
+          'volatile' => volatile,
+          'zone' => zone
         }
       }
 
       payload['attrs']['vars'] = vars unless vars.empty?
+      #payload['attrs']['zone'] = @icinga_satellite if( @icinga_cluster == true && !@icinga_satellite.nil? )
 
-      if( @icinga_cluster == true && !@icinga_satellite.nil? )
-        payload['attrs']['zone'] = @icinga_satellite
-      end
-
-      # logger.debug( JSON.pretty_generate( payload ) )
+      # remove all empty attrs
       payload.reject!{ |_k, v| v.nil? }
       payload['attrs'].reject!{ |_k, v| v.nil? }
 
@@ -201,8 +198,8 @@ module Icinga2
     # modify a host
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :fqdn
+    # @option params [String] :name
+    # @option params [String] :address
     # @option params [String] :display_name
     # @option params [Bool] :enable_notifications (false)
     # @option params [Integer] :max_check_attempts (3)
@@ -216,15 +213,15 @@ module Icinga2
     #
     # @example
     #    param = {
-    #      host: 'foo',
-    #      fqdn: 'foo.bar.com',
+    #      name: 'foo',
+    #      address: 'foo.bar.com',
     #      display_name: 'Host for an example Problem',
     #      max_check_attempts: 10,
     #    }
     #
     #    param = {
-    #      host: 'foo',
-    #      fqdn: 'foo.bar.com',
+    #      name: 'foo',
+    #      address: 'foo.bar.com',
     #      notes: 'an demonstration object',
     #      vars: {
     #        description: 'schould be delete ASAP',
@@ -240,8 +237,8 @@ module Icinga2
     #    }
     #
     #    param = {
-    #      host: 'foo',
-    #      fqdn: 'foo.bar.com',
+    #      name: 'foo',
+    #      address: 'foo.bar.com',
     #      vars: {
     #        description: 'removed all other custom vars',
     #      }
@@ -256,8 +253,8 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host               = params.dig(:host)
-      fqdn               = params.dig(:fqdn)
+      name               = params.dig(:name)
+      address            = params.dig(:address)
       display_name       = params.dig(:display_name) || host
       notifications      = params.dig(:enable_notifications) || false
       max_check_attempts = params.dig(:max_check_attempts) || 3
@@ -269,7 +266,7 @@ module Icinga2
       vars               = params.dig(:vars) || {}
       merge_vars         = params.dig(:merge_vars) || false
 
-      raise ArgumentError.new('Missing host') if( host.nil? )
+      raise ArgumentError.new('Missing host name') if( name.nil? )
       raise ArgumentError.new('only true or false for notifications are allowed') unless( notifications.is_a?(TrueClass) || notifications.is_a?(FalseClass) )
       raise ArgumentError.new('only Integer for max_check_attempts are allowed') unless( max_check_attempts.is_a?(Integer) )
       raise ArgumentError.new('only Integer for check_interval are allowed') unless( check_interval.is_a?(Integer) )
@@ -280,12 +277,12 @@ module Icinga2
       raise ArgumentError.new('wrong type. merge_vars must be an Boolean') unless( merge_vars.is_a?(TrueClass) || merge_vars.is_a?(FalseClass) )
 
       # check if host exists
-      exists = exists_host?( host )
-      raise ArgumentError.new( format( 'host %s do not exists', host ) ) if( exists == false )
+      exists = exists_host?( name )
+      raise ArgumentError.new( format( 'host %s do not exists', name ) ) if( exists == false )
 
       # merge the new with the old vars
       if( merge_vars == true )
-        current_host = hosts( host: host )
+        current_host = hosts( name: name )
         current_host_vars = current_host.first
         current_host_vars = current_host_vars.dig('attrs','vars')
         current_host_vars = current_host_vars.deep_string_keys
@@ -297,7 +294,7 @@ module Icinga2
       # POST request
       payload = {
         'attrs'     => {
-          'address'              => fqdn,
+          'address'              => address,
           'display_name'         => display_name,
           'max_check_attempts'   => max_check_attempts.to_i,
           'check_interval'       => check_interval.to_i,
@@ -312,7 +309,7 @@ module Icinga2
       payload['attrs']['vars'] = vars unless  vars.empty?
 
       post(
-        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options,
         payload: payload
@@ -332,13 +329,13 @@ module Icinga2
     #    @icinga.hosts
     #
     # @example to get one host
-    #    @icinga.hosts(host: 'icinga2')
+    #    @icinga.hosts( name: 'icinga2')
     #
     # @return [Array]
     #
     def hosts( params = {} )
 
-      host   = params.dig(:name)
+      name   = params.dig(:name)
 #       attrs  = params.dig(:attrs)
 #       filter = params.dig(:filter)
 #       joins  = params.dig(:joins)
@@ -350,7 +347,7 @@ module Icinga2
 #       payload['joins']  = joins  unless joins.nil?
 
       api_data(
-        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, host ),
+        url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
         options: @options
       )
@@ -370,7 +367,7 @@ module Icinga2
       raise ArgumentError.new('only String are allowed') unless( host_name.is_a?(String) )
       raise ArgumentError.new('Missing host_name') if( host_name.size.zero? )
 
-      result = hosts( host: host_name )
+      result = hosts( name: host_name )
       result = JSON.parse( result ) if( result.is_a?(String) )
       result = result.first if( result.is_a?(Array) )
 

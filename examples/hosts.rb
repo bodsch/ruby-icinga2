@@ -145,6 +145,10 @@ unless( i.nil? )
     puts i.modify_host(options)
     puts ''
 
+    puts ' = delete Host \'test\''
+    puts i.delete_host( name: 'test' )
+    puts ''
+
     puts ' = delete Host \'foo\''
     puts i.delete_host( name: 'foo' )
     puts ''
@@ -154,11 +158,11 @@ unless( i.nil? )
     puts ''
 
     puts '= list all Hosts'
-    #puts i.hosts
+    puts i.hosts
     puts ''
 
     puts '= list named Hosts \'c1-mysql-1\''
-    #puts i.hosts(name: 'c1-mysql-1')
+    puts i.hosts(name: 'c1-mysql-1')
     puts ''
 
     puts ' ------------------------------------------------------------- '

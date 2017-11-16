@@ -137,8 +137,11 @@ describe Icinga2 do
   describe 'Module Host' do
 
     it "list host 'c1-mysql-1'" do
-      h = @icinga2.hosts(host: 'c1-mysql-1')
+      h = @icinga2.hosts( name: 'c1-mysql-1' )
       expect(h).to be_a(Array)
+      name = h.first['attrs']['name']
+      expect(name).to be_a(String)
+      expect(name).to be == 'c1-mysql-1'
       expect(h.count).to be == 1
     end
 
@@ -150,8 +153,8 @@ describe Icinga2 do
 
     it 'create host \'foo\'' do
       options = {
-        host: 'foo',
-        fqdn: 'foo.bar.com',
+        name: 'foo',
+        address: 'foo.bar.com',
         display_name: 'test node',
         max_check_attempts: 5,
         notes: 'test node',
@@ -168,7 +171,6 @@ describe Icinga2 do
         }
       }
       h = @icinga2.add_host(options)
-
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be_a(Integer)
@@ -178,7 +180,7 @@ describe Icinga2 do
 
     it 'modify host \'foo\' with merge' do
       options = {
-        host: 'foo',
+        name: 'foo',
         display_name: 'test node (changed)',
         max_check_attempts: 10,
         notes: 'spec test',
@@ -205,7 +207,7 @@ describe Icinga2 do
 
     it 'modify host \'foo\' without merge' do
       options = {
-        host: 'foo',
+        name: 'foo',
         display_name: 'test node (changed)',
         max_check_attempts: 10,
         notes: 'spec test',
@@ -220,13 +222,20 @@ describe Icinga2 do
       expect(status_code).to be == 200
     end
 
-
     it 'delete host \'foo\'' do
-      h = @icinga2.delete_host( host: 'foo' )
+      h = @icinga2.delete_host( name: 'foo' )
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be_a(Integer)
       expect(status_code).to be == 200
+    end
+
+    it 'delete host \'foo\'  (again)' do
+      h = @icinga2.delete_host( name: 'foo' )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 404
     end
 
 

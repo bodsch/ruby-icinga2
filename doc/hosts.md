@@ -5,11 +5,21 @@
 
 ### Example
     param = {
-      name 'foo',
+      name: 'foo',
       address: 'foo.bar.com',
       display_name: 'test node',
       max_check_attempts: 5,
-      notes: 'test node'
+      notes: 'test node',
+      vars: {
+        description: 'host foo',
+        os: 'Linux',
+        partitions: {
+          '/' => {
+            crit: '95%',
+            warn: '90%'
+          }
+        }
+      }
     }
     @icinga.add_host(param)
 
@@ -19,6 +29,51 @@
 
 ### Example
     @icinga.delete_host(name: 'foo')
+
+
+## <a name="modify-host"></a>modify a host
+    modify-host( params )
+
+### Example
+
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      display_name: 'Host for an example Problem',
+      max_check_attempts: 10,
+    }
+
+or
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      notes: 'an demonstration object',
+      vars: {
+        description: 'schould be delete ASAP',
+        os: 'Linux',
+        partitions: {
+          '/' => {
+            crit: '98%',
+            warn: '95%'
+          }
+        }
+      },
+      merge_vars: true
+    }
+
+or
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      vars: {
+        description: 'removed all other custom vars',
+      }
+    }
+
+    @icinga.modify-host( name: 'foo')
 
 
 ## <a name="list-hosts"></a>list hosts

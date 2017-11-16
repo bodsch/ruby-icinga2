@@ -103,6 +103,7 @@ supports the following API Calls:
   - [Hosts](doc/hosts.md)
     * [add host](doc/hosts.md#add-host)
     * [delete host](doc/hosts.md#delete-host)
+    * [modify host](doc/hosts.md#modify-host)
     * [list hosts](doc/hosts.md#list-hosts)
     * [check if host exists](doc/hosts.md#host-exists)
     * [list host objects](doc/hosts.md#list-host-objects)
