@@ -87,15 +87,15 @@ unless( i.nil? )
 
     ['c1-mysql-1', 'bp-foo'].each do |h|
       puts format('= list named Hosts \'%s\'', h )
-      puts i.hosts( host: h )
+      puts i.hosts( name: h )
       puts ''
     end
 
     puts ' = add Host \'foo\''
 
     options = {
-      host: 'foo',
-      fqdn: 'foo.bar.com',
+      name: 'foo',
+      address: 'foo.bar.com',
       display_name: 'test node',
       max_check_attempts: 5,
       notes: 'test node',
@@ -120,7 +120,7 @@ unless( i.nil? )
 
     puts ' = modify Host \'foo\' with merge vars'
     options = {
-      host: 'foo',
+      name: 'foo',
       display_name: 'test node (changed)',
       max_check_attempts: 10,
       notes: 'spec test',
@@ -134,7 +134,7 @@ unless( i.nil? )
 
     puts ' = modify Host \'foo\' with overwrite vars'
     options = {
-      host: 'foo',
+      name: 'foo',
       display_name: 'test node (changed)',
       max_check_attempts: 10,
       notes: 'spec test',
@@ -146,11 +146,11 @@ unless( i.nil? )
     puts ''
 
     puts ' = delete Host \'foo\''
-    puts i.delete_host( host: 'foo' )
+    puts i.delete_host( name: 'foo' )
     puts ''
 
     puts ' = delete Host \'foo\' (again)'
-    puts i.delete_host( host: 'foo' )
+    puts i.delete_host( name: 'foo' )
     puts ''
 
     puts '= list all Hosts'
@@ -158,7 +158,7 @@ unless( i.nil? )
     puts ''
 
     puts '= list named Hosts \'c1-mysql-1\''
-    #puts i.hosts(host: 'c1-mysql-1')
+    #puts i.hosts(name: 'c1-mysql-1')
     puts ''
 
     puts ' ------------------------------------------------------------- '
