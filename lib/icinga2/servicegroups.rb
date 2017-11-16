@@ -11,6 +11,9 @@ module Icinga2
     # @param [Hash] params
     # @option params [String] :service_group servicegroup to create
     # @option params [String] :display_name the displayed name
+    # @option params [String] :notes
+    # @option params [String] :notes_url
+    # @option params [String] :action_url
     #
     # @example
     #   @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
@@ -23,14 +26,27 @@ module Icinga2
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
-      display_name = params.dig(:display_name)
+      display_name  = params.dig(:display_name)
+      notes         = params.dig(:notes)
+      notes_url     = params.dig(:notes_url)
+      action_url    = params.dig(:action_url)
+
+#      ignore = params.dig(:ignore)
+#      assgin = params.dig(:assign)
 
       raise ArgumentError.new('Missing service_group') if( service_group.nil? )
       raise ArgumentError.new('Missing display_name') if( display_name.nil? )
 
       payload = { 'attrs' => { 'display_name' => display_name } }
 
-      Network.put(
+#      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
+#      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
+
+      payload['attrs']['notes']      ||= notes      unless(notes.nil?)
+      payload['attrs']['notes_url']  ||= notes_url  unless(notes_url.nil?)
+      payload['attrs']['action_url'] ||= action_url unless(action_url.nil?)
+
+      put(
         url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),
         headers: @headers,
         options: @options,
@@ -57,7 +73,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing service_group') if( service_group.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
         headers: @headers,
         options: @options
@@ -88,15 +104,11 @@ module Icinga2
         format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group )
       end
 
-      data = Network.api_data(
+      api_data(
         url: url,
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
     # checks if the servicegroup exists
@@ -113,13 +125,13 @@ module Icinga2
       raise ArgumentError.new('only String are allowed') unless( service_group.is_a?(String) )
       raise ArgumentError.new('Missing service_group') if( service_group.size.zero? )
 
-
       result = servicegroups( service_group: service_group )
       result = JSON.parse( result ) if  result.is_a?( String )
+      result = result.first if( result.is_a?(Array) )
 
-      return true if  !result.nil? && result.is_a?(Array)
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      false
+      true
     end
 
   end

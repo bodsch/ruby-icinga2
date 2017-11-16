@@ -10,7 +10,6 @@ module Icinga2
     # return statistic data for latency and execution_time
     #
     # @example
-    #    @icinga.cib_data
     #    latency, execution_time = @icinga.average_statistics.values
     #
     #    h = @icinga.average_statistics
@@ -21,6 +20,9 @@ module Icinga2
     #    * execution_time (Float)
     #
     def average_statistics
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
+
       avg_latency        = @avg_latency.nil?        ? 0 : @avg_latency
       avg_execution_time = @avg_execution_time.nil? ? 0 : @avg_execution_time
 
@@ -33,7 +35,6 @@ module Icinga2
     # return statistic data for intervall data
     #
     # @example
-    #    @icinga.cib_data
     #    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = @icinga.interval_statistics.values
     #
     #    i = @icinga.interval_statistics
@@ -46,6 +47,8 @@ module Icinga2
     #    * services_passive_checks (Float)
     #
     def interval_statistics
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       # take a look into https://github.com/Icinga/pkg-icinga2-debian/blob/master/lib/icinga/cib.cpp
 
@@ -65,7 +68,6 @@ module Icinga2
     # return statistic data for services
     #
     # @example
-    #    @icinga.cib_data
     #    ok, warning, critical, unknown, pending, in_downtime, ack = @icinga.service_statistics.values
     #
     #    s = @icinga.service_statistics
@@ -81,6 +83,8 @@ module Icinga2
     #    * acknowledged (Integer)
     #
     def service_statistics
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       services_ok           = @services_ok.nil?           ? 0 : @services_ok
       services_warning      = @services_warning.nil?      ? 0 : @services_warning
@@ -104,7 +108,6 @@ module Icinga2
     # return statistic data for hosts
     #
     # @example
-    #    @icinga.cib_data
     #    up, down, pending, unreachable, in_downtime, ack = @icinga.host_statistics.values
     #
     #    h = @icinga.host_statistics
@@ -119,6 +122,8 @@ module Icinga2
     #    * acknowledged (Integer)
     #
     def host_statistics
+
+      cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
 
       hosts_up           = @hosts_up.nil?           ? 0 : @hosts_up
       hosts_down         = @hosts_down.nil?         ? 0 : @hosts_down
@@ -148,7 +153,7 @@ module Icinga2
     def work_queue_statistics
 
       stats  = {}
-      data   = Network.api_data(
+      data   = api_data(
         url: format( '%s/status', @icinga_api_url_base ),
         headers: @headers,
         options: @options
@@ -156,12 +161,11 @@ module Icinga2
 
       return stats if data.nil?
 
-      if( data.dig(:status).nil? )
-        results = data.dig('results')
+      if( data.is_a?(Array) )
 
-        json_rpc_data  = results.find { |k| k['name'] == 'ApiListener' }
-        graphite_data  = results.find { |k| k['name'] == 'GraphiteWriter' }
-        ido_mysql_data = results.find { |k| k['name'] == 'IdoMysqlConnection' }
+        json_rpc_data  = data.find { |k| k['name'] == 'ApiListener' }
+        graphite_data  = data.find { |k| k['name'] == 'GraphiteWriter' }
+        ido_mysql_data = data.find { |k| k['name'] == 'IdoMysqlConnection' }
 
         json_rpc_data  = json_rpc_data.dig('status', 'api', 'json_rpc') unless( json_rpc_data.nil? )
         graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')       unless( graphite_data.nil? )

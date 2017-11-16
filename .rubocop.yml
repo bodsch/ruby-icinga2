@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.0
 
 AllCops:
   Exclude:
@@ -52,5 +52,8 @@ Style/RaiseArgs:
   EnforcedStyle: compact
 
 Layout:
+  Enabled: False
+
+RescueWithoutErrorClass:
   Enabled: False
 

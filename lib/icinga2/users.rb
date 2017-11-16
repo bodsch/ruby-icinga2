@@ -64,7 +64,7 @@ module Icinga2
         }
       end
 
-      Network.put(
+      put(
         url: format( '%s/objects/users/%s', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options,
@@ -91,7 +91,7 @@ module Icinga2
 
       raise ArgumentError.new('Missing user_name') if( user_name.nil? )
 
-      Network.delete(
+      delete(
         url: format( '%s/objects/users/%s?cascade=1', @icinga_api_url_base, user_name ),
         headers: @headers,
         options: @options
@@ -109,9 +109,11 @@ module Icinga2
     # @example to get one user
     #    @icinga.users(user_name: 'icingaadmin')
     #
-    # @return [Hash] returns a hash
+    # @return [Array]
     #
     def users( params = {} )
+
+      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
       user_name = params.dig(:user_name)
 
@@ -122,15 +124,11 @@ module Icinga2
         format( '%s/objects/users/%s', @icinga_api_url_base, user_name )
       end
 
-      data = Network.api_data(
+      api_data(
         url: url,
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
     # checks if the user exists
@@ -148,11 +146,12 @@ module Icinga2
       raise ArgumentError.new('Missing user_name') if( user_name.size.zero? )
 
       result = users( user_name: user_name )
-      result = JSON.parse( result ) if( result.is_a?(String) )
+      result = JSON.parse( result ) if  result.is_a?( String )
+      result = result.first if( result.is_a?(Array) )
 
-      return true if( !result.nil? && result.is_a?(Array) )
+      return false if( result.is_a?(Hash) && result.dig('code') == 404 )
 
-      false
+      true
     end
 
   end

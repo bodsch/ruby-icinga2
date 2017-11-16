@@ -17,7 +17,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.api_data( params )
+    def api_data( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -25,65 +25,39 @@ module Icinga2
       url     = params.dig(:url)
       headers = params.dig(:headers)
       options = params.dig(:options)
-      payload = params.dig(:payload) || {}
+      payload = params.dig(:payload)
 
       raise ArgumentError.new('Missing url') if( url.nil? )
       raise ArgumentError.new('Missing headers') if( headers.nil? )
       raise ArgumentError.new('Missing options') if( options.nil? )
-      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
-      max_retries = 10
-      retried     = 0
-
-      begin
-        if payload
-          headers['X-HTTP-Method-Override'] = 'GET'
-          payload = JSON.generate(payload)
-          res = rest_client.post(payload, headers)
-        else
-          res = rest_client.get(headers)
-        end
-
-      rescue RestClient::Unauthorized => e
-
-        return {
-          status: 401,
-          message: 'unauthorized'
-        }
-
-      rescue RestClient::NotFound => e
-
-        message = format( 'not found (request %s)', url )
-#         $stderr.puts( message )
-
-        return {
-          status: 404,
-          message: message
-        }
-
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
-
-        if( retried < max_retries )
-          retried += 1
-          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
-          sleep(2)
-          retry
-        else
-
-          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-#           $stderr.puts( message )
-
-          return {
-            status: 500,
-            message: message
-          }
-        end
+      if( payload )
+        raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+        headers['X-HTTP-Method-Override'] = 'GET'
+        method = 'POST'
+      else
+        headers['X-HTTP-Method-Override'] = 'GET'
+        method = 'GET'
       end
 
-      body = res.body
-      JSON.parse(body)
+      begin
+        data = request( rest_client, method, headers, payload )
+
+        data = JSON.parse( data ) if( data.is_a?(String) )
+        data = data.deep_string_keys
+        data = data.dig('results') if( data.is_a?(Hash) )
+
+        return data
+
+      rescue => e
+
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
+
+        return nil
+      end
     end
 
     # static function for GET Requests without filters
@@ -98,7 +72,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.application_data( params )
+    def icinga_application_data( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -111,13 +85,23 @@ module Icinga2
       raise ArgumentError.new('Missing headers') if( headers.nil? )
       raise ArgumentError.new('Missing options') if( options.nil? )
 
-      data    = Network.api_data( url: url, headers: headers, options: options )
+      begin
 
-      return nil unless( data.dig(:status).nil? )
+        data = api_data( url: url, headers: headers, options: options )
+        data = data.first if( data.is_a?(Array) )
 
-      results = data.dig('results')
+        data
 
-      return results.first.dig('status') unless( results.nil? )
+        return data.dig('status') unless( data.nil? )
+
+      rescue => e
+
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
+
+        return nil
+      end
+
     end
 
     # static function for POST Requests
@@ -131,7 +115,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.post( params )
+    def post( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -146,71 +130,25 @@ module Icinga2
       raise ArgumentError.new('Missing options') if( options.nil? )
       raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
 
-      max_retries = 30
-      retried     = 0
-      result      = {}
-
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
       headers['X-HTTP-Method-Override'] = 'POST'
 
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
-
       begin
+        data = request( rest_client, 'POST', headers, payload )
 
-        data = rest_client.post(
-          JSON.generate( payload ),
-          headers
-        )
+        data = JSON.parse( data ) if( data.is_a?(String) )
+        data = data.deep_string_keys
+        data = data.dig('results').first if( data.is_a?(Hash) )
 
-        data    = JSON.parse( data )
+        return { 'code' => data.dig('code').to_i, 'name' => data.dig('name'), 'status' => data.dig('status') } unless( data.nil? )
 
-        results = data.dig('results').first
+      rescue => e
 
-        return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
 
-      rescue RestClient::ExceptionWithResponse => e
-
-        error  = e.response ? e.response : nil
-        error = JSON.parse( error ) if  error.is_a?( String )
-
-        results = error.dig( 'results' )
-
-        if( !results.nil? )
-          return {
-            status: results.dig('code').to_i,
-            name: results.dig('name'),
-            message: results.dig('status'),
-            error: results.dig('errors')
-          }
-        else
-          return {
-            status: error.dig( 'error' ).to_i,
-            message: error.dig( 'status' )
-          }
-        end
-
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
-
-        if( retried < max_retries )
-          retried += 1
-          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
-          sleep(2)
-          retry
-        else
-
-          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
-
-          return {
-            status: 500,
-            message: message
-          }
-        end
+        return nil
       end
-
-      result
     end
 
     # static function for PUT Requests
@@ -225,7 +163,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.put( params )
+    def put( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -240,72 +178,31 @@ module Icinga2
       raise ArgumentError.new('Missing options') if( options.nil? )
       raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
 
-      max_retries = 30
-      retried     = 0
-      result      = {}
-
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
       headers['X-HTTP-Method-Override'] = 'PUT'
 
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
-
       begin
-        data = rest_client.put(
-          JSON.generate( payload ),
-          headers
-        )
-        data    = JSON.parse( data )
-        results = data.dig('results').first
 
-        return { status: results.dig('code').to_i, message: results.dig('status') } unless( results.nil? )
+        data = request( rest_client, 'PUT', headers, payload )
+        data = JSON.parse( data ) if( data.is_a?(String) )
+        data = data.deep_string_keys
 
-      rescue RestClient::ExceptionWithResponse => e
-
-        error  = e.response ? e.response : nil
-        error = JSON.parse( error ) if  error.is_a?( String )
-
-        results = error.dig('results')
-
-        return { status: error.dig('error').to_i, message: error.dig('status'), error: results } if( results.nil? )
-
-        if( results.is_a?( Hash ) && results.count != 0 )
-
-          return {
-            status: results.dig('code').to_i,
-            name: results.dig('name'),
-            message: results.dig('status'),
-            error: results
-          }
+        if( data.is_a?(Hash) )
+          results = data.dig('results')
+          results = results.first if( results.is_a?(Array) )
         else
-          return {
-            status: results.first.dig('code').to_i,
-            message: format('%s (possible, object already exists)', results.first.dig('status') ),
-            error: results
-          }
+          results = data
         end
 
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
+        return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
 
-        if( retried < max_retries )
-          retried += 1
-          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
-          sleep(2)
-          retry
-        else
+      rescue => e
 
-          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
 
-          return {
-            status: 500,
-            message: message
-          }
-        end
+        return nil
       end
-
-      result
     end
 
     # static function for DELETE Requests
@@ -318,7 +215,7 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def self.delete( params )
+    def delete( params )
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -331,74 +228,175 @@ module Icinga2
       raise ArgumentError.new('Missing headers') if( headers.nil? )
       raise ArgumentError.new('Missing options') if( options.nil? )
 
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
+      headers['X-HTTP-Method-Override'] = 'DELETE'
+
+      begin
+        data = request( rest_client, 'DELETE', headers )
+
+        data = JSON.parse( data ) if( data.is_a?(String) )
+        data = data.deep_string_keys
+
+        if( data.is_a?(Hash) )
+          results = data.dig('results')
+          results = results.first if( results.is_a?(Array) )
+        else
+          results = data
+        end
+
+        return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
+
+      rescue => e
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
+
+        return nil
+      end
+    end
+
+    private
+    #
+    # internal functionfor the Rest-Client Request
+    #
+    def request( client, method, headers, data = {} )
+
+      # logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{options}, #{data} )" )
+
+      raise ArgumentError.new('client must be an RestClient::Resource') unless( client.is_a?(RestClient::Resource) )
+      raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w[GET POST PUT DELETE].include?(method) )
+
+      unless( data.nil? )
+        raise ArgumentError.new(format('data must be an Hash (%s)', data.class.to_s)) unless( data.is_a?(Hash) )
+      end
+
       max_retries = 3
       retried     = 0
 
-      headers['X-HTTP-Method-Override'] = 'DELETE'
-
-      result  = {}
-
-      rest_client = RestClient::Resource.new(
-        URI.encode( url ),
-        options
-      )
-
       begin
-        data     = rest_client.get( headers )
 
-        if( data )
+        case method.upcase
+        when 'GET'
+          response = client.get( headers )
+        when 'POST'
+          response = client.post( data.to_json, headers )
+        when 'PATCH'
+          response = client.patch( data, headers )
+        when 'PUT'
+          # response = @api_instance[endpoint].put( data, @headers )
+          client.put( data.to_json, headers ) do |response, req, _result|
 
-          data    = JSON.parse( data )
-          results = data.dig('results').first
+            @req           = req
+            @response_raw  = response
+            @response_body = response.body
+            @response_code = response.code.to_i
 
-          return { status: results.dig('code').to_i, name: results.dig('name'), message: results.dig('status') } unless( results.nil? )
+            # logger.debug('----------------------------')
+            # logger.debug(@response_raw)
+            # logger.debug(@response_body)
+            # logger.debug(@response_code)
+            # logger.debug('----------------------------')
+
+            case response.code
+            when 200
+              return @response_body
+            when 400
+              raise RestClient::BadRequest
+            when 404
+              raise RestClient::NotFound
+            when 500
+              raise RestClient::InternalServerError
+            else
+              response.return
+            end
+          end
+
+        when 'DELETE'
+          response = client.delete( @headers )
+        else
+          @logger.error( "Error: #{__method__} is not a valid request method." )
+          return false
         end
+
+        response_body    = response.body
+        response_headers = response.headers
+        response_body    = JSON.parse( response_body )
+
+        return response_body
+
+      rescue RestClient::BadRequest
+
+        response_body = JSON.parse(response_body) if response_body.is_a?(String)
+
+        return {
+         'results' => [{
+           'code' => 400,
+           'status' => response_body.nil? ? 'Bad Request' : response_body
+          }]
+        }
+
+      rescue RestClient::Unauthorized
+
+        return {
+            'code' => 401,
+            'status' => format('Not authorized to connect \'%s\' - wrong username or password?', @icinga_api_url_base)
+        }
+
+      rescue RestClient::NotFound
+
+        return {
+          'results' => [{
+            'code' => 404,
+            'status' => 'Object not Found'
+          }]
+        }
+
+      rescue RestClient::InternalServerError
+
+        response_body = JSON.parse(@response_body) if @response_body.is_a?(String)
+
+        results = response_body.dig('results')
+        results = results.first if( results.is_a?(Array) )
+        status  = results.dig('status')
+        errors  = results.dig('errors')
+        errors  = errors.first if( errors.is_a?(Array) )
+        errors  = errors.sub(/ \'.*\'/,'')
+
+        return {
+          'results' => [{
+            'code' => 500,
+            'status' => format('%s (%s)', status, errors).delete('.')
+          }]
+        }
+
+      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
+
+        # TODO
+        # ist hier ein raise sinnvoll?
+        raise format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, @icinga_api_url_base ) if( retried >= max_retries )
+
+        retried += 1
+        $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", @icinga_api_url_base, e, retried, max_retries))
+        sleep(3)
+        retry
 
       rescue RestClient::ExceptionWithResponse => e
 
-        error  = e.response ? e.response : nil
+        @logger.error( "Error: #{__method__} #{method_type.upcase} on #{endpoint} error: '#{e}'" )
+        @logger.error( data )
+        @logger.error( @headers )
+        @logger.error( JSON.pretty_generate( response_headers ) )
 
-        error = JSON.parse( error ) if  error.is_a?( String )
 
-        results = error.dig('results')
-
-        if( results.nil? )
-          return {
-            status: error.dig( 'error' ).to_i,
-            message: error.dig( 'status' )
-          }
-        else
-
-          results = results.first if( results.is_a?(Array) )
-
-          return {
-            status: results.dig('code').to_i,
-            name: results.dig('name'),
-            message: results.dig('status'),
-            error: results.dig('errors')
-          }
-        end
-      rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
-
-        if( retried < max_retries )
-          retried += 1
-          $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", url, e, retried, max_retries))
-          sleep(2)
-          retry
-        else
-
-          message = format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, url )
-          $stderr.puts( message )
-
-          return {
-            status: 500,
-            message: message
-          }
-        end
+        return {
+          'results' => [{
+            'code' => 500,
+            'status' => e
+          }]
+        }
       end
 
-      result
     end
+
 
   end
 end

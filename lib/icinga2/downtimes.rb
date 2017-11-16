@@ -58,6 +58,10 @@ module Icinga2
       raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
       raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )
 
+      # TODO
+      # check if host_name exists!
+
+
       if( !host_name.nil? )
 
         filter = format( 'host.name=="%s"', host_name )
@@ -79,7 +83,7 @@ module Icinga2
         'filter'      => filter
       }
 
-      Network.post(
+      post(
         url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),
         headers: @headers,
         options: @options,
@@ -96,15 +100,11 @@ module Icinga2
     #
     def downtimes
 
-      data = Network.api_data(
+      api_data(
         url: format( '%s/objects/downtimes'   , @icinga_api_url_base ),
         headers: @headers,
         options: @options
       )
-
-      return data.dig('results') if( data.dig(:status).nil? )
-
-      nil
     end
 
   end

@@ -5,11 +5,21 @@
 
 ### Example
     param = {
-      host: 'foo',
-      fqdn: 'foo.bar.com',
+      name: 'foo',
+      address: 'foo.bar.com',
       display_name: 'test node',
       max_check_attempts: 5,
-      notes: 'test node'
+      notes: 'test node',
+      vars: {
+        description: 'host foo',
+        os: 'Linux',
+        partitions: {
+          '/' => {
+            crit: '95%',
+            warn: '90%'
+          }
+        }
+      }
     }
     @icinga.add_host(param)
 
@@ -18,7 +28,52 @@
     delete_host( params )
 
 ### Example
-    @icinga.delete_host(host: 'foo')
+    @icinga.delete_host(name: 'foo')
+
+
+## <a name="modify-host"></a>modify a host
+    modify-host( params )
+
+### Example
+
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      display_name: 'Host for an example Problem',
+      max_check_attempts: 10,
+    }
+
+or
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      notes: 'an demonstration object',
+      vars: {
+        description: 'schould be delete ASAP',
+        os: 'Linux',
+        partitions: {
+          '/' => {
+            crit: '98%',
+            warn: '95%'
+          }
+        }
+      },
+      merge_vars: true
+    }
+
+or
+
+    param = {
+      name: 'foo',
+      address: 'foo.bar.com',
+      vars: {
+        description: 'removed all other custom vars',
+      }
+    }
+
+    @icinga.modify-host( name: 'foo')
 
 
 ## <a name="list-hosts"></a>list hosts
@@ -27,7 +82,7 @@
     hosts( params )
 
 #### Example
-    @icinga.host(host: 'icinga2')
+    @icinga.host(name: 'icinga2')
 
 ### list all hosts
     hosts
@@ -50,19 +105,6 @@
     @icinga.host_objects(attrs: ['name', 'state'])
 
 
-## <a name="hosts-adjusted"></a>adjusted hosts state
-    hosts_adjusted
-
-### Example
-    @icinga.cib_data
-    @icinga.host_objects
-    warning, critical, unknown = @icinga.hosts_adjusted.values
-
-or
-    h = @icinga.hosts_adjusted
-    down = h.dig(:down_adjusted)
-
-
 ## <a name="count-hosts-with-problems"></a>count of hosts with problems
     count_hosts_with_problems
 
@@ -82,7 +124,6 @@ or
     hosts_all
 
 ### Example
-    @icinga.host_objects
     @icinga.hosts_all
 
 
@@ -90,10 +131,10 @@ or
     host_problems
 
 ### Example
-    @icinga.host_objects
-    all, down, critical, unknown = @icinga.host_problems.values
+    all, down, critical, unknown, handled, adjusted = @icinga.host_problems.values
 
 or
+
     p = @icinga.host_problems
     down = h.dig(:down)
 

@@ -3,21 +3,7 @@
 
 module Icinga2
 
-  # namespace for version information
-  module Version
-
-    # major part of version
-    MAJOR = 0
-    # minor part of version
-    MINOR = 9
-    # tiny part of version
-    TINY  = 0
-    # patch part
-    PATCH = 0
-
-  end
-
   # Current version of gem.
-  VERSION = [Version::MAJOR, Version::MINOR, Version::TINY, Version::PATCH].compact * '.'
+  VERSION = '1.0.0.pre3' # [Version::MAJOR, Version::MINOR, Version::TINY, Version::PATCH].compact * '.'
 
 end

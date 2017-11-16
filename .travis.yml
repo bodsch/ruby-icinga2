@@ -5,21 +5,34 @@ sudo: required
 bundler_args: --retry=3 --jobs=3
 
 rvm:
+  - 2.0
+  - 2.1
+  - 2.2
   - 2.3
-  - 2.3.3
-  - 2.4.0
+  - 2.4
 
 services:
   - docker
 
 before_install:
   - gem install bundler
-  - docker pull bodsch/docker-icinga2:1708-35.1
-  - docker run --rm --detach --publish=5665:5665 --env ICINGA_MASTER=icinga2 --env ICINGA_CLUSTER=true --env ICINGA_API_USERS=root:icinga --env DEMO_DATA=true --hostname=icinga2 bodsch/docker-icinga2:1708-35.1
+  - gem update bundler
+  - docker pull bodsch/docker-icinga2:2.7.1-r4
+  - |
+    docker run \
+    --rm \
+    --detach \
+    --publish=5665:5665 \
+    --env ICINGA_MASTER=icinga2 \
+    --env ICINGA_CLUSTER=true \
+    --env ICINGA_API_USERS=root:icinga \
+    --env DEMO_DATA=true \
+    --hostname=icinga2 \
+    bodsch/docker-icinga2:2.7.1-r4
   - docker ps
   - sleep 20s
 
-script: bundle exec rspec spec || true
+script: bundle exec rspec spec
 
 fast_finish: true
 
