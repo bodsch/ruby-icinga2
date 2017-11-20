@@ -9,8 +9,8 @@ Add a Service to Icinga2
 
 | Parameter              | Type    | Example           | Description
 | :--------------------  | :-----: | :-----            | :-----------
-| `host`                 | String  | `foo`             | existing Host for these Service
-| `service_name`         | String  | `ping4`           | Service Name they will be create
+| `host_name`            | String  | `foo`             | existing Host for these Service
+| `name`                 | String  | `ping4`           | Service Name they will be create
 | `templates`            | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
 | `vars`                 | Hash    | (see below)       | Hash with custom options
 
@@ -33,8 +33,8 @@ The result are an `Hash`
 ### Example
 
     @icinga.add_services(
-      host: 'foo',
-      service_name: 'ping4',
+      host_name: 'foo',
+      name: 'ping4',
       vars: {
         attrs: {
           check_command: 'ping4',
@@ -47,8 +47,8 @@ The result are an `Hash`
 or
 
     @icinga.add_service(
-      host: 'foo',
-      service_name: 'http',
+      host_name: 'foo',
+      name: 'http',
       vars: {
         attrs: {
           check_command: 'http',
@@ -74,7 +74,7 @@ Delete an Service From Icinga2
 | Parameter              | Type    | Example           | Description
 | :--------------------  | :-----: | :-----            | :-----------
 | `host`                 | String  | `foo`             | existing Host for these Service
-| `service_name`         | String  | `ping4`           | Service Name they will be deleted
+| `name`                 | String  | `ping4`           | Service Name they will be deleted
 | `cascade`              | Bool    | `true`            | delete service also when other objects depend on it (default: `false`)
 
 
@@ -82,11 +82,11 @@ The result are an `Hash`
 
 #### Example
 
-    @icinga.delete_service(host: 'foo', service_name: 'ping4')
+    @icinga.delete_service(host_name: 'foo', name: 'ping4')
 
 or
 
-    @icinga.delete_service(host: 'foo', service_name: 'new_ping4', cascade: true)
+    @icinga.delete_service(host_name: 'foo', name: 'new_ping4', cascade: true)
 
 
 ## <a name="modify-service"></a>*modify_service( params )*
@@ -97,7 +97,7 @@ Modify an Service.
 
 | Parameter              | Type    | Example           | Description
 | :--------------------  | :-----: | :-----            | :-----------
-| `service_name`         | String  | `ping4`           | Service Name they will be deleted
+| `name`         | String  | `ping4`           | Service Name they will be deleted
 | `templates`            | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
 | `vars`                 | Hash    | (see below)       | Hash with custom options
 
@@ -111,7 +111,7 @@ The result are an `Hash`
 #### Example
 
     @icinga.modify_service(
-      service_name: 'http2',
+      name: 'http2',
       vars: {
         attrs: {
           check_interval: 60,
@@ -159,7 +159,7 @@ The result are an `Hash`
     services( params )
 
 #### Example
-    @icinga.services( host: 'icinga2', service: 'ping4' )
+    @icinga.services( host_name: 'icinga2', service: 'ping4' )
 
 
 ## <a name="service-exists"></a>*exists_service?( params )*
@@ -176,7 +176,7 @@ the optional `params` is an `Hash` with following Parameters:
 The result are an `Hash`
 
 ### Example
-    @icinga.exists_service?( host: 'icinga2', service: 'users' )
+    @icinga.exists_service?( host_name: 'icinga2', service: 'users' )
 
 
 ## <a name="list-service-objects"></a>*service_objects( params )*

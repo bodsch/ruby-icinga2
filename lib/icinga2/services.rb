@@ -1,4 +1,3 @@
-
 # frozen_string_literal: true
 
 module Icinga2
@@ -9,15 +8,15 @@ module Icinga2
     # add service
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :service_name
+    # @option params [String] :name
+    # @option params [String] :host_name
     # @option params [Array] :templates
     # @option params [Hash] :vars
     #
     # @example
     #    @icinga.add_service(
-    #      host: 'icinga2',
-    #      service_name: 'http2',
+    #      name: 'http2',
+    #      host_name: 'icinga2',
     #      vars: {
     #        attrs: {
     #          check_command: 'http',
@@ -38,44 +37,119 @@ module Icinga2
     #
     def add_service( params = {} )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('only Hash is allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host_name    = params.dig(:host)
-      service_name = params.dig(:service_name)
-      templates    = params.dig(:templates) || ['generic-service']
-      vars         = params.dig(:vars)
+      name = params.dig(:name)
+      host_name = params.dig(:host_name)
+      display_name = params.dig(:display_name)
+      groups = params.dig(:groups)
+      check_command = params.dig(:check_command)
+      max_check_attempts = params.dig(:max_check_attempts)
+      check_period = params.dig(:check_period)
+      check_timeout = params.dig(:check_timeout)
+      check_interval = params.dig(:check_interval)
+      retry_interval = params.dig(:retry_interval)
+      enable_notifications = params.dig(:enable_notifications)
+      enable_active_checks = params.dig(:enable_active_checks)
+      enable_passive_checks = params.dig(:enable_passive_checks)
+      enable_event_handler = params.dig(:enable_event_handler)
+      enable_flapping = params.dig(:enable_flapping)
+      flapping_threshold = params.dig(:flapping_threshold)
+      enable_perfdata = params.dig(:enable_perfdata)
+      event_command = params.dig(:event_command)
+      volatile = params.dig(:volatile)
+      zone = params.dig(:zone)
+      command_endpoint = params.dig(:command_endpoint)
+      notes = params.dig(:notes)
+      notes_url = params.dig(:notes_url)
+      action_url = params.dig(:action_url)
+      icon_image = params.dig(:icon_image)
+      icon_image_alt = params.dig(:icon_image_alt)
+      templates = params.dig(:templates) || ['generic-service']
+      vars = params.dig(:vars) || {}
 
-      raise ArgumentError.new('Missing host') if( host_name.nil? )
-      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
-      raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
-      raise ArgumentError.new('Missing vars') if( vars.nil? )
-      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
+      raise ArgumentError.new('missing name') if( name.nil? )
 
-      # validate
-      # needed_values = %w[check_command check_interval retry_interval]
-
-      attrs = vars.dig(:attrs)
-
-      validate_check_command  = attrs.select { |k,_v| k == 'check_command'.to_sym }.size
-      validate_check_interval = attrs.select { |k,_v| k == 'check_interval'.to_sym }.size
-      validate_retry_interval = attrs.select { |k,_v| k == 'retry_interval'.to_sym }.size
-
-      raise 'Error in attrs, expected \'check_command\' but was not found' if( validate_check_command.zero? )
-      raise 'Error in attrs, expected \'check_interval\' but was not found' if( validate_check_interval.zero? )
-      raise 'Error in attrs, expected \'retry_interval\' but was not found' if( validate_retry_interval.zero? )
-
-      payload = ''
-
-      vars.each_value do |v|
-
-        payload = {
-          'templates' => templates,
-          'attrs'     => update_host( v, host_name )
-        }
+      %w[display_name
+         host_name
+         check_command
+         check_period
+         event_command
+         zone
+         name
+         command_endpoint
+         notes
+         notes_url
+         action_url
+         icon_image
+         icon_image_alt
+         ].each do |attr|
+        raise ArgumentError.new("only String for #{attr} is allowed") unless( eval(attr).is_a?(String) || eval(attr).nil? )
       end
 
+      %w[max_check_attempts
+         flapping_threshold
+         check_timeout
+         check_interval
+         retry_interval].each do |attr|
+        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(Integer) || eval(attr).nil? )
+      end
+
+      %w[enable_notifications
+         enable_active_checks
+         enable_passive_checks
+         enable_event_handler
+         enable_flapping
+         enable_perfdata
+         volatile].each do |attr|
+        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(TrueClass) || eval(attr).is_a?(FalseClass) || eval(attr).nil? )
+      end
+
+      %w[groups templates].each do |attr|
+        raise ArgumentError.new("only Array for #{attr} is allowed") unless( eval(attr).is_a?(Array) || eval(attr).nil? )
+      end
+
+      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
+
+      payload = {
+        'templates' => templates,
+        'attrs' => {
+          'display_name' => display_name,
+          'groups' => groups,
+          'check_command' => check_command,
+          'max_check_attempts' => max_check_attempts,
+          'check_period' => check_period,
+          'check_timeout' => check_timeout,
+          'check_interval' => check_interval,
+          'retry_interval' => retry_interval,
+          'enable_notifications' => enable_notifications,
+          'enable_active_checks' => enable_active_checks,
+          'enable_passive_checks' => enable_passive_checks,
+          'enable_event_handler' => enable_event_handler,
+          'enable_flapping' => enable_flapping,
+          'flapping_threshold' => flapping_threshold,
+          'zone' => zone,
+          'enable_perfdata' => enable_perfdata,
+          'event_command' => event_command,
+          'volatile' => volatile,
+          'command_endpoint' => command_endpoint,
+          'notes' => notes,
+          'notes_url' => notes_url,
+          'action_url' => action_url,
+          'icon_image' => icon_image,
+          'icon_image_alt' => icon_image_alt,
+        }
+      }
+
+      payload['attrs']['vars'] = vars unless vars.empty?
+
+      # clear undefined settings
+      payload.reject!{ |_k, v| v.nil? }
+      payload['attrs'].reject!{ |_k, v| v.nil? }
+
       put(
-        url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ),
+        url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, name ),
         headers: @headers,
         options: @options,
         payload: payload
@@ -85,13 +159,13 @@ module Icinga2
     # delete a service
     #
     # @param [Hash] params
-    # @option params [String] :host host name for the service
-    # @option params [String] :service_name
+    # @option params [String] :host_name host name for the service
+    # @option params [String] :name
     # @option params [Bool] :cascade (false) delete service also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_service(host: 'foo', service_name: 'http2')
-    #   @icinga.delete_service(host: 'foo', service_name: 'http2', cascade: true)
+    #   @icinga.delete_service(host_name: 'foo', name: 'http2')
+    #   @icinga.delete_service(host_name: 'foo', name: 'http2', cascade: true)
     #
     # @return [Hash] result
     #
@@ -100,18 +174,18 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host_name    = params.dig(:host)
-      service_name = params.dig(:service_name)
+      host_name    = params.dig(:host_name)
+      name = params.dig(:name)
       cascade      = params.dig(:cascade)
 
       raise ArgumentError.new('Missing host') if( host_name.nil? )
-      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
+      raise ArgumentError.new('Missing service name') if( name.nil? )
 
       if( ! cascade.nil? && ( ! cascade.is_a?(TrueClass) && ! cascade.is_a?(FalseClass) ) )
         raise ArgumentError.new('cascade can only be true or false')
       end
 
-      url = format( '%s/objects/services/%s!%s%s', @icinga_api_url_base, host_name, service_name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
+      url = format( '%s/objects/services/%s!%s%s', @icinga_api_url_base, host_name, name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
 
       delete(
         url: url,
@@ -124,13 +198,13 @@ module Icinga2
     # modify an service
     #
     # @param [Hash] params
-    # @option params [String] :service_name
+    # @option params [String] :name
     # @option params [Array] :templates
     # @option params [Hash] :vars
     #
     # @example
     #    @icinga.modify_service(
-    #      service_name: 'http2',
+    #      name: 'http2',
     #      vars: {
     #        attrs: {
     #          check_interval: 60,
@@ -154,9 +228,9 @@ module Icinga2
 
       templates     = params.dig(:templates) || ['generic-service']
       vars          = params.dig(:vars)
-      service_name  = params.dig(:service_name)
+      name  = params.dig(:name)
 
-      raise ArgumentError.new('Missing service_name') if( service_name.nil? )
+      raise ArgumentError.new('Missing service name') if( name.nil? )
       raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
       raise ArgumentError.new('Missing vars') if( vars.nil? )
       raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
@@ -171,7 +245,7 @@ module Icinga2
         }
       end
 
-      payload['filter'] = format( 'service.name=="%s"', service_name )
+      payload['filter'] = format( 'service.name=="%s"', name )
 
       post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
@@ -209,14 +283,14 @@ module Icinga2
     # return services
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :service
+    # @option params [String] :host_name
+    # @option params [String] :name
     #
     # @example to get all services
     #    @icinga.services
     #
     # @example to get one service for host
-    #    @icinga.services( host: 'icinga2', service: 'ping4' )
+    #    @icinga.services( host_name: 'icinga2', name: 'ping4' )
     #
     # @return [Hash]
     #
@@ -224,14 +298,14 @@ module Icinga2
 
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
 
-      host_name = params.dig(:host)
-      service   = params.dig(:service)
+      host_name = params.dig(:host_name)
+      name   = params.dig(:name)
 
       url =
-      if( service.nil? )
+      if( name.nil? )
         format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
       else
-        format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service )
+        format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, name )
       end
 
       api_data(
@@ -244,11 +318,11 @@ module Icinga2
     # returns true if the service exists
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :service
+    # @option params [String] :host_name
+    # @option params [String] :name
     #
     # @example
-    #    @icinga.exists_service?(host: 'icinga2', service: 'users')
+    #    @icinga.exists_service?(host_name: 'icinga2', name: 'users')
     #
     # @return [Bool]
     #
@@ -257,13 +331,13 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host    = params.dig(:host)
-      service = params.dig(:service)
+      host    = params.dig(:host_name)
+      service = params.dig(:name)
 
       raise ArgumentError.new('Missing host') if( host.nil? )
       raise ArgumentError.new('Missing service') if( service.nil? )
 
-      result = services( host: host, service: service )
+      result = services( host_name: host, name: service )
       result = JSON.parse( result ) if  result.is_a?( String )
       result = result.first if( result.is_a?(Array) )
 
