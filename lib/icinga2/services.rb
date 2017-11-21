@@ -17,17 +17,13 @@ module Icinga2
     #    @icinga.add_service(
     #      name: 'http2',
     #      host_name: 'icinga2',
+    #      check_command: 'http',
+    #      check_interval: 10,
+    #      retry_interval: 30,
     #      vars: {
-    #        attrs: {
-    #          check_command: 'http',
-    #          check_interval: 10,
-    #          retry_interval: 30,
-    #          vars: {
-    #            http_address: '127.0.0.1',
-    #            http_url: '/access/index',
-    #            http_port: 80
-    #          }
-    #        }
+    #        http_address: '127.0.0.1',
+    #        http_url: '/access/index',
+    #        http_port: 80
     #      }
     #    )
     #
