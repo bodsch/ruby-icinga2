@@ -313,7 +313,7 @@ describe Icinga2 do
   describe 'Module Services' do
 
     it "list services 'ping4' for host 'c1-mysql-1'" do
-      h = @icinga2.services( host: 'c1-mysql-1', service: 'ping4' )
+      h = @icinga2.services( host_name: 'c1-mysql-1', name: 'ping4' )
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -325,11 +325,11 @@ describe Icinga2 do
     end
 
     it "exists service check 'ssh' for host 'c1-mysql-1'" do
-      expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'ssh' )).to be_truthy
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'ssh' )).to be_truthy
     end
 
     it "exists service check 'hdb' for host 'c1-mysql-1'" do
-      expect(@icinga2.exists_service?( host: 'c1-mysql-1', service: 'hdb' )).to be_falsey
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'hdb' )).to be_falsey
     end
 
     it 'count of all services with default parameters' do
@@ -406,19 +406,15 @@ describe Icinga2 do
 
     it 'add service \'new_http\' to host \'c1-mysql-1\'' do
       data = {
-        host: 'c1-mysql-1',
-        service_name: 'new_http',
+        host_name: 'c1-mysql-1',
+        name: 'new_http',
+        check_command: 'http',
+        check_interval: 10,
+        retry_interval: 30,
         vars: {
-          attrs: {
-            check_command: 'http',
-            check_interval: 10,
-            retry_interval: 30,
-            vars: {
-              http_address: '127.0.0.1',
-              http_url: '/access/index',
-              http_port: 80
-            }
-          }
+          http_address: '127.0.0.1',
+          http_url: '/access/index',
+          http_port: 80
         }
       }
 
@@ -438,7 +434,7 @@ describe Icinga2 do
     it 'modify service \'new_http\'' do
 
       data = {
-        service_name: 'new_http',
+        name: 'new_http',
         vars: {
           attrs: {
             check_interval: 60,
@@ -461,8 +457,8 @@ describe Icinga2 do
     it 'delete service \'new_http\' from \'c1-mysql-1\'' do
 
       s = @icinga2.delete_service(
-        host: 'c1-mysql-1',
-        service_name: 'new_http',
+        host_name: 'c1-mysql-1',
+        name: 'new_http',
         cascade: true
       )
       expect(s).to be_a(Hash)
@@ -479,19 +475,15 @@ describe Icinga2 do
 
     it 'add service \'new_http\' to host \'c1-mysql-1\'' do
       data = {
-        host: 'c1-mysql-1',
-        service_name: 'new_http',
+        host_name: 'c1-mysql-1',
+        name: 'new_http',
+        check_command: 'http',
+        check_interval: 10,
+        retry_interval: 30,
         vars: {
-          attrs: {
-            check_command: 'http',
-            check_interval: 10,
-            retry_interval: 30,
-            vars: {
-              http_address: '127.0.0.1',
-              http_url: '/access/index',
-              http_port: 80
-            }
-          }
+          http_address: '127.0.0.1',
+          http_url: '/access/index',
+          http_port: 80
         }
       }
 
@@ -501,7 +493,7 @@ describe Icinga2 do
       expect(status_code).to be_a(Integer)
 
       if(status_code != 200)
-        expect(s[:message]).to be_a(String)
+        expect(s['status']).to be_a(String)
       else
         expect(status_code).to be == 200
       end
@@ -510,7 +502,7 @@ describe Icinga2 do
     it 'modify service \'new_http\'' do
 
       data = {
-        service_name: 'new_http',
+        name: 'new_http',
         vars: {
           attrs: {
             check_interval: 60,
@@ -533,8 +525,8 @@ describe Icinga2 do
     it 'delete service \'new_http\' from \'c1-mysql-1\'' do
 
       s = @icinga2.delete_service(
-        host: 'c1-mysql-1',
-        service_name: 'new_http',
+        host_name: 'c1-mysql-1',
+        name: 'new_http',
         cascade: true
       )
       status_code = s['code']

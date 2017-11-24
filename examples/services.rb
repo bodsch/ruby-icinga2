@@ -100,12 +100,12 @@ unless( i.nil? )
 
     puts '= check if Service exists'
     ['c1-mysql-1', 'bp-foo'].each do |h|
-      e = i.exists_service?( host: h, service: 'ssh' ) ? 'true' : 'false'
+      e = i.exists_service?( host_name: h, name: 'ssh' ) ? 'true' : 'false'
       puts format( '  - Service \'ssh\' for Host \'%s\' : %s', h, e )
     end
     puts ''
     ['c1-mysql-1', 'bp-foo'].each do |h|
-      e = i.exists_service?( host: h, service: 'hdb' ) ? 'true' : 'false'
+      e = i.exists_service?( host_name: h, name: 'hdb' ) ? 'true' : 'false'
       puts format( '  - Service \'hdb\' for Host \'%s\' : %s', h, e )
     end
     puts ''
@@ -125,8 +125,8 @@ unless( i.nil? )
 
     puts '= add service'
     puts i.add_service(
-      host: 'c1-mysql-1',
-      service_name: 'http2',
+      host_name: 'c1-mysql-1',
+      name: 'http2',
       vars: {
         attrs: {
           check_command: 'http',
@@ -143,8 +143,8 @@ unless( i.nil? )
 
     puts '= add service (again)'
     puts i.add_service(
-        host: 'c1-mysql-1',
-        service_name: 'http2',
+        host_name: 'c1-mysql-1',
+        name: 'http2',
         vars: {
             attrs: {
                 check_command: 'http',
@@ -161,7 +161,7 @@ unless( i.nil? )
 
     puts '= modify service'
     puts i.modify_service(
-      service_name: 'http2',
+      name: 'http2',
       vars: {
         attrs: {
           check_interval: 60,
@@ -175,14 +175,14 @@ unless( i.nil? )
     )
 
     puts '= delete service'
-    puts i.delete_service(host: 'c1-mysql-1', service_name: 'http2' )
+    puts i.delete_service(host_name: 'c1-mysql-1', name: 'http2' )
 
     puts '= delete service (again)'
-    puts i.delete_service(host: 'c1-mysql-1', service_name: 'http2' )
+    puts i.delete_service(host_name: 'c1-mysql-1', name: 'http2' )
 
     puts ''
     puts '= list named Service \'ping4\' from Host \'icinga2\''
-    puts i.services( host: 'c1-mysql-1', service: 'ping4' )
+    puts i.services( host_name: 'c1-mysql-1', service: 'ping4' )
     puts ''
     puts '= list all Services'
     puts i.services
