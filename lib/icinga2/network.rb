@@ -19,7 +19,7 @@ module Icinga2
     #
     def api_data( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
@@ -74,7 +74,7 @@ module Icinga2
     #
     def icinga_application_data( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
@@ -117,7 +117,7 @@ module Icinga2
     #
     def post( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
@@ -165,7 +165,7 @@ module Icinga2
     #
     def put( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)
@@ -217,7 +217,7 @@ module Icinga2
     #
     def delete( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       url     = params.dig(:url)

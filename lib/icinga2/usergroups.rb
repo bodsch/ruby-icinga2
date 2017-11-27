@@ -19,8 +19,8 @@ module Icinga2
     #
     def add_usergroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       user_group   = params.dig(:user_group)
       display_name = params.dig(:display_name)
@@ -53,8 +53,8 @@ module Icinga2
     #
     def delete_usergroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       user_group = params.dig(:user_group)
 
@@ -109,8 +109,8 @@ module Icinga2
     #
     def exists_usergroup?( user_group )
 
-      raise ArgumentError.new('only String are allowed') unless( user_group.is_a?(String) )
-      raise ArgumentError.new('Missing user_group') if( user_group.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'user_group\' must be an String, given \'%s\'', user_group.class.to_s)) unless( user_group.is_a?(String) )
+      raise ArgumentError.new('Missing \'user_group\'') if( user_group.size.zero? )
 
       result = usergroups( user_group: user_group )
       result = JSON.parse( result ) if  result.is_a?( String )

@@ -22,8 +22,8 @@ module Icinga2
     #
     def add_servicegroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
       display_name  = params.dig(:display_name)
@@ -34,17 +34,24 @@ module Icinga2
 #      ignore = params.dig(:ignore)
 #      assgin = params.dig(:assign)
 
-      raise ArgumentError.new('Missing service_group') if( service_group.nil? )
-      raise ArgumentError.new('Missing display_name') if( display_name.nil? )
+      raise ArgumentError.new('Missing \'service_group\'') if( service_group.nil? )
+      raise ArgumentError.new('Missing \'display_name\'') if( display_name.nil? )
 
-      payload = { 'attrs' => { 'display_name' => display_name } }
+      payload = {
+        'attrs' => {
+          'display_name' => display_name,
+          'notes' => notes,
+          'notes_url' => notes_url,
+          'action_url' => action_url
+        }
+      }
 
 #      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
 #      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
 
-      payload['attrs']['notes']      ||= notes      unless(notes.nil?)
-      payload['attrs']['notes_url']  ||= notes_url  unless(notes_url.nil?)
-      payload['attrs']['action_url'] ||= action_url unless(action_url.nil?)
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+      payload['attrs'].reject!{ |_k, v| v.nil? }
 
       put(
         url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),
@@ -66,12 +73,12 @@ module Icinga2
     #
     def delete_servicegroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       service_group = params.dig(:service_group)
 
-      raise ArgumentError.new('Missing service_group') if( service_group.nil? )
+      raise ArgumentError.new('Missing \'service_group\'') if( service_group.nil? )
 
       delete(
         url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
@@ -122,8 +129,8 @@ module Icinga2
     #
     def exists_servicegroup?( service_group )
 
-      raise ArgumentError.new('only String are allowed') unless( service_group.is_a?(String) )
-      raise ArgumentError.new('Missing service_group') if( service_group.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'service_group\' must be an String, given \'%s\'', service_group.class.to_s)) unless( service_group.is_a?(String) )
+      raise ArgumentError.new('Missing \'service_group\'') if( service_group.size.zero? )
 
       result = servicegroups( service_group: service_group )
       result = JSON.parse( result ) if  result.is_a?( String )

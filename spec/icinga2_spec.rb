@@ -158,8 +158,8 @@ describe Icinga2 do
         display_name: 'test node',
         max_check_attempts: 5,
         notes: 'test node',
+        zone: 'icinga2-satellite-1.matrix.lan',
         vars: {
-          zone: 'icinga-satellite',
           description: 'spec test',
           os: 'Docker',
           partitions: {
@@ -185,7 +185,7 @@ describe Icinga2 do
         max_check_attempts: 10,
         notes: 'spec test',
         vars: {
-          description: 'changed at ...',
+          description: 'changed at ...'
         },
         merge_vars: true
       }
@@ -212,7 +212,7 @@ describe Icinga2 do
         max_check_attempts: 10,
         notes: 'spec test',
         vars: {
-          description: 'changed only the description',
+          description: 'changed only the description'
         }
       }
       h = @icinga2.modify_host(options)
@@ -411,6 +411,7 @@ describe Icinga2 do
         check_command: 'http',
         check_interval: 10,
         retry_interval: 30,
+        max_check_attempts: 5,
         vars: {
           http_address: '127.0.0.1',
           http_url: '/access/index',

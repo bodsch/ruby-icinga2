@@ -63,7 +63,7 @@ unless( i.nil? )
     puts ''
 
     puts '= service objects with \'attrs\' and \'joins\''
-    puts i.service_objects( attrs: ['name', 'state'], joins: ['host.name','host.state'] )
+    puts i.service_objects( attrs: %w[name state], joins: ['host.name','host.state'] )
     puts ''
 
     puts '= unhandled services'

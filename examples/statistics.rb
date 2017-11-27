@@ -110,6 +110,7 @@ unless( i.nil? )
     puts format( '  warning       : %s', service_stats_warning )
     puts format( '  critical      : %s', service_stats_critical )
     puts format( '  unknown       : %s', service_stats_unknown )
+    puts format( '  pending       : %s', service_stats_pending )
     puts format( '  in downtime   : %s', service_stats_in_downtime )
     puts format( '  acknowledged  : %s', service_stats_acknowledged )
     puts ''

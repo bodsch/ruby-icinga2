@@ -103,7 +103,7 @@ unless( i.nil? )
         description: 'spec test',
         os: 'Docker',
         partitions: {
-          '/': {
+          '/' => {
             crit: '95%',
             warn: '90%'
           }
@@ -125,7 +125,7 @@ unless( i.nil? )
       max_check_attempts: 10,
       notes: 'spec test',
       vars: {
-        description: 'changed at ...',
+        description: 'changed at ...'
       },
       merge_vars: true
     }
@@ -139,7 +139,7 @@ unless( i.nil? )
       max_check_attempts: 10,
       notes: 'spec test',
       vars: {
-        description: 'change and overwrite vars',
+        description: 'change and overwrite vars'
       }
     }
     puts i.modify_host(options)

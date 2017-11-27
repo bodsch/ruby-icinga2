@@ -143,7 +143,7 @@ module Icinga2
     #
     def cert?( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       pki_path     = params.dig(:pki_path)

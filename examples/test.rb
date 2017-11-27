@@ -18,12 +18,6 @@ icinga_api_user      = ENV.fetch( 'ICINGA_API_USER'         , 'admin' )
 icinga_api_pass      = ENV.fetch( 'ICINGA_API_PASSWORD'     , nil )
 icinga_api_pki_path  = ENV.fetch( 'ICINGA_API_PKI_PATH'     , '/etc/icinga2' )
 icinga_api_node_name = ENV.fetch( 'ICINGA_API_NODE_NAME'    , nil )
-icinga_cluster       = ENV.fetch( 'ICINGA_CLUSTER'          , false )
-icinga_satellite     = ENV.fetch( 'ICINGA_CLUSTER_SATELLITE', nil )
-
-
-# convert string to bool
-icinga_cluster   = icinga_cluster.to_s.eql?('true') ? true : false
 
 config = {
   icinga: {
@@ -34,9 +28,7 @@ config = {
       password: icinga_api_pass,
       pki_path: icinga_api_pki_path,
       node_name: icinga_api_node_name
-    },
-    cluster: icinga_cluster,
-    satellite: icinga_satellite
+    }
   }
 }
 
@@ -56,25 +48,25 @@ unless( i.nil? )
     # Join the output with the hosts on which these checks run (services are applied to hosts)
     #
     puts i.service_objects(
-      attrs: ["display_name", "check_command"],
-      filter: "match(\"1.2.3.4\",host.address)" ,
-      joins: ["host.name", "host.address"]
+      attrs: ['display_name', 'check_command'],
+      filter: 'match("1.2.3.4",host.address)' ,
+      joins: ['host.name', 'host.address']
     )
     puts ''
     # Get all services in critical state and filter out the ones for which active checks are disabled
     # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
     #
-    # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
+    # { "joins": ['host.name', 'host.address'], "filter": "service.state==2", "attrs": ['display_name', 'check_command', 'enable_active_checks'] }
     puts i.service_objects(
-      attrs: ["display_name", "check_command", "enable_active_checks"],
-      filter: "service.state==1" ,
-      joins: ["host.name", "host.address"]
+      attrs: ['display_name', 'check_command', 'enable_active_checks'],
+      filter: 'service.state==1',
+      joins: ['host.name', 'host.address']
     )
     puts ''
     # Get host name, address of hosts belonging to a specific hostgroup
     puts i.host_objects(
-      attrs: ["display_name", "name", "address"],
-      filter: "\"windows-servers\" in host.groups"
+      attrs: ['display_name', 'name', 'address'],
+      filter: '"windows-servers" in host.groups'
     )
 
   rescue => e

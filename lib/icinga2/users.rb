@@ -23,8 +23,8 @@ module Icinga2
     #
     def add_user( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       user_name     = params.dig(:user_name)
       display_name  = params.dig(:display_name)
@@ -84,8 +84,8 @@ module Icinga2
     #
     def delete_user( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       user_name = params.dig(:user_name)
 
@@ -113,7 +113,7 @@ module Icinga2
     #
     def users( params = {} )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
 
       user_name = params.dig(:user_name)
 
@@ -142,8 +142,8 @@ module Icinga2
     #
     def exists_user?( user_name )
 
-      raise ArgumentError.new('only String are allowed') unless( user_name.is_a?(String) )
-      raise ArgumentError.new('Missing user_name') if( user_name.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'user_name\' must be an String, given \'%s\'', user_name.class.to_s)) unless( user_name.is_a?(String) )
+      raise ArgumentError.new('Missing \'user_name\'') if( user_name.size.zero? )
 
       result = users( user_name: user_name )
       result = JSON.parse( result ) if  result.is_a?( String )

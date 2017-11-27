@@ -22,9 +22,9 @@ Metrics/MethodLength:
 Metrics/ModuleLength:
   Max: 300
 
-# Increases "Assignment Branch Condition size" warning from 15 to 70
+# Increases "Assignment Branch Condition size" warning from 15 to 80
 Metrics/AbcSize:
-  Max: 70
+  Max: 80
 
 # Increases "Block has too many lines" warning from 25 to 190
 Metrics/BlockLength:

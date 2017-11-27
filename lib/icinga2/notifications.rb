@@ -17,8 +17,8 @@ module Icinga2
     #
     def enable_host_notification( host )
 
-      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
-      raise ArgumentError.new('missing host') if( host.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'host\' must be an String, given \'%s\'', host.class.to_s)) unless( host.is_a?(String) )
+      raise ArgumentError.new('missing \'host\'') if( host.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
@@ -36,8 +36,8 @@ module Icinga2
     #
     def disable_host_notification( host )
 
-      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
-      raise ArgumentError.new('missing host') if( host.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'host\' must be an String, given \'%s\'', host.class.to_s)) unless( host.is_a?(String) )
+      raise ArgumentError.new('missing \'host\'') if( host.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
@@ -55,8 +55,8 @@ module Icinga2
     #
     def enable_service_notification( host )
 
-      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
-      raise ArgumentError.new('missing host') if( host.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'host\' must be an String, given \'%s\'', host.class.to_s)) unless( host.is_a?(String) )
+      raise ArgumentError.new('missing \'host\'') if( host.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
@@ -74,8 +74,8 @@ module Icinga2
     #
     def disable_service_notification( host )
 
-      raise ArgumentError.new('only String are allowed') unless( host.is_a?(String) )
-      raise ArgumentError.new('missing host') if( host.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'host\' must be an String, given \'%s\'', host.class.to_s)) unless( host.is_a?(String) )
+      raise ArgumentError.new('missing \'host\'') if( host.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } if( exists_host?( host ) == false )
 
@@ -95,8 +95,8 @@ module Icinga2
     #
     def enable_hostgroup_notification( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       host_group = params.dig(:host_group)
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
@@ -119,8 +119,8 @@ module Icinga2
     #
     def disable_hostgroup_notification( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       host_group = params.dig(:host_group)
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )

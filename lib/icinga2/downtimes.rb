@@ -10,7 +10,7 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] :name
-    # @option params [String] :host
+    # @option params [String] :host_name
     # @option params [String] :host_group
     # @option params [Integer] :start_time (Time.new.to_i)
     # @option params [Integer] :end_time
@@ -22,7 +22,7 @@ module Icinga2
     #    param = {
     #      name: 'test',
     #      type: 'service',
-    #      host: 'icinga2',
+    #      host_name: 'icinga2',
     #      comment: 'test downtime',
     #      author: 'icingaadmin',
     #      start_time: Time.now.to_i,
@@ -34,17 +34,24 @@ module Icinga2
     #
     def add_downtime( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       name            = params.dig(:name)
-      host_name       = params.dig(:host)
+      host_name       = params.dig(:host_name)
       host_group      = params.dig(:host_group)
       start_time      = params.dig(:start_time) || Time.now.to_i
       end_time        = params.dig(:end_time)
       author          = params.dig(:author)
       comment         = params.dig(:comment)
       type            = params.dig(:type)
+      fixed           = params.dig(:fixed)
+      duration        = params.dig(:duration)
+      entry_time      = params.dig(:entry_time)
+      scheduled_by    = params.dig(:scheduled_by)
+      service_name    = params.dig(:service_name)
+      triggered_by    = params.dig(:triggered_by)
+      config_owner    = params.dig(:config_owner)
       filter          = nil
 
       # sanitychecks

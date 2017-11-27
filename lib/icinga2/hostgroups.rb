@@ -11,6 +11,9 @@ module Icinga2
     # @param [Hash] params
     # @option params [String] :host_group hostgroup to create
     # @option params [String] :display_name the displayed name
+    # @option params [String] :notes
+    # @option params [String] :notes_url
+    # @option params [String] :action_url
     #
     # @example
     #   @icinga.add_hostgroup(host_group: 'foo', display_name: 'FOO')
@@ -19,20 +22,36 @@ module Icinga2
     #
     def add_hostgroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       host_group   = params.dig(:host_group)
       display_name = params.dig(:display_name)
+      notes        = params.dig(:notes)
+      notes_url    = params.dig(:notes_url)
+      action_url   = params.dig(:action_url)
 
-      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
-      raise ArgumentError.new('Missing display_name') if( display_name.nil? )
+      raise ArgumentError.new('Missing \'host_group\'') if( host_group.nil? )
+      raise ArgumentError.new('Missing \'display_name\'') if( display_name.nil? )
+
+      payload = {
+        'attrs' => {
+          'display_name' => display_name,
+          'notes' => notes,
+          'notes_url' => notes_url,
+          'action_url' => action_url
+        }
+      }
+
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+      payload['attrs'].reject!{ |_k, v| v.nil? }
 
       put(
         url: format('%s/objects/hostgroups/%s', @icinga_api_url_base, host_group),
         headers: @headers,
         options: @options,
-        payload: { 'attrs' => { 'display_name' => display_name } }
+        payload: payload
       )
     end
 
@@ -48,12 +67,12 @@ module Icinga2
     #
     def delete_hostgroup( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       host_group = params.dig(:host_group)
 
-      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
+      raise ArgumentError.new('Missing \'host_group\'') if( host_group.nil? )
 
       delete(
         url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
@@ -104,8 +123,8 @@ module Icinga2
     #
     def exists_hostgroup?( host_group )
 
-      raise ArgumentError.new('only String are allowed') unless( host_group.is_a?(String) )
-      raise ArgumentError.new('Missing host_group') if( host_group.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'host_group\' must be an String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
+      raise ArgumentError.new('Missing \'host_group\'') if( host_group.size.zero? )
 
       result = hostgroups(host_group: host_group)
       result = JSON.parse( result ) if( result.is_a?(String) )

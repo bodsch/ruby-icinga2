@@ -33,7 +33,7 @@ module Icinga2
     #
     def add_service( params = {} )
 
-      raise ArgumentError.new('only Hash is allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. params must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       name = params.dig(:name)
@@ -81,7 +81,8 @@ module Icinga2
          icon_image
          icon_image_alt
          ].each do |attr|
-        raise ArgumentError.new("only String for #{attr} is allowed") unless( eval(attr).is_a?(String) || eval(attr).nil? )
+          v = eval(attr)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
       end
 
       %w[max_check_attempts
@@ -89,8 +90,11 @@ module Icinga2
          check_timeout
          check_interval
          retry_interval].each do |attr|
-        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(Integer) || eval(attr).nil? )
+          v = eval(attr)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
       end
+
+      exit 1
 
       %w[enable_notifications
          enable_active_checks
@@ -99,14 +103,16 @@ module Icinga2
          enable_flapping
          enable_perfdata
          volatile].each do |attr|
-        raise ArgumentError.new("only Integer for #{attr} is allowed") unless( eval(attr).is_a?(TrueClass) || eval(attr).is_a?(FalseClass) || eval(attr).nil? )
+          v = eval(attr)
+          raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
       end
 
       %w[groups templates].each do |attr|
-        raise ArgumentError.new("only Array for #{attr} is allowed") unless( eval(attr).is_a?(Array) || eval(attr).nil? )
+          v = eval(attr)
+          raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
       end
 
-      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
 
       payload = {
         'templates' => templates,
