@@ -145,11 +145,10 @@ describe Icinga2 do
     it 'create host \'foo\'' do
       options = {
         name: 'foo',
-        address: 'foo.bar.com',
+        address: '127.0.0.1',
         display_name: 'test node',
         max_check_attempts: 5,
         notes: 'test node',
-        zone: 'icinga2-satellite-1.matrix.lan',
         vars: {
           description: 'spec test',
           os: 'Docker',
@@ -162,6 +161,7 @@ describe Icinga2 do
         }
       }
       h = @icinga2.add_host(options)
+      puts h
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be_a(Integer)
