@@ -30,7 +30,7 @@ before_install:
     --hostname=icinga2 \
     bodsch/docker-icinga2:2.8.0-r1
   - docker ps
-  - sleep 20s
+  - sleep 25s
 
 script: bundle exec rspec spec
 

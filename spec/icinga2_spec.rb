@@ -161,7 +161,6 @@ describe Icinga2 do
         }
       }
       h = @icinga2.add_host(options)
-      puts h
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be_a(Integer)
