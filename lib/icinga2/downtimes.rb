@@ -60,7 +60,7 @@ module Icinga2
       raise ArgumentError.new("wrong downtype type. only 'host' or' service' allowed ('#{type}' giving)") if( %w[host service].include?(type.downcase) == false )
       raise ArgumentError.new('choose host or host_group, not both') if( !host_group.nil? && !host_name.nil? )
       raise ArgumentError.new('Missing downtime author') if( author.nil? )
-      raise ArgumentError.new("these author ar not exists: #{author}") unless( exists_user?( author ) )
+      raise ArgumentError.new("these author are not exists: #{author}") unless( exists_user?( author ) )
       raise ArgumentError.new('Missing downtime comment') if( comment.nil? )
       raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
       raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )

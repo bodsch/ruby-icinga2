@@ -776,7 +776,7 @@ describe Icinga2 do
       h = @icinga2.add_downtime(
         name: 'test',
         type: 'service',
-        host: 'c1-mysql-1',
+        host_name: 'c1-mysql-1',
         comment: 'test downtime',
         author: 'icingaadmin',
         start_time: Time.now.to_i,
