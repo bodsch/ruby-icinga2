@@ -136,15 +136,6 @@ describe Icinga2 do
 
   describe 'Module Host' do
 
-    it "list host 'c1-mysql-1'" do
-      h = @icinga2.hosts( name: 'c1-mysql-1' )
-      expect(h).to be_a(Array)
-      name = h.first['attrs']['name']
-      expect(name).to be_a(String)
-      expect(name).to be == 'c1-mysql-1'
-      expect(h.count).to be == 1
-    end
-
     it 'list all hosts' do
       h = @icinga2.hosts
       expect(h).to be_a(Array)
@@ -177,6 +168,18 @@ describe Icinga2 do
       expect(status_code).to be == 200
     end
 
+    it 'list host \'foo\'' do
+      h = @icinga2.hosts( name: 'foo' )
+      expect(h).to be_a(Array)
+      name = h.first['attrs']['name']
+      expect(name).to be_a(String)
+      expect(name).to be == 'foo'
+      expect(h.count).to be == 1
+    end
+
+    it 'exists host \'foo\'' do
+      expect(@icinga2.exists_host?('foo')).to be_truthy
+    end
 
     it 'modify host \'foo\' with merge' do
       options = {
@@ -238,10 +241,6 @@ describe Icinga2 do
       expect(status_code).to be == 404
     end
 
-
-    it "exists host 'c1-mysql-1'" do
-      expect(@icinga2.exists_host?('c1-mysql-1')).to be_truthy
-    end
 
     it 'exists_host \'test\'' do
       expect(@icinga2.exists_host?('test')).to be_falsey
@@ -324,8 +323,8 @@ describe Icinga2 do
       expect(h.count).to be >= 1
     end
 
-    it "exists service check 'ssh' for host 'c1-mysql-1'" do
-      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'ssh' )).to be_truthy
+    it "exists service check 'bp-mysql-uptime' for host 'c1-mysql-1'" do
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'bp-mysql-uptime' )).to be_truthy
     end
 
     it "exists service check 'hdb' for host 'c1-mysql-1'" do
