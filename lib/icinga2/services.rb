@@ -94,8 +94,6 @@ module Icinga2
         raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
       end
 
-      exit 1
-
       %w[enable_notifications
          enable_active_checks
          enable_passive_checks

@@ -45,8 +45,8 @@ module Icinga2
       author          = params.dig(:author)
       comment         = params.dig(:comment)
       type            = params.dig(:type)
-      fixed           = params.dig(:fixed)
-      duration        = params.dig(:duration)
+      fixed           = params.dig(:fixed) || true
+      duration        = params.dig(:duration) || 30
       entry_time      = params.dig(:entry_time)
       scheduled_by    = params.dig(:scheduled_by)
       service_name    = params.dig(:service_name)
@@ -65,6 +65,9 @@ module Icinga2
       raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
       raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )
 
+      raise ArgumentError.new(format('wrong type. \'duration\' must be Integer, given \'%s\'', duration.class.to_s)) unless( duration.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'fixed\' must be True or False, given \'%s\'', fixed.class.to_s)) unless( fixed.is_a?(TrueClass) || fixed.is_a?(FalseClass) )
+
       # TODO
       # check if host_name exists!
 
@@ -80,15 +83,25 @@ module Icinga2
       end
 
       payload = {
-        'type'        => type.capitalize, # we need the first char as Uppercase
-        'start_time'  => start_time,
-        'end_time'    => end_time,
-        'author'      => author,
-        'comment'     => comment,
-        'fixed'       => true,
-        'duration'    => 30,
-        'filter'      => filter
+        type: type.capitalize, # we need the first char as Uppercase
+        start_time: start_time,
+        end_time: end_time,
+        author: author,
+        comment: comment,
+        fixed: fixed,
+        duration: duration,
+        filter: filter,
+        entry_time: entry_time,
+        scheduled_by: scheduled_by,
+        host_name: host_name,
+        host_group: host_group,
+        service_name: service_name,
+        triggered_by: triggered_by,
+        config_owner: config_owner
       }
+
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
 
       post(
         url: format( '%s/actions/schedule-downtime', @icinga_api_url_base ),

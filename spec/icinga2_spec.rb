@@ -416,9 +416,7 @@ describe Icinga2 do
           http_port: 80
         }
       }
-
       s = @icinga2.add_service( data )
-
       status_code = s['code']
       expect(s).to be_a(Hash)
       expect(status_code).to be_a(Integer)
@@ -431,7 +429,6 @@ describe Icinga2 do
     end
 
     it 'modify service \'new_http\'' do
-
       data = {
         name: 'new_http',
         vars: {
@@ -771,6 +768,7 @@ describe Icinga2 do
   describe 'Module Downtimes' do
 
     it "add downtime 'test'" do
+
       h = @icinga2.add_downtime(
         name: 'test',
         type: 'service',
@@ -778,7 +776,7 @@ describe Icinga2 do
         comment: 'test downtime',
         author: 'icingaadmin',
         start_time: Time.now.to_i,
-        end_time: Time.now.to_i + 20
+        end_time: Time.now.to_i + 120
       )
       status_code = h['code']
       expect(h).to be_a(Hash)
