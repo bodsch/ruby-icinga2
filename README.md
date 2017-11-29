@@ -29,6 +29,7 @@ An enhanced ruby gem to communicate with Icinga2 API
 ## Usage
 
 create an instance
+
     require 'icinga2'
 
     config = {
