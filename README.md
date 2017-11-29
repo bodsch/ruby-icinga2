@@ -29,14 +29,15 @@ An enhanced ruby gem to communicate with Icinga2 API
 ## Usage
 
 create an instance
+    require 'icinga2'
 
     config = {
       :icinga => {
-        :host      => icingaHost,
+        :host      => icinga_host,
         :api       => {
-          :port => icingaApiPort,
-          :user => icingaApiUser,
-          :pass => icingaApiPass
+          :port => icinga_api_port,
+          :user => icinga_api_user,
+          :pass => icinga_api_pass
         }
       }
     }

@@ -28,8 +28,8 @@ module Icinga2
       raise ArgumentError.new('Missing user_group') if( user_group.nil? )
 
       payload = {
-        'attrs' => {
-          'display_name' => display_name
+        attrs: {
+          display_name: display_name
         }
       }
 

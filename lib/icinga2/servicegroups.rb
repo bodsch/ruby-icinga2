@@ -31,27 +31,25 @@ module Icinga2
       notes_url     = params.dig(:notes_url)
       action_url    = params.dig(:action_url)
 
-#      ignore = params.dig(:ignore)
-#      assgin = params.dig(:assign)
-
       raise ArgumentError.new('Missing \'service_group\'') if( service_group.nil? )
       raise ArgumentError.new('Missing \'display_name\'') if( display_name.nil? )
 
+      raise ArgumentError.new(format('wrong type. \'notes\' must be an Hash, given \'%s\'', notes.class.to_s)) unless( notes.is_a?(String) || notes.nil? )
+      raise ArgumentError.new(format('wrong type. \'notes_url\' must be an Hash, given \'%s\'', notes_url.class.to_s)) unless( notes_url.is_a?(String) || notes_url.nil? )
+      raise ArgumentError.new(format('wrong type. \'action_url\' must be an Hash, given \'%s\'', action_url.class.to_s)) unless( action_url.is_a?(String) || action_url.nil? )
+
       payload = {
-        'attrs' => {
-          'display_name' => display_name,
-          'notes' => notes,
-          'notes_url' => notes_url,
-          'action_url' => action_url
+        attrs: {
+          display_name: display_name,
+          notes: notes,
+          notes_url: notes_url,
+          action_url: action_url
         }
       }
 
-#      payload['attrs']['assign'] ||= format('assgin where %s', assign) unless(assign.nil?)
-#      payload['attrs']['ignore'] ||= format('ignore where %s', assign) unless(assign.nil?)
-
       # remove all empty attrs
       payload.reject!{ |_k, v| v.nil? }
-      payload['attrs'].reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       put(
         url: format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ),

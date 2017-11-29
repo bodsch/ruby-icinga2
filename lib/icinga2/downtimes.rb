@@ -17,6 +17,13 @@ module Icinga2
     # @option params [String] :author
     # @option params [String] :comment
     # @option params [String] :type 'host' or 'service' downtime
+    # @option params [String] config_owner
+    # @option params [Integer] duration
+    # @option params [Integer] entry_time
+    # @option params [Boolean] fixed
+    # @option params [String] scheduled_by
+    # @option params [String] service_name
+    # @option params [String] triggered_by
     #
     # @example
     #    param = {
@@ -54,16 +61,21 @@ module Icinga2
       config_owner    = params.dig(:config_owner)
       filter          = nil
 
+#       raise ArgumentError.new(format('wrong type. \'start_time\' must be Integer, given \'%s\'', start_time.class.to_s)) unless( start_time.is_a?(Integer))
+#       raise ArgumentError.new(format('wrong type. \'end_time\' must be Integer, given \'%s\'', end_time.class.to_s)) unless( end_time.is_a?(Integer) )
+#      raise ArgumentError.new(format('wrong type. \'host_name\' must be String, given \'%s\'', host_name.class.to_s)) unless( host_name.is_a?(String) )
+#      raise ArgumentError.new(format('wrong type. \'host_group\' must be String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
+
       # sanitychecks
       #
-      raise ArgumentError.new('Missing name') if( name.nil? )
-      raise ArgumentError.new("wrong downtype type. only 'host' or' service' allowed ('#{type}' giving)") if( %w[host service].include?(type.downcase) == false )
-      raise ArgumentError.new('choose host or host_group, not both') if( !host_group.nil? && !host_name.nil? )
-      raise ArgumentError.new('Missing downtime author') if( author.nil? )
-      raise ArgumentError.new("these author are not exists: #{author}") unless( exists_user?( author ) )
-      raise ArgumentError.new('Missing downtime comment') if( comment.nil? )
-      raise ArgumentError.new('Missing downtime end_time') if( end_time.nil? )
-      raise ArgumentError.new('end_time are equal or smaller then start_time') if( end_time.to_i <= start_time )
+      raise ArgumentError.new('Missing \'name\' too add a downtime') if( name.nil? )
+      raise ArgumentError.new(format('wrong downtype type. only \'host\' os \'service\' allowed, given \%s\'', type)) if( %w[host service].include?(type.downcase) == false )
+      raise ArgumentError.new('choose \'host_name\' or \'host_group\', not both') if( !host_group.nil? && !host_name.nil? )
+      raise ArgumentError.new('Missing downtime \'author\'') if( author.nil? )
+      raise ArgumentError.new(format('these \'author\' are not exists: \'%s\'', author)) unless( exists_user?( author ) )
+      raise ArgumentError.new('Missing downtime \'comment\'') if( comment.nil? )
+      raise ArgumentError.new('Missing downtime \'end_time\'') if( end_time.nil? )
+      raise ArgumentError.new('\'end_time\' are equal or smaller then \'start_time\'') if( end_time.to_i <= start_time )
 
       raise ArgumentError.new(format('wrong type. \'duration\' must be Integer, given \'%s\'', duration.class.to_s)) unless( duration.is_a?(Integer) )
       raise ArgumentError.new(format('wrong type. \'fixed\' must be True or False, given \'%s\'', fixed.class.to_s)) unless( fixed.is_a?(TrueClass) || fixed.is_a?(FalseClass) )

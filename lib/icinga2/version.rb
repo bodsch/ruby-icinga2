@@ -4,6 +4,6 @@
 module Icinga2
 
   # Current version of gem.
-  VERSION = '0.9.2.1' # [Version::MAJOR, Version::MINOR, Version::TINY, Version::PATCH].compact * '.'
+  VERSION = '0.9.2.2' # [Version::MAJOR, Version::MINOR, Version::TINY, Version::PATCH].compact * '.'
 
 end

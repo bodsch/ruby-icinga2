@@ -655,7 +655,20 @@ describe Icinga2 do
       expect(@icinga2.exists_user?('icinga-admin')).to be_falsey
     end
 
-    it 'add user' do
+    it 'add user with multiple and not existing groups' do
+      h = @icinga2.add_user(
+        user_name: 'foo',
+        display_name: 'FOO',
+        email: 'foo@bar.com',
+        pager: '0000',
+        groups: ['non-existing-group', 'icingaadmins', 'icinga-admins']
+      )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 404
+    end
+
+    it 'add user \'foo\'' do
       h = @icinga2.add_user(
         user_name: 'foo',
         display_name: 'FOO',
@@ -668,7 +681,7 @@ describe Icinga2 do
       expect(status_code).to be == 200
     end
 
-    it 'add user (again)' do
+    it 'add user \'foo\' (again)' do
       h = @icinga2.add_user(
           user_name: 'foo',
           display_name: 'FOO',

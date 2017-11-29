@@ -245,7 +245,7 @@ module Icinga2
         }
       end
 
-      payload['filter'] = format( 'service.name=="%s"', name )
+      payload['filter'] = format( 'service.name == "%s"', name )
 
       post(
         url: format( '%s/objects/services', @icinga_api_url_base ),

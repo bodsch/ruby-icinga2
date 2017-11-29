@@ -36,17 +36,6 @@ module Icinga2
       raise ArgumentError.new('Missing user_name') if( user_name.nil? )
       raise ArgumentError.new('groups must be an array') unless( groups.is_a?( Array ) )
 
-      payload = {
-        'attrs' => {
-          'display_name'         => display_name,
-          'email'                => email,
-          'pager'                => pager,
-          'enable_notifications' => notifications
-        }
-      }
-
-      payload['attrs']['groups'] = groups unless  groups.empty?
-
       group_validate = []
 
       groups.each do |g|
@@ -54,15 +43,26 @@ module Icinga2
       end
 
       if( group_validate.count != 0 )
-
-        groups = group_validate.join(', ')
-
         return {
-          status: 404,
-          message: "these groups are not exists: #{groups}",
-          data: params
+          'code' => 404,
+          'message' => format('these groups are not exists: \'%s\'', group_validate.join(', ')),
+          'data' => params
         }
       end
+
+      payload = {
+        attrs: {
+          display_name: display_name,
+          email: email,
+          pager: pager,
+          enable_notifications: notifications,
+          groups: groups
+        }
+      }
+
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       put(
         url: format( '%s/objects/users/%s', @icinga_api_url_base, user_name ),
