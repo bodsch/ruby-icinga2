@@ -12,21 +12,10 @@ Add a Service to Icinga2
 | `host_name`            | String  | `foo`             | existing Host for these Service
 | `name`                 | String  | `ping4`           | Service Name they will be create
 | `templates`            | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
-| `vars`                 | Hash    | (see below)       | Hash with custom options
-
-Under the `vars` Hash is the structure very strict.
-They hold only a `attrs` Hash with all others variable.
-
-**Importand** The the `attrs` Hash has mandatory fields!
-
-| Parameter              | Type    | Example           | Description
-| :--------------------  | :-----: | :------------     | :-----------
 | `check_command`        | String  | `ping4`           | The Check Command to execute (**Importand** This Check-Comand must be exists! Otherwise an error will occur)
 | `check_interval`       | Integer | `10`              | The check Interval
 | `retry_interval`       | Integer | `30`              | The retry Interval
 | `vars`                 | Hash    | (see below)       | optional config params for the `check_command`
-
-For more custom fields, add an `vars` Hash with the config parameters of the `check_command` (see below in the examples)
 
 The result are an `Hash`
 
@@ -35,13 +24,9 @@ The result are an `Hash`
     @icinga.add_services(
       host_name: 'foo',
       name: 'ping4',
-      vars: {
-        attrs: {
-          check_command: 'ping4',
-          check_interval: 10,
-          retry_interval: 30
-        }
-      }
+      check_command: 'ping4',
+      check_interval: 10,
+      retry_interval: 30
     )
 
 or
@@ -49,17 +34,13 @@ or
     @icinga.add_service(
       host_name: 'foo',
       name: 'http',
+      check_command: 'http',
+      check_interval: 10,
+      retry_interval: 30,
       vars: {
-        attrs: {
-          check_command: 'http',
-          check_interval: 10,
-          retry_interval: 30,
-          vars: {
-            http_address: '127.0.0.1',
-            http_url: '/access/index',
-            http_port: 80
-          }
-        }
+        http_address: '127.0.0.1',
+        http_url: '/access/index',
+        http_port: 80
       }
     )
 
@@ -97,14 +78,9 @@ Modify an Service.
 
 | Parameter              | Type    | Example           | Description
 | :--------------------  | :-----: | :-----            | :-----------
-| `name`         | String  | `ping4`           | Service Name they will be deleted
+| `name`                 | String  | `ping4`           | Service Name they will be deleted
 | `templates`            | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
-| `vars`                 | Hash    | (see below)       | Hash with custom options
-
-Under the `vars` Hash is the structure very strict.
-They hold only a `attrs` Hash with all others variable. (similar to `add_service`)
-
-For more custom fields, add an `vars` Hash with the config parameters of the `check_command` (see below in the examples)
+| `vars`                 | Hash    | (see below)       | Hash with custom options (see `add_services()`)
 
 The result are an `Hash`
 
@@ -112,15 +88,11 @@ The result are an `Hash`
 
     @icinga.modify_service(
       name: 'http2',
+      check_interval: 60,
+      retry_interval: 10,
       vars: {
-        attrs: {
-          check_interval: 60,
-          retry_interval: 10,
-          vars: {
-            http_url: '/access/login'     ,
-            http_address: '10.41.80.63'
-          }
-        }
+        http_url: '/access/login'     ,
+        http_address: '10.41.80.63'
       }
     )
 

@@ -10,7 +10,32 @@ module Icinga2
     # @param [Hash] params
     # @option params [String] :name
     # @option params [String] :host_name
+    # @option params [String] :display_name
     # @option params [Array] :templates
+    # @option params [Array] :groups
+    # @option params [String] :notes
+    # @option params [String] :notes_url
+    # @option params [String] :action_url
+    # @option params [String] :check_command
+    # @option params [Integer] :check_interval
+    # @option params [String] :check_period
+    # @option params [Integer] :check_timeout
+    # @option params [String] :command_endpoint
+    # @option params [Integer] :enable_active_checks
+    # @option params [Integer] :enable_event_handler
+    # @option params [Integer] :enable_flapping
+    # @option params [Integer] :enable_notifications
+    # @option params [Integer] :enable_passive_checks
+    # @option params [Integer] :enable_perfdata
+    # @option params [String] :event_command
+    # @option params [Integer] :flapping_threshold_high
+    # @option params [Integer] :flapping_threshold_low
+    # @option params [Integer] :flapping_threshold
+    # @option params [String] :icon_image_alt
+    # @option params [String] :icon_image
+    # @option params [Integer] :max_check_attempts
+    # @option params [Integer] :retry_interval
+    # @option params [Boolean] :volatile
     # @option params [Hash] :vars
     #
     # @example
@@ -31,7 +56,7 @@ module Icinga2
     #    * status
     #    * message
     #
-    def add_service( params = {} )
+    def add_service( params )
 
       raise ArgumentError.new(format('wrong type. params must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
@@ -113,40 +138,39 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
 
       payload = {
-        'templates' => templates,
-        'attrs' => {
-          'display_name' => display_name,
-          'groups' => groups,
-          'check_command' => check_command,
-          'max_check_attempts' => max_check_attempts,
-          'check_period' => check_period,
-          'check_timeout' => check_timeout,
-          'check_interval' => check_interval,
-          'retry_interval' => retry_interval,
-          'enable_notifications' => enable_notifications,
-          'enable_active_checks' => enable_active_checks,
-          'enable_passive_checks' => enable_passive_checks,
-          'enable_event_handler' => enable_event_handler,
-          'enable_flapping' => enable_flapping,
-          'flapping_threshold' => flapping_threshold,
-          'zone' => zone,
-          'enable_perfdata' => enable_perfdata,
-          'event_command' => event_command,
-          'volatile' => volatile,
-          'command_endpoint' => command_endpoint,
-          'notes' => notes,
-          'notes_url' => notes_url,
-          'action_url' => action_url,
-          'icon_image' => icon_image,
-          'icon_image_alt' => icon_image_alt,
+        templates: templates,
+        attrs: {
+          display_name: display_name,
+          groups: groups,
+          check_command: check_command,
+          max_check_attempts: max_check_attempts,
+          check_period: check_period,
+          check_timeout: check_timeout,
+          check_interval: check_interval,
+          retry_interval: retry_interval,
+          enable_notifications: enable_notifications,
+          enable_active_checks: enable_active_checks,
+          enable_passive_checks: enable_passive_checks,
+          enable_event_handler: enable_event_handler,
+          enable_flapping: enable_flapping,
+          flapping_threshold: flapping_threshold,
+          zone: zone,
+          enable_perfdata: enable_perfdata,
+          event_command: event_command,
+          volatile: volatile,
+          command_endpoint: command_endpoint,
+          notes: notes,
+          notes_url: notes_url,
+          action_url: action_url,
+          icon_image: icon_image,
+          icon_image_alt: icon_image_alt,
+          vars: vars
         }
       }
 
-      payload['attrs']['vars'] = vars unless vars.empty?
-
       # clear undefined settings
       payload.reject!{ |_k, v| v.nil? }
-      payload['attrs'].reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       put(
         url: format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, name ),
@@ -205,15 +229,11 @@ module Icinga2
     # @example
     #    @icinga.modify_service(
     #      name: 'http2',
+    #      check_interval: 60,
+    #      retry_interval: 10,
     #      vars: {
-    #        attrs: {
-    #          check_interval: 60,
-    #          retry_interval: 10,
-    #          vars: {
-    #            http_url: '/access/login'     ,
-    #            http_address: '10.41.80.63'
-    #          }
-    #        }
+    #        http_url: '/access/login'     ,
+    #        http_address: '10.41.80.63'
     #      }
     #    )
     #
@@ -223,29 +243,120 @@ module Icinga2
     #
     def modify_service( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. params must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      templates     = params.dig(:templates) || ['generic-service']
-      vars          = params.dig(:vars)
-      name  = params.dig(:name)
+      name = params.dig(:name)
+      host_name = params.dig(:host_name)
+      display_name = params.dig(:display_name)
+      groups = params.dig(:groups)
+      check_command = params.dig(:check_command)
+      max_check_attempts = params.dig(:max_check_attempts)
+      check_period = params.dig(:check_period)
+      check_timeout = params.dig(:check_timeout)
+      check_interval = params.dig(:check_interval)
+      retry_interval = params.dig(:retry_interval)
+      enable_notifications = params.dig(:enable_notifications)
+      enable_active_checks = params.dig(:enable_active_checks)
+      enable_passive_checks = params.dig(:enable_passive_checks)
+      enable_event_handler = params.dig(:enable_event_handler)
+      enable_flapping = params.dig(:enable_flapping)
+      flapping_threshold = params.dig(:flapping_threshold)
+      enable_perfdata = params.dig(:enable_perfdata)
+      event_command = params.dig(:event_command)
+      volatile = params.dig(:volatile)
+      zone = params.dig(:zone)
+      command_endpoint = params.dig(:command_endpoint)
+      notes = params.dig(:notes)
+      notes_url = params.dig(:notes_url)
+      action_url = params.dig(:action_url)
+      icon_image = params.dig(:icon_image)
+      icon_image_alt = params.dig(:icon_image_alt)
+      templates = params.dig(:templates) || ['generic-service']
+      vars = params.dig(:vars) || {}
 
-      raise ArgumentError.new('Missing service name') if( name.nil? )
-      raise ArgumentError.new('only Array for templates are allowed') unless( templates.is_a?(Array) )
-      raise ArgumentError.new('Missing vars') if( vars.nil? )
-      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
+      raise ArgumentError.new('missing name') if( name.nil? )
 
-      payload = {}
-
-      vars.each_value do |v|
-
-        payload = {
-          'templates' => templates,
-          'attrs'     => v
-        }
+      %w[display_name
+         host_name
+         check_command
+         check_period
+         event_command
+         zone
+         name
+         command_endpoint
+         notes
+         notes_url
+         action_url
+         icon_image
+         icon_image_alt
+         ].each do |attr|
+          v = eval(attr)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
       end
 
-      payload['filter'] = format( 'service.name == "%s"', name )
+      %w[max_check_attempts
+         flapping_threshold
+         check_timeout
+         check_interval
+         retry_interval].each do |attr|
+          v = eval(attr)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
+      end
+
+      %w[enable_notifications
+         enable_active_checks
+         enable_passive_checks
+         enable_event_handler
+         enable_flapping
+         enable_perfdata
+         volatile].each do |attr|
+          v = eval(attr)
+          raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
+      end
+
+      %w[groups templates].each do |attr|
+          v = eval(attr)
+          raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
+      end
+
+      raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
+
+      payload = {
+        templates: templates,
+        filter: format( 'service.name == "%s"', name ),
+        attrs: {
+          display_name: display_name,
+          groups: groups,
+          check_command: check_command,
+          max_check_attempts: max_check_attempts,
+          check_period: check_period,
+          check_timeout: check_timeout,
+          check_interval: check_interval,
+          retry_interval: retry_interval,
+          enable_notifications: enable_notifications,
+          enable_active_checks: enable_active_checks,
+          enable_passive_checks: enable_passive_checks,
+          enable_event_handler: enable_event_handler,
+          enable_flapping: enable_flapping,
+          flapping_threshold: flapping_threshold,
+          zone: zone,
+          enable_perfdata: enable_perfdata,
+          event_command: event_command,
+          volatile: volatile,
+          command_endpoint: command_endpoint,
+          notes: notes,
+          notes_url: notes_url,
+          action_url: action_url,
+          icon_image: icon_image,
+          icon_image_alt: icon_image_alt,
+          vars: vars
+        }
+      }
+
+      # clear undefined settings
+      payload.reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       post(
         url: format( '%s/objects/services', @icinga_api_url_base ),
