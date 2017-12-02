@@ -12,13 +12,13 @@ RSpec::Core::RakeTask.new(:spec) do |task|
 end
 
 desc 'Run all style checks'
-task :style => ['style:ruby']
+task style: ['style:ruby']
 
 desc 'Run all regular tasks'
-task :default => :spec
+task default: :spec
 
 desc 'Run all tests'
-task :test => ['test']
+task test: ['test']
 
 namespace :style do
   desc 'Run Ruby style checks'
@@ -30,8 +30,8 @@ namespace :style do
 end
 
 
-Rake::TestTask.new("test:all") do |t|
-  t.libs = ["lib", "spec"]
+Rake::TestTask.new('test:all') do |t|
+  t.libs = %w[lib spec]
   t.warning = true
   t.test_files = FileList['spec/**/*_spec.rb']
 end

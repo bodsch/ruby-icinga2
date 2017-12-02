@@ -3,7 +3,7 @@
 module Icinga2
 
   # namespace for service handling
-  module Services
+  module Services extend Base
 
     # add service
     #
