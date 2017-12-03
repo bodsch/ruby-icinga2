@@ -1,5 +1,6 @@
 
 require_relative 'version'
+require_relative 'base'
 require_relative 'network'
 require_relative 'statistics'
 require_relative 'converts'

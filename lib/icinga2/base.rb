@@ -11,6 +11,7 @@ module Icinga2
       params.assert_valid_keys(params, options[:required] + options[:optional])
     end
   end
+
   def assert_valid_keys(params, *valid_keys)
     valid_keys.flatten!
     params.each_key do |k|

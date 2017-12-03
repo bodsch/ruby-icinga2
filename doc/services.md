@@ -7,15 +7,36 @@ Add a Service to Icinga2
 
 `params` is an `Hash` with following Parameters:
 
-| Parameter              | Type    | Example           | Description
-| :--------------------  | :-----: | :-----            | :-----------
-| `host_name`            | String  | `foo`             | existing Host for these Service
-| `name`                 | String  | `ping4`           | Service Name they will be create
-| `templates`            | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
-| `check_command`        | String  | `ping4`           | The Check Command to execute (**Importand** This Check-Comand must be exists! Otherwise an error will occur)
-| `check_interval`       | Integer | `10`              | The check Interval
-| `retry_interval`       | Integer | `30`              | The retry Interval
-| `vars`                 | Hash    | (see below)       | optional config params for the `check_command`
+| Parameter                | Type    | Example           | Description
+| :--------------------    | :-----: | :-----            | :-----------
+| `host_name`              | String  | `foo`             | existing Host for these Service
+| `name`                   | String  | `ping4`           | Service Name they will be create
+| `display_name`           | String  | `ping4 check`     | displayed Name
+| `templates`              | Array   | `['own-service']` | (optional) a Array of templates (default: `['generic-service']`)
+| `check_command`          | String  | `ping4`           | The Check Command to execute (**Importand** This Check-Comand must be exists! Otherwise an error will occur)
+| `check_interval`         | Integer | `10`              | The check Interval
+| `retry_interval`         | Integer | `30`              | The retry Interval
+| `notes`                  | String  | ``                |
+| `notes_url`              | String  | ``                |
+| `action_url`             | String  | ``                |
+| `check_period`           | String  | ``                |
+| `check_timeout`          | Integer | ``                |
+| `command_endpoint`       | String  | ``                |
+| `enable_active_checks`   | Bool    | ``                |
+| `enable_event_handler`   | Bool    | ``                |
+| `enable_flapping`        | Bool    | ``                |
+| `enable_notifications`   | Bool    | ``                |
+| `enable_passive_checks`  | Bool    | ``                |
+| `enable_perfdata`        | Bool    | ``                |
+| `event_command`          | String  | ``                |
+| `flapping_threshold_high`| Integer | ``                |
+| `flapping_threshold_low` | Integer | ``                |
+| `flapping_threshold`     | Integer | ``                |
+| `icon_image_alt`         | String  | ``                |
+| `icon_image`             | String  | ``                |
+| `max_check_attempts`     | Integer | ``                |
+| `volatile`               | Bool    | ``                |
+| `vars`                   | Hash    | (see below)       | optional config params for the `check_command`
 
 The result are an `Hash`
 

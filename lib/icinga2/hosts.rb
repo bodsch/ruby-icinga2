@@ -10,6 +10,7 @@ module Icinga2
     # @param [Hash] params
     # @option params [String] :name
     # @option params [String] :address
+    # @option params [String] :address6
     # @option params [String] :display_name
     # @option params [Bool] :enable_notifications (false)
     # @option params [Integer] :max_check_attempts (3)
@@ -18,6 +19,24 @@ module Icinga2
     # @option params [String] :notes
     # @option params [String] :notes_url
     # @option params [String] :action_url
+    # @option params [String] :check_command
+    # @option params [Integer] :check_interval
+    # @option params [String] :check_period
+    # @option params [Integer] :check_timeout
+    # @option params [String] :command_endpoint
+    # @option params [Bool] :enable_active_checks
+    # @option params [Bool] :enable_event_handler
+    # @option params [Bool] :enable_flapping
+    # @option params [Bool] :enable_passive_checks
+    # @option params [Bool] :enable_perfdata
+    # @option params [String] :event_command
+    # @option params [Integer] :flapping_threshold
+    # @option params [Integer] :flapping_threshold_high
+    # @option params [Integer] :flapping_threshold_low
+    # @option params [String] :icon_image
+    # @option params [String] :icon_image_alt
+    # @option params [Integer] :retry_interval
+    # @option params [Bool] :volatile
     # @option params [Hash] :vars ({})
     #
     # @example

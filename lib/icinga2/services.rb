@@ -21,12 +21,12 @@ module Icinga2
     # @option params [String] :check_period
     # @option params [Integer] :check_timeout
     # @option params [String] :command_endpoint
-    # @option params [Integer] :enable_active_checks
-    # @option params [Integer] :enable_event_handler
-    # @option params [Integer] :enable_flapping
-    # @option params [Integer] :enable_notifications
-    # @option params [Integer] :enable_passive_checks
-    # @option params [Integer] :enable_perfdata
+    # @option params [Boolean] :enable_active_checks
+    # @option params [Boolean] :enable_event_handler
+    # @option params [Boolean] :enable_flapping
+    # @option params [Boolean] :enable_notifications
+    # @option params [Boolean] :enable_passive_checks
+    # @option params [Boolean] :enable_perfdata
     # @option params [String] :event_command
     # @option params [Integer] :flapping_threshold_high
     # @option params [Integer] :flapping_threshold_low
