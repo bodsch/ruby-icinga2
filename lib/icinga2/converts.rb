@@ -23,8 +23,8 @@ module Icinga2
     #
     def state_to_string( state, is_host = false )
 
-      result = SERVICE_STATE_STRING[state] if( is_host == false )
-      result = HOST_STATE_STRING[state] if( is_host == true )
+      result = SERVICE_STATE_STRING[state] unless( is_host )
+      result = HOST_STATE_STRING[state] if( is_host )
       result = 'Undefined' if( result.nil? )
       result
     end
@@ -38,8 +38,8 @@ module Icinga2
     #
     def state_to_color( state, is_host = false )
 
-      result = SERVICE_STATE_COLOR[state] if( is_host == false )
-      result = HOST_STATE_COLOR[state] if( is_host == true )
+      result = SERVICE_STATE_COLOR[state] unless( is_host )
+      result = HOST_STATE_COLOR[state] if( is_host )
       result = 'blue' if( result.nil? )
       result
     end

@@ -1,0 +1,18 @@
+---
+UncommunicativeModuleName:
+  accept:
+    - Icinga2
+
+TooManyConstants:
+  max_constants: 7
+
+TooManyStatements:
+  enabled: true
+  exclude:
+  - initialize
+  max_statements: 20
+
+LongParameterList:
+  enabled: true
+  max_params: 4
+

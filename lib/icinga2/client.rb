@@ -80,9 +80,7 @@ module Icinga2
     #          user: 'root',
     #          password: 'icinga',
     #          version: 1
-    #        },
-    #        cluster: false,
-    #        satellite: true
+    #        }
     #      }
     #    }
     #
@@ -102,9 +100,6 @@ module Icinga2
       icinga_api_version    = settings.dig(:icinga, :api, :version)  || 1
       icinga_api_pki_path   = settings.dig(:icinga, :api, :pki_path)
       icinga_api_node_name  = settings.dig(:icinga, :api, :node_name)
-      @icinga_cluster       = settings.dig(:icinga, :cluster)        || false
-      @icinga_satellite     = settings.dig(:icinga, :satellite)
-      @icinga_notifications = settings.dig(:icinga, :notifications)  || false
 
       @last_call_timeout    = 320
       @last_cib_data_called = 0
@@ -214,28 +209,14 @@ module Icinga2
         options: @options
       )
 
-      #puts '---'
-      #puts data
-      #puts data.class.to_s
-      #puts '---'
-
       return nil if( data.nil? )
-#      return data if( data.is_a?(Hash) && data.dig('code').to_i != 200 )
-#puts '.'
 
       app_data = data.dig('icingaapplication','app')
 
-      #puts '---'
-      #puts app_data
-      #puts app_data.class.to_s
-      #puts '---'
-
       # version and revision
       @version, @revision = parse_version(app_data.dig('version'))
-
       #   - node_name
       @node_name = app_data.dig('node_name')
-
       #   - start_time
       @start_time = Time.at(app_data.dig('program_start').to_f)
 

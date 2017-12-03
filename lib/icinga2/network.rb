@@ -89,8 +89,8 @@ module Icinga2
 
         data = api_data( url: url, headers: headers, options: options )
         data = data.first if( data.is_a?(Array) )
-        data
-        # return data.dig('status') unless( data.nil? )
+        # data
+        return data.dig('status') unless( data.nil? )
       rescue => e
 
         logger.error(e)

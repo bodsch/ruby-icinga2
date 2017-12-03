@@ -101,7 +101,7 @@ module Icinga2
       host_group = params.dig(:host_group)
       raise ArgumentError.new('Missing host_group') if( host_group.nil? )
 
-      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_hostgroup?( host_group ) == false )
+      return { 'code' => 404, 'status' => 'Object not Found' } unless( exists_hostgroup?( host_group ) )
 
       hostgroup_notification( host_group: host_group, enable_notifications: true )
     end
