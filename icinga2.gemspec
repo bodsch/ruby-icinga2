@@ -36,27 +36,23 @@ Gem::Specification.new do |s|
       s.required_ruby_version = '~> 2.3'
     end
 
-    if( RUBY_VERSION < '2.3' )
-      s.add_dependency('ruby_dig', '~> 0')
-    end
+    s.add_dependency('ruby_dig', '~> 0') if  RUBY_VERSION < '2.3' 
 
-    if( RUBY_VERSION >= '2.3' )
-      s.add_dependency('openssl', '~> 2.0')
-    end
+    s.add_dependency('openssl', '~> 2.0') if  RUBY_VERSION >= '2.3' 
   rescue => e
-    warn "#{$0}: #{e}"
+    warn "#{$PROGRAM_NAME}: #{e}"
     exit!
   end
 
-  s.add_dependency('rest-client', '~> 2.0')
   s.add_dependency('json', '~> 2.1')
+  s.add_dependency('rest-client', '~> 2.0')
 
-  s.add_development_dependency('rspec', '~> 0')
-  s.add_development_dependency('rspec-nc', '~> 0')
   s.add_development_dependency('guard', '~> 0')
   s.add_development_dependency('guard-rspec', '~> 0')
   s.add_development_dependency('pry', '~> 0')
-  s.add_development_dependency('pry-remote', '~> 0')
   s.add_development_dependency('pry-nav', '~> 0')
+  s.add_development_dependency('pry-remote', '~> 0')
+  s.add_development_dependency('rspec', '~> 0')
+  s.add_development_dependency('rspec-nc', '~> 0')
 
 end

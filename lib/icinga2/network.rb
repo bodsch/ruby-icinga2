@@ -375,7 +375,7 @@ module Icinga2
         raise format( "Maximum retries (%d) against '%s' reached. Giving up ...", max_retries, @icinga_api_url_base ) if( retried >= max_retries )
 
         retried += 1
-        $stderr.puts(format("Cannot execute request against '%s': '%s' (retry %d / %d)", @icinga_api_url_base, e, retried, max_retries))
+        warn(format("Cannot execute request against '%s': '%s' (retry %d / %d)", @icinga_api_url_base, e, retried, max_retries))
         sleep(3)
         retry
 

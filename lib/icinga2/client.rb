@@ -121,8 +121,6 @@ module Icinga2
       )
 
       @headers    = { 'Content-Type' => 'application/json', 'Accept' => 'application/json' }
-
-      self
     end
 
     # create a HTTP Header based on a Icinga2 Certificate or an User API Login

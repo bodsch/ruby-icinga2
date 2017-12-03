@@ -4,10 +4,11 @@ source 'https://rubygems.org'
 group :tools do
   gem 'rake'
   gem 'rake-notes'
-  gem 'rubocop'
-  gem 'rubocop-checkstyle_formatter'
   gem 'rspec'
   gem 'rspec_junit_formatter'
+  gem 'rubocop'
+  gem 'rubocop-checkstyle_formatter'
+  gem 'rubycritic'
 end
 
 gemspec
