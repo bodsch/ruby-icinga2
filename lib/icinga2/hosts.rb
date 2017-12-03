@@ -113,16 +113,18 @@ module Icinga2
          notes
          notes_url
          zone].each do |attr|
-          v = eval(attr)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
       end
 
       %w[check_interval
          flapping_threshold
          max_check_attempts
          retry_interval].each do |attr|
-          v = eval(attr)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
       end
 
       %w[enable_active_checks
@@ -132,13 +134,15 @@ module Icinga2
          enable_passive_checks
          enable_perfdata
          volatile].each do |attr|
-          v = eval(attr)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
       end
 
       %w[groups templates].each do |attr|
-          v = eval(attr)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
+        raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
       end
 
       raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )

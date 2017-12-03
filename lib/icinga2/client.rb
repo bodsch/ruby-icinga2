@@ -1,6 +1,6 @@
 
 require_relative 'version'
-require_relative 'base'
+require_relative 'validator'
 require_relative 'network'
 require_relative 'statistics'
 require_relative 'converts'
@@ -46,6 +46,7 @@ module Icinga2
 
     include Logging
 
+    include Icinga2::Validator
     include Icinga2::Network
     include Icinga2::Statistics
     include Icinga2::Converts

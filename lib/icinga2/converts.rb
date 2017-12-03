@@ -8,6 +8,12 @@ module Icinga2
   #
   module Converts
 
+    HOST_STATE_STRING = %w[Up Down].freeze
+    SERVICE_STATE_STRING = %w[OK Warning Critical Unknown].freeze
+
+    HOST_STATE_COLOR = %w[green red].freeze
+    SERVICE_STATE_COLOR = %w[green yellow red purple].freeze
+
     # convert a Icinga2 state into a human readable state
     #
     # @param [String] state the Icinga2 State
@@ -15,33 +21,12 @@ module Icinga2
     #
     # @return [String]
     #
-    def self.state_to_string( state, is_host = false )
+    def state_to_string( state, is_host = false )
 
-      state =
-      if( is_host == true )
-        case state
-        when 0
-          'Up'
-        when 1
-          'Down'
-        else
-          'Undefined'
-        end
-      else
-        case state
-        when 0
-          'OK'
-        when 1
-          'Warning'
-        when 2
-          'Critical'
-        when 3
-          'Unknown'
-        else
-          'Undefined'
-        end
-      end
-      state
+      result = SERVICE_STATE_STRING[state] if( is_host == false )
+      result = HOST_STATE_STRING[state] if( is_host == true )
+      result = 'Undefined' if( result.nil? )
+      result
     end
 
     # convert a Icinga2 state into a named color
@@ -51,33 +36,12 @@ module Icinga2
     #
     # @return [String]
     #
-    def self.state_to_color( state, is_host = false )
+    def state_to_color( state, is_host = false )
 
-      state =
-      if( is_host == true )
-        case state
-        when 0
-          'green'
-        when 1
-          'red'
-        else
-          'blue'
-        end
-      else
-        case state
-        when 0
-          'green'
-        when 1
-          'yellow'
-        when 2
-          'red'
-        when 3
-          'purple'
-        else
-          'blue'
-        end
-      end
-      state
+      result = SERVICE_STATE_COLOR[state] if( is_host == false )
+      result = HOST_STATE_COLOR[state] if( is_host == true )
+      result = 'blue' if( result.nil? )
+      result
     end
 
     # reformat a service check name

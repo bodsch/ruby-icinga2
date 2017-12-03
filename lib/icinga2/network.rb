@@ -89,11 +89,8 @@ module Icinga2
 
         data = api_data( url: url, headers: headers, options: options )
         data = data.first if( data.is_a?(Array) )
-
         data
-
-        return data.dig('status') unless( data.nil? )
-
+        # return data.dig('status') unless( data.nil? )
       rescue => e
 
         logger.error(e)
@@ -286,15 +283,8 @@ module Icinga2
           client.put( data.to_json, headers ) do |response, req, _result|
 
             @req           = req
-            @response_raw  = response
             @response_body = response.body
             @response_code = response.code.to_i
-
-            # logger.debug('----------------------------')
-            # logger.debug(@response_raw)
-            # logger.debug(@response_body)
-            # logger.debug(@response_code)
-            # logger.debug('----------------------------')
 
             case response.code
             when 200
@@ -327,28 +317,15 @@ module Icinga2
 
         response_body = JSON.parse(response_body) if response_body.is_a?(String)
 
-        return {
-         'results' => [{
-           'code' => 400,
-           'status' => response_body.nil? ? 'Bad Request' : response_body
-          }]
-        }
+        return { 'results' => [{ 'code' => 400, 'status' => response_body.nil? ? 'Bad Request' : response_body }] }
 
       rescue RestClient::Unauthorized
 
-        return {
-            'code' => 401,
-            'status' => format('Not authorized to connect \'%s\' - wrong username or password?', @icinga_api_url_base)
-        }
+        return { 'results' => [{ 'code'  => 401, 'status' => format('Not authorized to connect \'%s\' - wrong username or password?', @icinga_api_url_base) }] }
 
       rescue RestClient::NotFound
 
-        return {
-          'results' => [{
-            'code' => 404,
-            'status' => 'Object not Found'
-          }]
-        }
+        return { 'results' => [{ 'code' => 404, 'status' => 'Object not Found' }] }
 
       rescue RestClient::InternalServerError
 
@@ -361,12 +338,7 @@ module Icinga2
         errors  = errors.first if( errors.is_a?(Array) )
         errors  = errors.sub(/ \'.*\'/,'')
 
-        return {
-          'results' => [{
-            'code' => 500,
-            'status' => format('%s (%s)', status, errors).delete('.')
-          }]
-        }
+        return { 'results' => [{ 'code' => 500, 'status' => format('%s (%s)', status, errors).delete('.') }] }
 
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
 
@@ -386,13 +358,7 @@ module Icinga2
         @logger.error( @headers )
         @logger.error( JSON.pretty_generate( response_headers ) )
 
-
-        return {
-          'results' => [{
-            'code' => 500,
-            'status' => e
-          }]
-        }
+        return { 'results' => [{ 'code' => 500, 'status' => e }] }
       end
 
     end

@@ -3,7 +3,7 @@
 module Icinga2
 
   # namespace for service handling
-  module Services extend Base
+  module Services extend Validator
 
     # add service
     #
@@ -106,7 +106,8 @@ module Icinga2
          icon_image
          icon_image_alt
          ].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
         raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
       end
 
@@ -115,7 +116,8 @@ module Icinga2
          check_timeout
          check_interval
          retry_interval].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+        v  = params.dig(attr.to_sym)
         raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
       end
 
@@ -126,16 +128,25 @@ module Icinga2
          enable_flapping
          enable_perfdata
          volatile].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
           raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
       end
 
       %w[groups templates].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
           raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
       end
 
       raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
+
+
+#       validate_options!( params,
+#         required: [:name, :host_name, :check_command],
+#         optional: [:display_name, :groups, ]
+#       )
+
 
       payload = {
         templates: templates,
@@ -247,7 +258,6 @@ module Icinga2
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       name = params.dig(:name)
-      host_name = params.dig(:host_name)
       display_name = params.dig(:display_name)
       groups = params.dig(:groups)
       check_command = params.dig(:check_command)
@@ -291,7 +301,8 @@ module Icinga2
          icon_image
          icon_image_alt
          ].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
         raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
       end
 
@@ -300,7 +311,8 @@ module Icinga2
          check_timeout
          check_interval
          retry_interval].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
         raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
       end
 
@@ -311,12 +323,14 @@ module Icinga2
          enable_flapping
          enable_perfdata
          volatile].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
           raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
       end
 
       %w[groups templates].each do |attr|
-          v = eval(attr)
+#           v = eval(attr)
+          v  = params.dig(attr.to_sym)
           raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
       end
 

@@ -34,6 +34,39 @@ describe Icinga2 do
     end
   end
 
+
+  describe 'Converts' do
+
+    it 'host state to string' do
+      expect(@icinga2.state_to_string(0, true)).to be == 'Up'
+      expect(@icinga2.state_to_string(1, true)).to be == 'Down'
+      expect(@icinga2.state_to_string(5, true)).to be == 'Undefined'
+    end
+    it 'service state to string' do
+      expect(@icinga2.state_to_string(0, false)).to be == 'OK'
+      expect(@icinga2.state_to_string(1, false)).to be == 'Warning'
+      expect(@icinga2.state_to_string(2, false)).to be == 'Critical'
+      expect(@icinga2.state_to_string(3, false)).to be == 'Unknown'
+      expect(@icinga2.state_to_string(5, false)).to be == 'Undefined'
+    end
+
+    it 'host state to color' do
+      expect(@icinga2.state_to_color(0, true)).to be == 'green'
+      expect(@icinga2.state_to_color(1, true)).to be == 'red'
+      expect(@icinga2.state_to_color(5, true)).to be == 'blue'
+    end
+
+    it 'service state to color' do
+      expect(@icinga2.state_to_color(0, false)).to be == 'green'
+      expect(@icinga2.state_to_color(1, false)).to be == 'yellow'
+      expect(@icinga2.state_to_color(2, false)).to be == 'red'
+      expect(@icinga2.state_to_color(3, false)).to be == 'purple'
+      expect(@icinga2.state_to_color(5, false)).to be == 'blue'
+    end
+
+  end
+
+
   describe 'Information' do
 
     it 'status_data' do
