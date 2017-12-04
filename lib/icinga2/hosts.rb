@@ -67,125 +67,74 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      action_url = params.dig(:action_url)
-      address = params.dig(:address)
-      address6 = params.dig(:address6)
-      check_command = params.dig(:check_command)
-      check_interval = params.dig(:check_interval)
-      check_period = params.dig(:check_period)
-      check_timeout = params.dig(:check_timeout)
-      command_endpoint = params.dig(:command_endpoint)
-      display_name = params.dig(:display_name)
-      enable_active_checks = params.dig(:enable_active_checks)
-      enable_event_handler = params.dig(:enable_event_handler)
-      enable_flapping = params.dig(:enable_flapping) || false
-      enable_notifications = params.dig(:enable_notifications)
-      enable_passive_checks = params.dig(:enable_passive_checks)
-      enable_perfdata = params.dig(:enable_perfdata)
-      event_command = params.dig(:event_command)
-      flapping_threshold = params.dig(:flapping_threshold)
-      groups = params.dig(:groups)
-      icon_image = params.dig(:icon_image)
-      icon_image_alt = params.dig(:icon_image_alt)
-      max_check_attempts = params.dig(:max_check_attempts)
-      name = params.dig(:name)
-      notes = params.dig(:notes)
-      notes_url = params.dig(:notes_url)
-      retry_interval = params.dig(:retry_interval)
-      templates = params.dig(:templates) || [ 'generic-host' ]
-      vars = params.dig(:vars) || {}
-      volatile = params.dig(:volatile)
-      zone = params.dig(:zone)
-
-      raise ArgumentError.new('missing name') if( name.nil? )
-
-      %w[action_url
-         address
-         address6
-         check_command
-         check_period
-         command_endpoint
-         display_name
-         event_command
-         icon_image
-         icon_image_alt
-         name
-         notes
-         notes_url
-         zone].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
-      end
-
-      %w[check_interval
-         flapping_threshold
-         max_check_attempts
-         retry_interval].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
-      end
-
-      %w[enable_active_checks
-         enable_event_handler
-         enable_flapping
-         enable_notifications
-         enable_passive_checks
-         enable_perfdata
-         volatile].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
-      end
-
-      %w[groups templates].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
-      end
-
-      raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
+      name    = validate( params, required: true, var: 'name', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
+      address    = validate( params, required: false, var: 'address', type: String )
+      address6   = validate( params, required: false, var: 'address6', type: String )
+      check_command = validate( params, required: false, var: 'check_command', type: String )
+      check_interval = validate( params, required: false, var: 'check_interval', type: Integer )
+      check_period   = validate( params, required: false, var: 'check_period', type: Integer )
+      check_timeout = validate( params, required: false, var: 'check_timeout', type: Integer )
+      command_endpoint = validate( params, required: false, var: 'command_endpoint', type: String )
+      display_name   = validate( params, required: false, var: 'display_name', type: String )
+      enable_active_checks = validate( params, required: false, var: 'enable_active_checks', type: Boolean )
+      enable_event_handler = validate( params, required: false, var: 'enable_event_handler', type: Boolean )
+      enable_flapping   = validate( params, required: false, var: 'enable_flapping', type: Boolean )
+      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean )
+      enable_passive_checks = validate( params, required: false, var: 'enable_passive_checks', type: Boolean )
+      volatile = validate( params, required: false, var: 'volatile', type: Boolean )
+      enable_perfdata   = validate( params, required: false, var: 'enable_perfdata', type: Boolean )
+      event_command = validate( params, required: false, var: 'event_command', type: String )
+      flapping_threshold = validate( params, required: false, var: 'flapping_threshold', type: Integer )
+      groups   = validate( params, required: false, var: 'groups', type: Array )
+      icon_image    = validate( params, required: false, var: 'icon_image', type: String )
+      icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
+      notes    = validate( params, required: false, var: 'notes', type: String )
+      notes_url   = validate( params, required: false, var: 'notes_url', type: String )
+      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer )
+      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer )
+      templates   = validate( params, required: false, var: 'templates', type: Array ) || [ 'generic-host' ]
+      vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
+      zone   = validate( params, required: false, var: 'zone', type: String )
 
       address = Socket.gethostbyname( name ).first if( address.nil? )
 
       payload = {
-        'templates' => templates,
-        'attrs'     => {
-          'action_url' => action_url,
-          'address' => address,
-          'address6' => address6,
-          'check_period' => check_period,
-          'check_command' => check_command,
-          'check_interval' => check_interval,
-          'check_timeout' => check_timeout,
-          'command_endpoint' => command_endpoint,
-          'display_name' => display_name,
-          'enable_active_checks' => enable_active_checks,
-          'enable_event_handler' => enable_event_handler,
-          'enable_flapping' => enable_flapping,
-          'enable_notifications' => enable_notifications,
-          'enable_passive_checks' => enable_passive_checks,
-          'enable_perfdata' => enable_perfdata,
-          'event_command' => event_command,
-          'flapping_threshold' => flapping_threshold,
-          'groups' => groups,
-          'icon_image' => icon_image,
-          'icon_image_alt' => icon_image_alt,
-          'max_check_attempts' => max_check_attempts,
-          'notes' => notes,
-          'notes_url' => notes_url,
-          'retry_interval' => retry_interval,
-          'volatile' => volatile,
-          'zone' => zone
+        templates: templates,
+        attrs: {
+          action_url: action_url,
+          address: address,
+          address6: address6,
+          check_period: check_period,
+          check_command: check_command,
+          check_interval: check_interval,
+          check_timeout: check_timeout,
+          command_endpoint: command_endpoint,
+          display_name: display_name,
+          enable_active_checks: enable_active_checks,
+          enable_event_handler: enable_event_handler,
+          enable_flapping: enable_flapping,
+          enable_notifications: enable_notifications,
+          enable_passive_checks: enable_passive_checks,
+          enable_perfdata: enable_perfdata,
+          event_command: event_command,
+          flapping_threshold: flapping_threshold,
+          groups: groups,
+          icon_image: icon_image,
+          icon_image_alt: icon_image_alt,
+          max_check_attempts: max_check_attempts,
+          notes: notes,
+          notes_url: notes_url,
+          retry_interval: retry_interval,
+          volatile: volatile,
+          zone: zone,
+          vars: vars
         }
       }
 
-      payload['attrs']['vars'] = vars unless vars.empty?
-
       # remove all empty attrs
       payload.reject!{ |_k, v| v.nil? }
-      payload['attrs'].reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
 #       puts JSON.pretty_generate  payload
 
