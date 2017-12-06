@@ -72,7 +72,7 @@ module Icinga2
       address    = validate( params, required: false, var: 'address', type: String )
       address6   = validate( params, required: false, var: 'address6', type: String )
       check_command = validate( params, required: false, var: 'check_command', type: String )
-      check_interval = validate( params, required: false, var: 'check_interval', type: Integer )
+      check_interval = validate( params, required: false, var: 'check_interval', type: Integer ) || 60
       check_period   = validate( params, required: false, var: 'check_period', type: Integer )
       check_timeout = validate( params, required: false, var: 'check_timeout', type: Integer )
       command_endpoint = validate( params, required: false, var: 'command_endpoint', type: String )
@@ -80,7 +80,7 @@ module Icinga2
       enable_active_checks = validate( params, required: false, var: 'enable_active_checks', type: Boolean )
       enable_event_handler = validate( params, required: false, var: 'enable_event_handler', type: Boolean )
       enable_flapping   = validate( params, required: false, var: 'enable_flapping', type: Boolean )
-      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean )
+      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
       enable_passive_checks = validate( params, required: false, var: 'enable_passive_checks', type: Boolean )
       volatile = validate( params, required: false, var: 'volatile', type: Boolean )
       enable_perfdata   = validate( params, required: false, var: 'enable_perfdata', type: Boolean )
@@ -91,8 +91,8 @@ module Icinga2
       icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
       notes    = validate( params, required: false, var: 'notes', type: String )
       notes_url   = validate( params, required: false, var: 'notes_url', type: String )
-      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer )
-      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer )
+      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer ) || 3
+      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer ) || 45
       templates   = validate( params, required: false, var: 'templates', type: Array ) || [ 'generic-host' ]
       vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
       zone   = validate( params, required: false, var: 'zone', type: String )
@@ -176,15 +176,35 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] :name
+    # @option params [String] :name
     # @option params [String] :address
+    # @option params [String] :address6
     # @option params [String] :display_name
-    # @option params [Bool] :enable_notifications (false)
-    # @option params [Integer] :max_check_attempts (3)
-    # @option params [Integer] :check_interval (60)
-    # @option params [Integer] :retry_interval (45)
+    # @option params [Bool] :enable_notifications
+    # @option params [Integer] :max_check_attempts
+    # @option params [Integer] :check_interval
+    # @option params [Integer] :retry_interval
     # @option params [String] :notes
     # @option params [String] :notes_url
     # @option params [String] :action_url
+    # @option params [String] :check_command
+    # @option params [Integer] :check_interval
+    # @option params [String] :check_period
+    # @option params [Integer] :check_timeout
+    # @option params [String] :command_endpoint
+    # @option params [Bool] :enable_active_checks
+    # @option params [Bool] :enable_event_handler
+    # @option params [Bool] :enable_flapping
+    # @option params [Bool] :enable_passive_checks
+    # @option params [Bool] :enable_perfdata
+    # @option params [String] :event_command
+    # @option params [Integer] :flapping_threshold
+    # @option params [Integer] :flapping_threshold_high
+    # @option params [Integer] :flapping_threshold_low
+    # @option params [String] :icon_image
+    # @option params [String] :icon_image_alt
+    # @option params [Integer] :retry_interval
+    # @option params [Bool] :volatile
     # @option params [Hash] :vars ({})
     # @option params [Bool] :merge_vars (false)
     #
@@ -230,32 +250,39 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      name               = params.dig(:name)
-      address            = params.dig(:address)
-      display_name       = params.dig(:display_name) || host
-      notifications      = params.dig(:enable_notifications) || false
-      max_check_attempts = params.dig(:max_check_attempts) || 3
-      check_interval     = params.dig(:check_interval) || 60
-      retry_interval     = params.dig(:retry_interval) || 45
-      notes              = params.dig(:notes)
-      notes_url          = params.dig(:notes_url)
-      action_url         = params.dig(:action_url)
-      vars               = params.dig(:vars) || {}
-      merge_vars         = params.dig(:merge_vars) || false
-
-      raise ArgumentError.new('Missing host name') if( name.nil? )
-      raise ArgumentError.new('only true or false for notifications are allowed') unless( notifications.is_a?(TrueClass) || notifications.is_a?(FalseClass) )
-      raise ArgumentError.new('only Integer for max_check_attempts are allowed') unless( max_check_attempts.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for check_interval are allowed') unless( check_interval.is_a?(Integer) )
-      raise ArgumentError.new('only Integer for retry_interval are allowed') unless( retry_interval.is_a?(Integer) )
-      raise ArgumentError.new('only String for notes are allowed') unless( notes.is_a?(String) || notes.nil? )
-      raise ArgumentError.new('only String for notes_url are allowed') unless( notes_url.is_a?(String) || notes_url.nil? )
-      raise ArgumentError.new('only Hash for vars are allowed') unless( vars.is_a?(Hash) )
-      raise ArgumentError.new('wrong type. merge_vars must be an Boolean') unless( merge_vars.is_a?(TrueClass) || merge_vars.is_a?(FalseClass) )
+      name    = validate( params, required: true, var: 'name', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
+      address    = validate( params, required: false, var: 'address', type: String )
+      address6   = validate( params, required: false, var: 'address6', type: String )
+      check_command = validate( params, required: false, var: 'check_command', type: String )
+      check_interval = validate( params, required: false, var: 'check_interval', type: Integer )
+      check_period   = validate( params, required: false, var: 'check_period', type: Integer )
+      check_timeout = validate( params, required: false, var: 'check_timeout', type: Integer )
+      command_endpoint = validate( params, required: false, var: 'command_endpoint', type: String )
+      display_name   = validate( params, required: false, var: 'display_name', type: String )
+      enable_active_checks = validate( params, required: false, var: 'enable_active_checks', type: Boolean )
+      enable_event_handler = validate( params, required: false, var: 'enable_event_handler', type: Boolean )
+      enable_flapping   = validate( params, required: false, var: 'enable_flapping', type: Boolean )
+      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean )
+      enable_passive_checks = validate( params, required: false, var: 'enable_passive_checks', type: Boolean )
+      volatile = validate( params, required: false, var: 'volatile', type: Boolean )
+      enable_perfdata   = validate( params, required: false, var: 'enable_perfdata', type: Boolean )
+      event_command = validate( params, required: false, var: 'event_command', type: String )
+      flapping_threshold = validate( params, required: false, var: 'flapping_threshold', type: Integer )
+      groups   = validate( params, required: false, var: 'groups', type: Array )
+      icon_image    = validate( params, required: false, var: 'icon_image', type: String )
+      icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
+      notes    = validate( params, required: false, var: 'notes', type: String )
+      notes_url   = validate( params, required: false, var: 'notes_url', type: String )
+      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer )
+      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer )
+      templates   = validate( params, required: false, var: 'templates', type: Array ) || [ 'generic-host' ]
+      vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
+      zone   = validate( params, required: false, var: 'zone', type: String )
+      merge_vars = validate( params, required: false, var: 'merge_vars', type: Boolean ) || false
 
       # check if host exists
-      exists = exists_host?( name )
-      raise ArgumentError.new( format( 'host %s do not exists', name ) ) if( exists == false )
+      return { 'code' => 404, 'name' => name, 'status' => 'Object not Found' } unless( exists_host?( name ) )
 
       # merge the new with the old vars
       if( merge_vars == true )
@@ -268,22 +295,42 @@ module Icinga2
         vars = current_host_vars.merge( vars )
       end
 
-      # POST request
       payload = {
-        'attrs'     => {
-          'address'              => address,
-          'display_name'         => display_name,
-          'max_check_attempts'   => max_check_attempts.to_i,
-          'check_interval'       => check_interval.to_i,
-          'retry_interval'       => retry_interval.to_i,
-          'enable_notifications' => notifications,
-          'action_url'           => action_url,
-          'notes'                => notes,
-          'notes_url'            => notes_url
+        templates: templates,
+        attrs: {
+          action_url: action_url,
+          address: address,
+          address6: address6,
+          check_period: check_period,
+          check_command: check_command,
+          check_interval: check_interval,
+          check_timeout: check_timeout,
+          command_endpoint: command_endpoint,
+          display_name: display_name,
+          enable_active_checks: enable_active_checks,
+          enable_event_handler: enable_event_handler,
+          enable_flapping: enable_flapping,
+          enable_notifications: enable_notifications,
+          enable_passive_checks: enable_passive_checks,
+          enable_perfdata: enable_perfdata,
+          event_command: event_command,
+          flapping_threshold: flapping_threshold,
+          groups: groups,
+          icon_image: icon_image,
+          icon_image_alt: icon_image_alt,
+          max_check_attempts: max_check_attempts,
+          notes: notes,
+          notes_url: notes_url,
+          retry_interval: retry_interval,
+          volatile: volatile,
+          zone: zone,
+          vars: vars
         }
       }
 
-      payload['attrs']['vars'] = vars unless  vars.empty?
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       post(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
@@ -312,7 +359,8 @@ module Icinga2
     #
     def hosts( params = {} )
 
-      name   = params.dig(:name)
+      name    = validate( params, required: false, var: 'name', type: String )
+      #name   = params.dig(:name)
 #       attrs  = params.dig(:attrs)
 #       filter = params.dig(:filter)
 #       joins  = params.dig(:joins)
@@ -341,7 +389,7 @@ module Icinga2
     #
     def exists_host?( host_name )
 
-      raise ArgumentError.new('only String are allowed') unless( host_name.is_a?(String) )
+      raise ArgumentError.new(format('wrong type. \'host_name\' must be an String, given \'%s\'',host_name.class.to_s)) unless( host_name.is_a?(String) )
       raise ArgumentError.new('Missing host_name') if( host_name.size.zero? )
 
       result = hosts( name: host_name )
@@ -370,23 +418,16 @@ module Icinga2
     #
     def host_objects( params = {} )
 
-      attrs   = params.dig(:attrs)
-      filter  = params.dig(:filter)
-      joins   = params.dig(:joins)
+      attrs   = validate( params, required: false, var: 'attrs', type: Array ) || %w[name state acknowledgement downtime_depth last_check]
+      filter  = validate( params, required: false, var: 'filter', type: Array )
+      joins   = validate( params, required: false, var: 'joins', type: Array )
 
-#       raise ArgumentError.new('only Array for attrs are allowed') unless( attrs.is_a?(Hash) )
-#       raise ArgumentError.new('only Array for filter are allowed') unless( filter.is_a?(Hash) )
-#       raise ArgumentError.new('only Array for joins are allowed') unless( joins.is_a?(Hash) )
-
-      payload = {}
-
-      if( attrs.nil? )
-        attrs = %w[name state acknowledgement downtime_depth last_check]
-      end
-
-      payload['attrs']  = attrs  unless attrs.nil?
-      payload['filter'] = filter unless filter.nil?
-      payload['joins']  = joins  unless joins.nil?
+      payload = {
+        attrs: attrs,
+        filter: filter,
+        joins: joins
+      }
+      payload.reject!{ |_k, v| v.nil? }
 
       data = api_data(
         url: format( '%s/objects/hosts', @icinga_api_url_base ),
@@ -482,7 +523,7 @@ module Icinga2
     #
     def list_hosts_with_problems( max_items = 5 )
 
-      raise ArgumentError.new('only Integer for max_items are allowed') unless( max_items.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'max_items\' must be an Integer, given \'%s\'', max_items.class.to_s)) unless( max_items.is_a?(Integer) )
 
       host_problems = {}
       host_problems_severity = {}
@@ -490,10 +531,7 @@ module Icinga2
       host_data = host_objects
       host_data = JSON.parse( host_data ) if host_data.is_a?(String)
 
-# logger.debug(host_data)
-
       unless( host_data.nil? )
-
         host_data.each do |h,_v|
           name  = h.dig('name')
           state = h.dig('attrs','state')
@@ -545,10 +583,10 @@ module Icinga2
       cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
       host_objects if((Time.now.to_i - @last_host_objects_called).to_i > @last_call_timeout)
 
-      raise ArgumentError.new('Integer for @hosts_problems_down needed') unless( @hosts_problems_down.is_a?(Integer) )
-      raise ArgumentError.new('Integer for @hosts_problems_critical needed') unless( @hosts_problems_critical.is_a?(Integer) )
-      raise ArgumentError.new('Integer for @hosts_problems_unknown needed') unless( @hosts_problems_unknown.is_a?(Integer) )
-      raise ArgumentError.new('Integer for @hosts_down needed') unless( @hosts_down.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_down\' must be an Integer, given \'%s\'', @hosts_problems_down.class.to_s)) unless( @hosts_problems_down.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'@hosts_down\' must be an Integer, given \'%s\'', @hosts_down.class.to_s)) unless( @hosts_down.is_a?(Integer) )
 
       problems_all      = @hosts_problems.nil?           ? 0 : @hosts_problems
       problems_down     = @hosts_problems_down.nil?      ? 0 : @hosts_problems_down
@@ -591,16 +629,16 @@ module Icinga2
     #
     def host_severity( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       state           = params.dig('attrs','state')
       acknowledgement = params.dig('attrs','acknowledgement') || 0
       downtime_depth  = params.dig('attrs','downtime_depth')  || 0
 
-      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
-      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
-      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
+      raise ArgumentError.new(format('wrong type. \'state\' must be an Float, given \'%s\'', state.class.to_s)) unless( state.is_a?(Float) )
+      raise ArgumentError.new(format('wrong type. \'acknowledgement\' must be an Float, given \'%s\'', acknowledgement.class.to_s)) unless( acknowledgement.is_a?(Float) )
+      raise ArgumentError.new(format('wrong type. \'downtime_depth\' must be an Float, given \'%s\'', downtime_depth.class.to_s)) unless( downtime_depth.is_a?(Float) )
 
       severity = 0
 

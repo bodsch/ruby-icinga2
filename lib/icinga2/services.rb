@@ -254,8 +254,8 @@ module Icinga2
     #
     def modify_service( params )
 
-      raise ArgumentError.new(format('wrong type. params must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing params') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       name = params.dig(:name)
       display_name = params.dig(:display_name)

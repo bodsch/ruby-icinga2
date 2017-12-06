@@ -9,7 +9,6 @@ module Icinga2
     # add downtime
     #
     # @param [Hash] params
-    # @option params [String] :name
     # @option params [String] :host_name
     # @option params [String] :host_group
     # @option params [Integer] :start_time (Time.new.to_i)
@@ -44,65 +43,53 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      name            = params.dig(:name)
-      host_name       = params.dig(:host_name)
-      host_group      = params.dig(:host_group)
-      start_time      = params.dig(:start_time) || Time.now.to_i
-      end_time        = params.dig(:end_time)
-      author          = params.dig(:author)
-      comment         = params.dig(:comment)
-      type            = params.dig(:type)
-      fixed           = params.dig(:fixed) || true
-      duration        = params.dig(:duration) || 30
-      entry_time      = params.dig(:entry_time)
-      scheduled_by    = params.dig(:scheduled_by)
-      service_name    = params.dig(:service_name)
-      triggered_by    = params.dig(:triggered_by)
-      config_owner    = params.dig(:config_owner)
+      host_name       = validate( params, required: false, var: 'host_name', type: String )
+      host_group      = validate( params, required: false, var: 'host_group', type: String )
+      start_time      = validate( params, required: false, var: 'start_time', type: Integer ) || Time.now.to_i
+      end_time        = validate( params, required: false, var: 'end_time', type: Integer )
+      author          = validate( params, required: true, var: 'author', type: String )
+      comment         = validate( params, required: true, var: 'comment', type: String )
+      type            = validate( params, required: false, var: 'type', type: String )
+      fixed           = validate( params, required: false, var: 'fixed', type: Boolean ) || true
+      duration        = validate( params, required: false, var: 'duration', type: Integer ) || 30
+      entry_time      = validate( params, required: false, var: 'entry_time', type: Integer )
+      scheduled_by    = validate( params, required: false, var: 'scheduled_by', type: String )
+      service_name    = validate( params, required: false, var: 'service_name', type: String )
+      triggered_by    = validate( params, required: false, var: 'triggered_by', type: String )
+      config_owner    = validate( params, required: false, var: 'config_owner', type: String )
       filter          = nil
-
-#       raise ArgumentError.new(format('wrong type. \'start_time\' must be Integer, given \'%s\'', start_time.class.to_s)) unless( start_time.is_a?(Integer))
-#       raise ArgumentError.new(format('wrong type. \'end_time\' must be Integer, given \'%s\'', end_time.class.to_s)) unless( end_time.is_a?(Integer) )
-#      raise ArgumentError.new(format('wrong type. \'host_name\' must be String, given \'%s\'', host_name.class.to_s)) unless( host_name.is_a?(String) )
-#      raise ArgumentError.new(format('wrong type. \'host_group\' must be String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
 
       # sanitychecks
       #
-      raise ArgumentError.new('Missing \'name\' too add a downtime') if( name.nil? )
       raise ArgumentError.new(format('wrong downtype type. only \'host\' os \'service\' allowed, given \%s\'', type)) if( %w[host service].include?(type.downcase) == false )
-      raise ArgumentError.new('choose \'host_name\' or \'host_group\', not both') if( !host_group.nil? && !host_name.nil? )
-      raise ArgumentError.new('Missing downtime \'author\'') if( author.nil? )
+      raise ArgumentError.new('choose \'host_name\' or \'host_group\', not both') unless( host_group.nil? || host_name.nil? )
       raise ArgumentError.new(format('these \'author\' are not exists: \'%s\'', author)) unless( exists_user?( author ) )
-      raise ArgumentError.new('Missing downtime \'comment\'') if( comment.nil? )
       raise ArgumentError.new('Missing downtime \'end_time\'') if( end_time.nil? )
       raise ArgumentError.new('\'end_time\' are equal or smaller then \'start_time\'') if( end_time.to_i <= start_time )
 
-      raise ArgumentError.new(format('wrong type. \'duration\' must be Integer, given \'%s\'', duration.class.to_s)) unless( duration.is_a?(Integer) )
-      raise ArgumentError.new(format('wrong type. \'fixed\' must be True or False, given \'%s\'', fixed.class.to_s)) unless( fixed.is_a?(TrueClass) || fixed.is_a?(FalseClass) )
 
       # TODO
-      # check if host_name exists!
+      #  - more flexibility (e.g. support scheduled_by ...)
 
-
-      if( !host_name.nil? )
-
+      unless( host_name.nil? )
+        return { 'code' => 404, 'name' => host_name, 'status' => 'Object not Found' } unless( exists_host?( host_name ) )
         filter = format( 'host.name=="%s"', host_name )
-      elsif( !host_group.nil? )
+      end
 
-        # check if hostgroup available ?
-        #
+      unless( host_group.nil? )
+        return { 'code' => 404, 'name' => host_group, 'status' => 'Object not Found' } unless( exists_hostgroup?( host_group ) )
         filter = format( '"%s" in host.groups', host_group )
       end
 
       payload = {
         type: type.capitalize, # we need the first char as Uppercase
+        filter: filter,
+        fixed: fixed,
         start_time: start_time,
         end_time: end_time,
         author: author,
         comment: comment,
-        fixed: fixed,
         duration: duration,
-        filter: filter,
         entry_time: entry_time,
         scheduled_by: scheduled_by,
         host_name: host_name,

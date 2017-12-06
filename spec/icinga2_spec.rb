@@ -213,6 +213,24 @@ describe Icinga2 do
       expect(@icinga2.exists_host?('foo')).to be_truthy
     end
 
+    it 'modify host \'foo\' with merge (must be failed)' do
+      options = {
+        name: 'foo-2',
+        display_name: 'test node (changed)',
+        max_check_attempts: 10,
+        notes: 'spec test',
+        vars: {
+          description: 'changed at ...'
+        },
+        merge_vars: true
+      }
+      h = @icinga2.modify_host(options)
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 404
+    end
+
     it 'modify host \'foo\' with merge' do
       options = {
         name: 'foo',
@@ -741,7 +759,6 @@ describe Icinga2 do
     it "add downtime 'test'" do
 
       h = @icinga2.add_downtime(
-        name: 'test',
         type: 'service',
         host_name: 'c1-mysql-1',
         comment: 'test downtime',

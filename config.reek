@@ -10,9 +10,11 @@ TooManyStatements:
   enabled: true
   exclude:
   - initialize
-  max_statements: 20
+  max_statements: 30
 
 LongParameterList:
   enabled: true
   max_params: 4
 
+UncommunicativeVariableName:
+  enabled: false
