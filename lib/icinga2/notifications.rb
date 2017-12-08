@@ -85,21 +85,17 @@ module Icinga2
     # enable hostgroup notifications
     #
     # @param [Hash] params
-    # @option params [String] host
     # @option params [String] host_group
     #
     # @example
-    #    @icinga.enable_hostgroup_notification(host: 'icinga2', host_group: 'linux-servers')
+    #    @icinga.enable_hostgroup_notification('linux-servers')
     #
     # @return [Hash]
     #
-    def enable_hostgroup_notification( params )
+    def enable_hostgroup_notification( host_group )
 
-      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
-
-      host_group = params.dig(:host_group)
-      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
+      raise ArgumentError.new(format('wrong type. \'host_group\' must be an String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
+      raise ArgumentError.new('missing \'host_group\'') if( host_group.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } unless( exists_hostgroup?( host_group ) )
 
@@ -109,25 +105,21 @@ module Icinga2
     # disable hostgroup notifications
     #
     # @param [Hash] params
-    # @option params [String] host
     # @option params [String] host_group
     #
     # @example
-    #    @icinga.disable_hostgroup_notification(host: 'icinga2', host_group: 'linux-servers')
+    #    @icinga.disable_hostgroup_notification('linux-servers')
     #
     # @return [Hash]
     #
-    def disable_hostgroup_notification( params )
+    def disable_hostgroup_notification( host_group )
 
-      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
-
-      host_group = params.dig(:host_group)
-      raise ArgumentError.new('Missing host_group') if( host_group.nil? )
+      raise ArgumentError.new(format('wrong type. \'host_group\' must be an String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
+      raise ArgumentError.new('missing \'host_group\'') if( host_group.size.zero? )
 
       return { 'code' => 404, 'status' => 'Object not Found' } if( exists_hostgroup?( host_group ) == false )
 
-      hostgroup_notification( host_group: host_group, enable_notifications: true )
+      hostgroup_notification( host_group: host_group, enable_notifications: false )
     end
 
     # return all notifications
@@ -154,16 +146,15 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def host_notification( params = {} )
+    def host_notification( params )
 
-      name          = params.dig(:name)
-      notifications = params.dig(:enable_notifications) || false
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      payload = {
-        'attrs'     => {
-          'enable_notifications' => notifications
-        }
-      }
+      name = validate( params, required: true, var: 'name', type: String )
+      notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
+
+      payload = { attrs: { enable_notifications: notifications } }
 
       post(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
@@ -182,16 +173,17 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def hostgroup_notification( params = {} )
+    def hostgroup_notification( params )
 
-      group         = params.dig(:host_group)
-      notifications = params.dig(:enable_notifications) || false
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      group = validate( params, required: true, var: 'host_group', type: String )
+      notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
 
       payload = {
-        'filter'    => format( '"%s" in host.groups', group ),
-        'attrs'     => {
-          'enable_notifications' => notifications
-        }
+        filter: format( '"%s" in host.groups', group ),
+        attrs: { enable_notifications: notifications }
       }
 
       post(
@@ -211,16 +203,17 @@ module Icinga2
     #
     # @return [Hash]
     #
-    def service_notification( params = {} )
+    def service_notification( params )
 
-      name          = params.dig(:name)
-      notifications = params.dig(:enable_notifications) || false
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      name = validate( params, required: true, var: 'name', type: String )
+      notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
 
       payload = {
-        'filter'    => format( 'host.name=="%s"', name ),
-        'attrs'     => {
-          'enable_notifications' => notifications
-        }
+        filter: format( 'host.name=="%s"', name ),
+        attrs: { enable_notifications: notifications }
       }
 
       post(

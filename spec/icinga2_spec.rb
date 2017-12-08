@@ -362,7 +362,7 @@ describe Icinga2 do
   describe 'Module Services' do
 
     it 'list services \'ping4\' for host \'c1-mysql-1\'' do
-      h = @icinga2.services( host_name: 'c1-mysql-1', name: 'ping4' )
+      h = @icinga2.services( host_name: 'c1-mysql-1', service_name: 'ping4' )
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -374,11 +374,11 @@ describe Icinga2 do
     end
 
     it 'exists service check \'bp-mysql-uptime\' for host \'c1-mysql-1\'' do
-      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'bp-mysql-uptime' )).to be_truthy
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', service_name: 'bp-mysql-uptime' )).to be_truthy
     end
 
     it 'exists service check \'hdb\' for host \'c1-mysql-1\'' do
-      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'hdb' )).to be_falsey
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', service_name: 'hdb' )).to be_falsey
     end
 
     it 'count of all services with default parameters' do
@@ -518,7 +518,7 @@ describe Icinga2 do
     end
 
     it 'list servicegroup \'disk\'' do
-      h = @icinga2.servicegroups(service_group: 'disk')
+      h = @icinga2.servicegroups('disk')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -550,7 +550,7 @@ describe Icinga2 do
     end
 
     it 'delete Servicegroup \'foo\'' do
-      s = @icinga2.delete_servicegroup( service_group: 'foo' )
+      s = @icinga2.delete_servicegroup('foo')
       expect(s).to be_a(Hash)
 
       status_code = s['code']
@@ -559,7 +559,7 @@ describe Icinga2 do
     end
 
     it 'delete Servicegroup \'foo\' (again)' do
-      s = @icinga2.delete_servicegroup( service_group: 'foo' )
+      s = @icinga2.delete_servicegroup('foo')
       expect(s).to be_a(Hash)
 
       status_code = s['code']
@@ -587,6 +587,14 @@ describe Icinga2 do
       expect(status_code).to be == 200
     end
 
+    it "disable notification for host 'c1-web-1' and all services" do
+      h = @icinga2.disable_service_notification( 'c1-web-1' )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+
     it 'list notifications' do
       h = @icinga2.notifications
       expect(h).to be_a(Array)
@@ -594,14 +602,14 @@ describe Icinga2 do
     end
 
     it 'enable Notifications for hostgroup' do
-      h = @icinga2.enable_hostgroup_notification( host_group: 'linux-servers')
+      h = @icinga2.enable_hostgroup_notification('linux-servers')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200
     end
 
-    it 'enable Notifications for hostgroup' do
-      h = @icinga2.disable_hostgroup_notification( host_group: 'linux-servers')
+    it 'disable Notifications for hostgroup' do
+      h = @icinga2.disable_hostgroup_notification('linux-servers')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200

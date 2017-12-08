@@ -96,8 +96,8 @@ unless( i.nil? )
     puts ''
 
     rescue => e
-      $stderr.puts( e )
-      $stderr.puts( e.backtrace.join("\n") )
+      warn( e )
+      warn( e.backtrace.join("\n") )
     end
 end
 

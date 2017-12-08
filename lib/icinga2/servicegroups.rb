@@ -25,18 +25,11 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      service_group = params.dig(:service_group)
-      display_name  = params.dig(:display_name)
-      notes         = params.dig(:notes)
-      notes_url     = params.dig(:notes_url)
-      action_url    = params.dig(:action_url)
-
-      raise ArgumentError.new('Missing \'service_group\'') if( service_group.nil? )
-      raise ArgumentError.new('Missing \'display_name\'') if( display_name.nil? )
-
-      raise ArgumentError.new(format('wrong type. \'notes\' must be an Hash, given \'%s\'', notes.class.to_s)) unless( notes.is_a?(String) || notes.nil? )
-      raise ArgumentError.new(format('wrong type. \'notes_url\' must be an Hash, given \'%s\'', notes_url.class.to_s)) unless( notes_url.is_a?(String) || notes_url.nil? )
-      raise ArgumentError.new(format('wrong type. \'action_url\' must be an Hash, given \'%s\'', action_url.class.to_s)) unless( action_url.is_a?(String) || action_url.nil? )
+      service_group = validate( params, required: true, var: 'service_group', type: String )
+      display_name = validate( params, required: true, var: 'display_name', type: String )
+      notes = validate( params, required: false, var: 'notes', type: String )
+      notes_url = validate( params, required: false, var: 'notes_url', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
 
       payload = {
         attrs: {
@@ -61,22 +54,19 @@ module Icinga2
 
     # delete a servicegroup
     #
-    # @param [Hash] params
-    # @option params [String] :service_group servicegroup to delete
+    # @param [String] :service_group servicegroup to delete
     #
     # @example
-    #   @icinga.delete_servicegroup(service_group: 'foo')
+    #   @icinga.delete_servicegroup('foo')
     #
     # @return [Array] result
     #
-    def delete_servicegroup( params )
+    def delete_servicegroup( service_group )
 
-      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'service_group\' must be an String, given \'%s\'', service_group.class.to_s)) unless( service_group.is_a?(String) )
+      raise ArgumentError.new('missing \'service_group\'') if( service_group.size.zero? )
 
-      service_group = params.dig(:service_group)
-
-      raise ArgumentError.new('Missing \'service_group\'') if( service_group.nil? )
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_servicegroup?( service_group ) == false )
 
       delete(
         url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
@@ -98,16 +88,12 @@ module Icinga2
     #
     # @return [Array] returns a hash with all servicegroups
     #
-    def servicegroups( params = {} )
+    def servicegroups( service_group = nil )
 
-      service_group = params.dig(:service_group)
+      raise ArgumentError.new(format('wrong type. \'service_group\' must be an String, given \'%s\'', service_group.class.to_s)) unless( service_group.nil? || service_group.is_a?(String) )
 
-      url =
-      if( service_group.nil? )
-        format( '%s/objects/servicegroups'   , @icinga_api_url_base )
-      else
-        format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group )
-      end
+      url = format( '%s/objects/servicegroups'   , @icinga_api_url_base )
+      url = format( '%s/objects/servicegroups/%s', @icinga_api_url_base, service_group ) unless( service_group.nil? )
 
       api_data(
         url: url,
@@ -130,7 +116,7 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'service_group\' must be an String, given \'%s\'', service_group.class.to_s)) unless( service_group.is_a?(String) )
       raise ArgumentError.new('Missing \'service_group\'') if( service_group.size.zero? )
 
-      result = servicegroups( service_group: service_group )
+      result = servicegroups(service_group)
       result = JSON.parse( result ) if  result.is_a?( String )
       result = result.first if( result.is_a?(Array) )
 

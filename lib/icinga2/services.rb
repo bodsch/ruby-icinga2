@@ -389,13 +389,17 @@ module Icinga2
     #
     def unhandled_services
 
-      payload = {}
-
       filter = 'service.state != ServiceOK && service.downtime_depth == 0.0 && service.acknowledgement == 0.0'
       attrs  = %w[__name name state acknowledgement downtime_depth last_check]
 
-      payload['attrs']  = attrs unless  attrs.nil?
-      payload['filter'] = filter unless filter.nil?
+      payload = {
+        attrs: attrs,
+        filter: filter
+      }
+
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+      payload[:attrs].reject!{ |_k, v| v.nil? }
 
       api_data(
         url: format( '%s/objects/services', @icinga_api_url_base ),
@@ -421,17 +425,13 @@ module Icinga2
     #
     def services( params = {} )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
 
-      host_name = params.dig(:host_name)
-      name   = params.dig(:name)
+      host_name = validate( params, required: false, var: 'host_name', type: String )
+      service_name = validate( params, required: false, var: 'service_name', type: String )
 
-      url =
-      if( name.nil? )
-        format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
-      else
-        format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, name )
-      end
+      url = format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
+      url = format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ) unless( service_name.nil? )
 
       api_data(
         url: url,
@@ -447,22 +447,19 @@ module Icinga2
     # @option params [String] :name
     #
     # @example
-    #    @icinga.exists_service?(host_name: 'icinga2', name: 'users')
+    #    @icinga.exists_service?(host_name: 'icinga2', service_name: 'users')
     #
     # @return [Bool]
     #
     def exists_service?( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host    = params.dig(:host_name)
-      service = params.dig(:name)
+      host_name = validate( params, required: true, var: 'host_name', type: String )
+      service_name = validate( params, required: true, var: 'service_name', type: String )
 
-      raise ArgumentError.new('Missing host') if( host.nil? )
-      raise ArgumentError.new('Missing service') if( service.nil? )
-
-      result = services( host_name: host, name: service )
+      result = services( host_name: host_name, service_name: service_name )
       result = JSON.parse( result ) if  result.is_a?( String )
       result = result.first if( result.is_a?(Array) )
 
@@ -488,22 +485,16 @@ module Icinga2
     #
     def service_objects( params = {} )
 
-      attrs   = params.dig(:attrs)
-      filter  = params.dig(:filter)
-      joins   = params.dig(:joins)
-      payload = {}
+      attrs   = validate( params, required: false, var: 'attrs', type: Array ) || %w[name state acknowledgement downtime_depth  last_check]
+      filter  = validate( params, required: false, var: 'filter', type: Array )
+      joins   = validate( params, required: false, var: 'joins', type: Array ) || ['host.name', 'host.state', 'host.acknowledgement', 'host.downtime_depth', 'host.last_check']
 
-      if( attrs.nil? )
-        attrs = %w[name state acknowledgement downtime_depth  last_check]
-      end
-
-      if( joins.nil? )
-        joins = ['host.name', 'host.state', 'host.acknowledgement', 'host.downtime_depth', 'host.last_check']
-      end
-
-      payload['attrs']  = attrs unless  attrs.nil?
-      payload['filter'] = filter unless filter.nil?
-      payload['joins']  = joins unless  joins.nil?
+      payload = {
+        attrs: attrs,
+        filter: filter,
+        joins: joins
+      }
+      payload.reject!{ |_k, v| v.nil? }
 
       data = api_data(
         url: format( '%s/objects/services', @icinga_api_url_base ),
@@ -603,6 +594,8 @@ module Icinga2
     #
     def list_services_with_problems( max_items = 5 )
 
+      raise ArgumentError.new(format('wrong type. \'max_items\' must be an Integer, given \'%s\'', max_items.class.to_s)) unless( max_items.is_a?(Integer) )
+
       services_with_problems = {}
       services_with_problems_and_severity = {}
 
@@ -611,11 +604,10 @@ module Icinga2
       services_data = JSON.parse( services_data ) if services_data.is_a?(String)
 
       unless( services_data.nil? )
-
         services_data.each do |s|
-
           name  = s.dig('name')
           state = s.dig('attrs','state')
+
           next if  state.zero?
 
           services_with_problems[name] = service_severity(s)
@@ -763,16 +755,14 @@ module Icinga2
     #
     def service_severity( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      state           = params.dig('attrs','state')
-      acknowledgement = params.dig('attrs','acknowledgement') || 0
-      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+      attrs = params.dig('attrs')
 
-      raise ArgumentError.new('only Float for state are allowed') unless( state.is_a?(Float) )
-      raise ArgumentError.new('only Float for acknowledgement are allowed') unless( acknowledgement.is_a?(Float) )
-      raise ArgumentError.new('only Float for downtime_depth are allowed') unless( downtime_depth.is_a?(Float) )
+      state = validate( attrs, required: true, var: 'state', type: Float )
+      acknowledgement = validate( attrs, required: false, var: 'acknowledgement', type: Float ) || 0
+      downtime_depth = validate( attrs, required: false, var: 'downtime_depth', type: Float ) || 0
 
       severity = 0
 
@@ -788,7 +778,6 @@ module Icinga2
       severity += 16 if object_has_been_checked?(params)
 
       unless state.zero?
-
         severity +=
           if state == 1
             32

@@ -247,7 +247,7 @@ module Icinga2
     #
     def modify_host( params )
 
-      raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       name    = validate( params, required: true, var: 'name', type: String )
@@ -439,9 +439,7 @@ module Icinga2
       @last_host_objects_called = Time.now.to_i
 
       if( !data.nil? && data.is_a?(Array) )
-
         all_hosts = data.clone
-
         unless( all_hosts.nil? )
           # global var for count of all hosts
           @hosts_all           = all_hosts.size
@@ -451,7 +449,6 @@ module Icinga2
           @hosts_problems_down     = count_problems(all_hosts, Icinga2::HOSTS_DOWN)
           @hosts_problems_critical = count_problems(all_hosts, Icinga2::HOSTS_CRITICAL)
           @hosts_problems_unknown  = count_problems(all_hosts, Icinga2::HOSTS_UNKNOWN)
-
         end
       end
 
@@ -544,9 +541,7 @@ module Icinga2
 
       # get the count of problems
       #
-      if( host_problems.count != 0 )
-        host_problems.keys[1..max_items].each { |k| host_problems_severity[k] = host_problems[k] }
-      end
+      host_problems.keys[1..max_items].each { |k| host_problems_severity[k] = host_problems[k] } if( host_problems.count != 0 )
 
       host_problems_severity
     end
@@ -632,13 +627,11 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      state           = params.dig('attrs','state')
-      acknowledgement = params.dig('attrs','acknowledgement') || 0
-      downtime_depth  = params.dig('attrs','downtime_depth')  || 0
+      attrs = params.dig('attrs')
 
-      raise ArgumentError.new(format('wrong type. \'state\' must be an Float, given \'%s\'', state.class.to_s)) unless( state.is_a?(Float) )
-      raise ArgumentError.new(format('wrong type. \'acknowledgement\' must be an Float, given \'%s\'', acknowledgement.class.to_s)) unless( acknowledgement.is_a?(Float) )
-      raise ArgumentError.new(format('wrong type. \'downtime_depth\' must be an Float, given \'%s\'', downtime_depth.class.to_s)) unless( downtime_depth.is_a?(Float) )
+      state = validate( attrs, required: true, var: 'state', type: Float )
+      acknowledgement = validate( attrs, required: false, var: 'acknowledgement', type: Float ) || 0
+      downtime_depth = validate( attrs, required: false, var: 'downtime_depth', type: Float ) || 0
 
       severity = 0
 
@@ -654,7 +647,6 @@ module Icinga2
       severity += 16 if object_has_been_checked?(params)
 
       unless state.zero?
-
         severity +=
           if state == 1
             32
