@@ -84,8 +84,7 @@ module Icinga2
 
     # enable hostgroup notifications
     #
-    # @param [Hash] params
-    # @option params [String] host_group
+    # @param [String] host_group
     #
     # @example
     #    @icinga.enable_hostgroup_notification('linux-servers')
@@ -104,8 +103,7 @@ module Icinga2
 
     # disable hostgroup notifications
     #
-    # @param [Hash] params
-    # @option params [String] host_group
+    # @param [String] host_group
     #
     # @example
     #    @icinga.disable_hostgroup_notification('linux-servers')
@@ -168,8 +166,8 @@ module Icinga2
     # @api protected
     #
     # @param [Hash] params
-    # @option params [String] host_group
-    # @option params [Bool] enable_notifications (false)
+    # @option params [String] :host_group
+    # @option params [Bool] :enable_notifications (false)
     #
     # @return [Hash]
     #

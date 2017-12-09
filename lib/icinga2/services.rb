@@ -8,35 +8,35 @@ module Icinga2
     # add service
     #
     # @param [Hash] params
-    # @option params [String] :name
-    # @option params [String] :host_name
-    # @option params [String] :display_name
-    # @option params [Array] :templates
-    # @option params [Array] :groups
-    # @option params [String] :notes
-    # @option params [String] :notes_url
-    # @option params [String] :action_url
-    # @option params [String] :check_command
-    # @option params [Integer] :check_interval
-    # @option params [String] :check_period
-    # @option params [Integer] :check_timeout
-    # @option params [String] :command_endpoint
-    # @option params [Boolean] :enable_active_checks
-    # @option params [Boolean] :enable_event_handler
-    # @option params [Boolean] :enable_flapping
-    # @option params [Boolean] :enable_notifications
-    # @option params [Boolean] :enable_passive_checks
-    # @option params [Boolean] :enable_perfdata
-    # @option params [String] :event_command
-    # @option params [Integer] :flapping_threshold_high
-    # @option params [Integer] :flapping_threshold_low
-    # @option params [Integer] :flapping_threshold
-    # @option params [String] :icon_image_alt
-    # @option params [String] :icon_image
-    # @option params [Integer] :max_check_attempts
-    # @option params [Integer] :retry_interval
-    # @option params [Boolean] :volatile
-    # @option params [Hash] :vars
+    # @option params [String] name
+    # @option params [String] host_name
+    # @option params [String] display_name
+    # @option params [Array] templates
+    # @option params [Array] groups
+    # @option params [String] notes
+    # @option params [String] notes_url
+    # @option params [String] action_url
+    # @option params [String] check_command
+    # @option params [Integer] check_interval
+    # @option params [String] check_period
+    # @option params [Integer] check_timeout
+    # @option params [String] command_endpoint
+    # @option params [Boolean] enable_active_checks
+    # @option params [Boolean] enable_event_handler
+    # @option params [Boolean] enable_flapping
+    # @option params [Boolean] enable_notifications
+    # @option params [Boolean] enable_passive_checks
+    # @option params [Boolean] enable_perfdata
+    # @option params [String] event_command
+    # @option params [Integer] flapping_threshold_high
+    # @option params [Integer] flapping_threshold_low
+    # @option params [Integer] flapping_threshold
+    # @option params [String] icon_image_alt
+    # @option params [String] icon_image
+    # @option params [Integer] max_check_attempts
+    # @option params [Integer] retry_interval
+    # @option params [Boolean] volatile
+    # @option params [Hash] vars
     #
     # @example
     #    @icinga.add_service(
@@ -61,92 +61,37 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. params must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      name = params.dig(:name)
-      host_name = params.dig(:host_name)
-      display_name = params.dig(:display_name)
-      groups = params.dig(:groups)
-      check_command = params.dig(:check_command)
-      max_check_attempts = params.dig(:max_check_attempts)
-      check_period = params.dig(:check_period)
-      check_timeout = params.dig(:check_timeout)
-      check_interval = params.dig(:check_interval)
-      retry_interval = params.dig(:retry_interval)
-      enable_notifications = params.dig(:enable_notifications)
-      enable_active_checks = params.dig(:enable_active_checks)
-      enable_passive_checks = params.dig(:enable_passive_checks)
-      enable_event_handler = params.dig(:enable_event_handler)
-      enable_flapping = params.dig(:enable_flapping)
-      flapping_threshold = params.dig(:flapping_threshold)
-      enable_perfdata = params.dig(:enable_perfdata)
-      event_command = params.dig(:event_command)
-      volatile = params.dig(:volatile)
-      zone = params.dig(:zone)
-      command_endpoint = params.dig(:command_endpoint)
-      notes = params.dig(:notes)
-      notes_url = params.dig(:notes_url)
-      action_url = params.dig(:action_url)
-      icon_image = params.dig(:icon_image)
-      icon_image_alt = params.dig(:icon_image_alt)
-      templates = params.dig(:templates) || ['generic-service']
-      vars = params.dig(:vars) || {}
+      name    = validate( params, required: true, var: 'name', type: String )
+      host_name    = validate( params, required: true, var: 'host_name', type: String )
+      display_name   = validate( params, required: false, var: 'display_name', type: String )
+      groups   = validate( params, required: false, var: 'groups', type: Array )
+      check_command = validate( params, required: false, var: 'check_command', type: String )
+      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer ) || 3
+      check_interval = validate( params, required: false, var: 'check_interval', type: Integer ) || 60
+      check_period   = validate( params, required: false, var: 'check_period', type: Integer )
+      check_timeout = validate( params, required: false, var: 'check_timeout', type: Integer )
+      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer ) || 45
+      enable_active_checks = validate( params, required: false, var: 'enable_active_checks', type: Boolean )
+      enable_event_handler = validate( params, required: false, var: 'enable_event_handler', type: Boolean )
+      enable_flapping   = validate( params, required: false, var: 'enable_flapping', type: Boolean )
+      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
+      enable_passive_checks = validate( params, required: false, var: 'enable_passive_checks', type: Boolean )
+      flapping_threshold = validate( params, required: false, var: 'flapping_threshold', type: Integer )
+      enable_perfdata   = validate( params, required: false, var: 'enable_perfdata', type: Boolean )
+      event_command = validate( params, required: false, var: 'event_command', type: String )
+      volatile = validate( params, required: false, var: 'volatile', type: Boolean )
+      zone   = validate( params, required: false, var: 'zone', type: String )
+      command_endpoint = validate( params, required: false, var: 'command_endpoint', type: String )
+      notes    = validate( params, required: false, var: 'notes', type: String )
+      notes_url   = validate( params, required: false, var: 'notes_url', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
+      icon_image    = validate( params, required: false, var: 'icon_image', type: String )
+      icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
+      templates   = validate( params, required: false, var: 'templates', type: Array ) || ['generic-service']
+      vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
 
-      raise ArgumentError.new('missing name') if( name.nil? )
-
-      %w[display_name
-         host_name
-         check_command
-         check_period
-         event_command
-         zone
-         name
-         command_endpoint
-         notes
-         notes_url
-         action_url
-         icon_image
-         icon_image_alt
-         ].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
-      end
-
-      %w[max_check_attempts
-         flapping_threshold
-         check_timeout
-         check_interval
-         retry_interval].each do |attr|
-#           v = eval(attr)
-        v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
-      end
-
-      %w[enable_notifications
-         enable_active_checks
-         enable_passive_checks
-         enable_event_handler
-         enable_flapping
-         enable_perfdata
-         volatile].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
-      end
-
-      %w[groups templates].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
-      end
-
-      raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
-
-
-#       validate_options!( params,
-#         required: [:name, :host_name, :check_command],
-#         optional: [:display_name, :groups, ]
-#       )
-
+      # check if host exists
+      return { 'code' => 404, 'name' => host_name, 'status' => 'Object not Found' } unless( exists_host?( host_name ) )
 
       payload = {
         templates: templates,
@@ -194,9 +139,9 @@ module Icinga2
     # delete a service
     #
     # @param [Hash] params
-    # @option params [String] :host_name host name for the service
-    # @option params [String] :name
-    # @option params [Bool] :cascade (false) delete service also when other objects depend on it
+    # @option params [String] name service name
+    # @option params [String] host_name host name for the service
+    # @option params [Bool] cascade (false) delete service also when other objects depend on it
     #
     # @example
     #   @icinga.delete_service(host_name: 'foo', name: 'http2')
@@ -209,16 +154,9 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host_name    = params.dig(:host_name)
-      name = params.dig(:name)
-      cascade      = params.dig(:cascade)
-
-      raise ArgumentError.new('Missing host') if( host_name.nil? )
-      raise ArgumentError.new('Missing service name') if( name.nil? )
-
-      if( ! cascade.nil? && ( ! cascade.is_a?(TrueClass) && ! cascade.is_a?(FalseClass) ) )
-        raise ArgumentError.new('cascade can only be true or false')
-      end
+      name      = validate( params, required: true, var: 'name', type: String )
+      host_name = validate( params, required: true, var: 'host_name', type: String )
+      cascade   = validate( params, required: false, var: 'cascade', type: Boolean ) || false
 
       url = format( '%s/objects/services/%s!%s%s', @icinga_api_url_base, host_name, name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
 
@@ -233,9 +171,9 @@ module Icinga2
     # modify an service
     #
     # @param [Hash] params
-    # @option params [String] :name
-    # @option params [Array] :templates
-    # @option params [Hash] :vars
+    # @option params [String] name
+    # @option params [Array] templates
+    # @option params [Hash] vars
     #
     # @example
     #    @icinga.modify_service(
@@ -257,84 +195,40 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      name = params.dig(:name)
-      display_name = params.dig(:display_name)
-      groups = params.dig(:groups)
-      check_command = params.dig(:check_command)
-      max_check_attempts = params.dig(:max_check_attempts)
-      check_period = params.dig(:check_period)
-      check_timeout = params.dig(:check_timeout)
-      check_interval = params.dig(:check_interval)
-      retry_interval = params.dig(:retry_interval)
-      enable_notifications = params.dig(:enable_notifications)
-      enable_active_checks = params.dig(:enable_active_checks)
-      enable_passive_checks = params.dig(:enable_passive_checks)
-      enable_event_handler = params.dig(:enable_event_handler)
-      enable_flapping = params.dig(:enable_flapping)
-      flapping_threshold = params.dig(:flapping_threshold)
-      enable_perfdata = params.dig(:enable_perfdata)
-      event_command = params.dig(:event_command)
-      volatile = params.dig(:volatile)
-      zone = params.dig(:zone)
-      command_endpoint = params.dig(:command_endpoint)
-      notes = params.dig(:notes)
-      notes_url = params.dig(:notes_url)
-      action_url = params.dig(:action_url)
-      icon_image = params.dig(:icon_image)
-      icon_image_alt = params.dig(:icon_image_alt)
-      templates = params.dig(:templates) || ['generic-service']
-      vars = params.dig(:vars) || {}
+      name    = validate( params, required: true, var: 'name', type: String )
+#       host_name    = validate( params, required: false, var: 'host_name', type: String )
+      display_name   = validate( params, required: false, var: 'display_name', type: String )
+      groups   = validate( params, required: false, var: 'groups', type: Array )
+      check_command = validate( params, required: false, var: 'check_command', type: String )
+      max_check_attempts = validate( params, required: false, var: 'max_check_attempts', type: Integer ) || 3
+      check_interval = validate( params, required: false, var: 'check_interval', type: Integer ) || 60
+      check_period   = validate( params, required: false, var: 'check_period', type: Integer )
+      check_timeout = validate( params, required: false, var: 'check_timeout', type: Integer )
+      retry_interval   = validate( params, required: false, var: 'retry_interval', type: Integer ) || 45
+      enable_active_checks = validate( params, required: false, var: 'enable_active_checks', type: Boolean )
+      enable_event_handler = validate( params, required: false, var: 'enable_event_handler', type: Boolean )
+      enable_flapping   = validate( params, required: false, var: 'enable_flapping', type: Boolean )
+      enable_notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
+      enable_passive_checks = validate( params, required: false, var: 'enable_passive_checks', type: Boolean )
+      flapping_threshold = validate( params, required: false, var: 'flapping_threshold', type: Integer )
+      enable_perfdata   = validate( params, required: false, var: 'enable_perfdata', type: Boolean )
+      event_command = validate( params, required: false, var: 'event_command', type: String )
+      volatile = validate( params, required: false, var: 'volatile', type: Boolean )
+      zone   = validate( params, required: false, var: 'zone', type: String )
+      command_endpoint = validate( params, required: false, var: 'command_endpoint', type: String )
+      notes    = validate( params, required: false, var: 'notes', type: String )
+      notes_url   = validate( params, required: false, var: 'notes_url', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
+      icon_image    = validate( params, required: false, var: 'icon_image', type: String )
+      icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
+      templates   = validate( params, required: false, var: 'templates', type: Array ) || ['generic-service']
+      vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
+      merge_vars = validate( params, required: false, var: 'merge_vars', type: Boolean ) || false
 
-      raise ArgumentError.new('missing name') if( name.nil? )
-
-      %w[display_name
-         host_name
-         check_command
-         check_period
-         event_command
-         zone
-         name
-         command_endpoint
-         notes
-         notes_url
-         action_url
-         icon_image
-         icon_image_alt
-         ].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an String, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(String) || v.nil? )
-      end
-
-      %w[max_check_attempts
-         flapping_threshold
-         check_timeout
-         check_interval
-         retry_interval].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-        raise ArgumentError.new(format('wrong type. \'%s\' must be an Integer, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Integer) || v.nil? )
-      end
-
-      %w[enable_notifications
-         enable_active_checks
-         enable_passive_checks
-         enable_event_handler
-         enable_flapping
-         enable_perfdata
-         volatile].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be True or False, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(TrueClass) || v.is_a?(FalseClass) || v.nil? )
-      end
-
-      %w[groups templates].each do |attr|
-#           v = eval(attr)
-          v  = params.dig(attr.to_sym)
-          raise ArgumentError.new(format('wrong type. \'%s\' must be an Array, given \'%s\'', attr, v.class.to_s)) unless( v.is_a?(Array) || v.nil? )
-      end
-
-      raise ArgumentError.new(format('wrong type. \'vars\' must be an Hash, given \'%s\'', v.class.to_s)) unless( vars.is_a?(Hash) )
+      # check if service exists
+#       return { 'code' => 404, 'name' => name, 'status' => 'Object not Found' } unless( exists_service?( host_name: host_name, service_name: name ) )
+#       # check if host exists
+#       return { 'code' => 404, 'name' => host_name, 'status' => 'Object not Found' } unless( exists_host?( host_name ) )
 
       payload = {
         templates: templates,
@@ -412,8 +306,8 @@ module Icinga2
     # return services
     #
     # @param [Hash] params
-    # @option params [String] :host_name
-    # @option params [String] :name
+    # @option params [String] host_name
+    # @option params [String] name
     #
     # @example to get all services
     #    @icinga.services
@@ -428,10 +322,10 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
 
       host_name = validate( params, required: false, var: 'host_name', type: String )
-      service_name = validate( params, required: false, var: 'service_name', type: String )
+      name      = validate( params, required: false, var: 'name', type: String )
 
       url = format( '%s/objects/services/%s', @icinga_api_url_base, host_name )
-      url = format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, service_name ) unless( service_name.nil? )
+      url = format( '%s/objects/services/%s!%s', @icinga_api_url_base, host_name, name ) unless( name.nil? )
 
       api_data(
         url: url,
@@ -443,11 +337,11 @@ module Icinga2
     # returns true if the service exists
     #
     # @param [Hash] params
-    # @option params [String] :host_name
-    # @option params [String] :name
+    # @option params [String] host_name
+    # @option params [String] name
     #
     # @example
-    #    @icinga.exists_service?(host_name: 'icinga2', service_name: 'users')
+    #    @icinga.exists_service?(host_name: 'icinga2', name: 'users')
     #
     # @return [Bool]
     #
@@ -457,9 +351,9 @@ module Icinga2
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       host_name = validate( params, required: true, var: 'host_name', type: String )
-      service_name = validate( params, required: true, var: 'service_name', type: String )
+      name      = validate( params, required: true, var: 'name', type: String )
 
-      result = services( host_name: host_name, service_name: service_name )
+      result = services( host_name: host_name, name: name )
       result = JSON.parse( result ) if  result.is_a?( String )
       result = result.first if( result.is_a?(Array) )
 
@@ -471,9 +365,9 @@ module Icinga2
     # returns service objects
     #
     # @param [Hash] params
-    # @option params [Array] :attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
-    # @option params [Array] :filter ([])
-    # @option params [Array] :joins (['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check'])
+    # @option params [Array] attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
+    # @option params [Array] filter ([])
+    # @option params [Array] joins (['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check'])
     #
     # @example with default attrs and joins
     #    @icinga.service_objects
@@ -494,6 +388,7 @@ module Icinga2
         filter: filter,
         joins: joins
       }
+
       payload.reject!{ |_k, v| v.nil? }
 
       data = api_data(
@@ -760,9 +655,9 @@ module Icinga2
 
       attrs = params.dig('attrs')
 
-      state = validate( attrs, required: true, var: 'state', type: Float )
+      state           = validate( attrs, required: true, var: 'state', type: Float )
       acknowledgement = validate( attrs, required: false, var: 'acknowledgement', type: Float ) || 0
-      downtime_depth = validate( attrs, required: false, var: 'downtime_depth', type: Float ) || 0
+      downtime_depth  = validate( attrs, required: false, var: 'downtime_depth', type: Float ) || 0
 
       severity = 0
 
@@ -810,36 +705,6 @@ module Icinga2
       end
 
       severity
-    end
-
-    private
-    # update host
-    #
-    # @param [Hash] hash
-    # @param [String] host
-    #
-    # @api protected
-    #
-    # @return [Hash]
-    #
-    def update_host( hash, host )
-
-      hash.each do |k, v|
-
-        if( k == 'host' && v.is_a?( String ) )
-          v.replace( host )
-
-        elsif( v.is_a?( Hash ) )
-
-          update_host( v, host )
-
-        elsif( v.is_a?(Array) )
-
-          v.flatten.each { |x| update_host( x, host ) if x.is_a?( Hash ) }
-        end
-      end
-
-      hash
     end
 
   end

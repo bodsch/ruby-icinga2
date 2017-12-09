@@ -9,11 +9,11 @@ module Icinga2
     # add a servicegroup
     #
     # @param [Hash] params
-    # @option params [String] :service_group servicegroup to create
-    # @option params [String] :display_name the displayed name
-    # @option params [String] :notes
-    # @option params [String] :notes_url
-    # @option params [String] :action_url
+    # @option params [String] service_group servicegroup to create
+    # @option params [String] display_name the displayed name
+    # @option params [String] notes
+    # @option params [String] notes_url
+    # @option params [String] action_url
     #
     # @example
     #   @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
@@ -54,7 +54,7 @@ module Icinga2
 
     # delete a servicegroup
     #
-    # @param [String] :service_group servicegroup to delete
+    # @param [String] service_group servicegroup to delete
     #
     # @example
     #   @icinga.delete_servicegroup('foo')
@@ -77,8 +77,7 @@ module Icinga2
 
     # returns all servicegroups
     #
-    # @param [Hash] params
-    # @option params [String] :service_group ('') optional for a single servicegroup
+    # @param [String] service_group (nil) optional for a single servicegroup
     #
     # @example to get all users
     #    @icinga.servicegroups

@@ -276,7 +276,7 @@ describe Icinga2 do
     end
 
     it 'delete host \'foo\'' do
-      h = @icinga2.delete_host( name: 'foo' )
+      h = @icinga2.delete_host( name: 'foo', cascade: true )
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be_a(Integer)
@@ -362,7 +362,7 @@ describe Icinga2 do
   describe 'Module Services' do
 
     it 'list services \'ping4\' for host \'c1-mysql-1\'' do
-      h = @icinga2.services( host_name: 'c1-mysql-1', service_name: 'ping4' )
+      h = @icinga2.services( host_name: 'c1-mysql-1', name: 'ping4' )
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -374,11 +374,11 @@ describe Icinga2 do
     end
 
     it 'exists service check \'bp-mysql-uptime\' for host \'c1-mysql-1\'' do
-      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', service_name: 'bp-mysql-uptime' )).to be_truthy
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'bp-mysql-uptime' )).to be_truthy
     end
 
     it 'exists service check \'hdb\' for host \'c1-mysql-1\'' do
-      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', service_name: 'hdb' )).to be_falsey
+      expect(@icinga2.exists_service?( host_name: 'c1-mysql-1', name: 'hdb' )).to be_falsey
     end
 
     it 'count of all services with default parameters' do
@@ -626,7 +626,7 @@ describe Icinga2 do
     end
 
     it 'list named users' do
-      h = @icinga2.users(user_name: 'icingaadmin')
+      h = @icinga2.users('icingaadmin')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -679,13 +679,13 @@ describe Icinga2 do
     end
 
     it 'list named users' do
-      h = @icinga2.users(user_name: 'foo')
+      h = @icinga2.users('foo')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
 
     it 'delete user' do
-      h = @icinga2.delete_user(user_name: 'foo')
+      h = @icinga2.delete_user('foo')
 
       expect(h).to be_a(Hash)
       status_code = h['code']
@@ -693,7 +693,7 @@ describe Icinga2 do
     end
 
     it 'delete user (again)' do
-      h = @icinga2.delete_user(user_name: 'foo')
+      h = @icinga2.delete_user('foo')
 
       expect(h).to be_a(Hash)
       status_code = h['code']
@@ -710,7 +710,7 @@ describe Icinga2 do
     end
 
     it 'list named usergroup' do
-      h = @icinga2.usergroups(user_group: 'icingaadmins')
+      h = @icinga2.usergroups('icingaadmins')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
@@ -738,13 +738,13 @@ describe Icinga2 do
     end
 
     it 'list named usergroup' do
-      h = @icinga2.usergroups( user_group: 'foo' )
+      h = @icinga2.usergroups( 'foo' )
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
 
     it 'delete usergroup' do
-      h = @icinga2.delete_usergroup( user_group: 'foo' )
+      h = @icinga2.delete_usergroup( 'foo' )
 
       expect(h).to be_a(Hash)
       status_code = h['code']
@@ -752,7 +752,7 @@ describe Icinga2 do
     end
 
     it 'delete usergroup (again)' do
-      h = @icinga2.delete_usergroup(user_group: 'foo')
+      h = @icinga2.delete_usergroup('foo')
 
       expect(h).to be_a(Hash)
       status_code = h['code']

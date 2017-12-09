@@ -8,11 +8,11 @@ module Icinga2
     # static function for GET Requests
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
-    # @option params [Hash] :payload
+    # @option params [String] host
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
+    # @option params [Hash] payload
     #
     #
     # @return [Hash]
@@ -63,11 +63,11 @@ module Icinga2
     # static function for GET Requests without filters
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
-    # @option params [Hash] :payload
+    # @option params [String] host
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
+    # @option params [Hash] payload
     #
     #
     # @return [Hash]
@@ -104,10 +104,10 @@ module Icinga2
     # static function for POST Requests
     #
     # @param [Hash] params
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
-    # @option params [Hash] :payload
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
+    # @option params [Hash] payload
     #
     #
     # @return [Hash]
@@ -151,11 +151,11 @@ module Icinga2
     # static function for PUT Requests
     #
     # @param [Hash] params
-    # @option params [String] :host
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
-    # @option params [Hash] :payload
+    # @option params [String] host
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
+    # @option params [Hash] payload
     #
     #
     # @return [Hash]
@@ -205,9 +205,9 @@ module Icinga2
     # static function for DELETE Requests
     #
     # @param [Hash] params
-    # @option params [String] :url
-    # @option params [String] :headers
-    # @option params [String] :options
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
     #
     #
     # @return [Hash]

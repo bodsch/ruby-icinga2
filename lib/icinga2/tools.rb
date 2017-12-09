@@ -45,7 +45,7 @@ module Icinga2
 
     # return count of handled problems
     #
-    # @param [Hash] objects
+    # @param [Array] objects
     # @param [Integer] state (nil)
     #
     # @example for host objects
@@ -66,16 +66,17 @@ module Icinga2
     #
     def count_problems( objects, state = nil )
 
+      raise ArgumentError.new(format('wrong type. \'objects\' must be an Array, given \'%s\'', objects.class.to_s)) unless( objects.is_a?(Array) )
+      raise ArgumentError.new('missing objects') if( objects.size.zero? )
+
+      raise ArgumentError.new(format('wrong type. \'state\' must be an Integer, given \'%s\'', state.class.to_s)) unless( state.nil? || state.is_a?(Integer) )
+
+      # 0 = "Up"   or "OK"
+      # 1 = "Down" or "Warning"
+      # 2 = "Critical"
+      # 3 = "Unknown"
       compare_states = []
-
-      unless( state.nil? )
-
-        # 0 = "Up"   or "OK"
-        # 1 = "Down" or "Warning"
-        # 2 = "Critical"
-        # 3 = "Unknown"
-        compare_states = [1, 2, 3]
-      end
+      compare_states = [1, 2, 3] unless( state.nil? )
 
       compare_states.push(state) if( state.is_a?(Integer) )
 

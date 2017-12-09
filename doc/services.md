@@ -279,13 +279,3 @@ The result are an `Integer`
     service_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
 
 
-
-## <a name=""></a>*update_host( hash, host )* (private)
-
-update host
-
-The result are an `Hash`
-
-### Example
-    service_severity( {'attrs' => { 'state' => 0.0, 'acknowledgement' => 0.0, 'downtime_depth' => 0.0 } } )
-

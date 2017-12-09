@@ -133,7 +133,6 @@ supports the following API Calls:
     * [count of all services](doc/services.md#count-all-services)
     * [count all services with handled problems](doc/services.md#count-all-services-handled)
     * calculate service severity (protected)
-    * update host (private)
 
   - [Servicegroups](doc/servicegroups.md)
     * [add servicegroup](doc/servicegroups.md#add-servicegroup)

@@ -8,36 +8,36 @@ module Icinga2
     # add host
     #
     # @param [Hash] params
-    # @option params [String] :name
-    # @option params [String] :address
-    # @option params [String] :address6
-    # @option params [String] :display_name
-    # @option params [Bool] :enable_notifications (false)
-    # @option params [Integer] :max_check_attempts (3)
-    # @option params [Integer] :check_interval (60)
-    # @option params [Integer] :retry_interval (45)
-    # @option params [String] :notes
-    # @option params [String] :notes_url
-    # @option params [String] :action_url
-    # @option params [String] :check_command
-    # @option params [Integer] :check_interval
-    # @option params [String] :check_period
-    # @option params [Integer] :check_timeout
-    # @option params [String] :command_endpoint
-    # @option params [Bool] :enable_active_checks
-    # @option params [Bool] :enable_event_handler
-    # @option params [Bool] :enable_flapping
-    # @option params [Bool] :enable_passive_checks
-    # @option params [Bool] :enable_perfdata
-    # @option params [String] :event_command
-    # @option params [Integer] :flapping_threshold
-    # @option params [Integer] :flapping_threshold_high
-    # @option params [Integer] :flapping_threshold_low
-    # @option params [String] :icon_image
-    # @option params [String] :icon_image_alt
-    # @option params [Integer] :retry_interval
-    # @option params [Bool] :volatile
-    # @option params [Hash] :vars ({})
+    # @option params [String] name
+    # @option params [String] address
+    # @option params [String] address6
+    # @option params [String] display_name
+    # @option params [Bool] enable_notifications (false)
+    # @option params [Integer] max_check_attempts (3)
+    # @option params [Integer] check_interval (60)
+    # @option params [Integer] retry_interval (45)
+    # @option params [String] notes
+    # @option params [String] notes_url
+    # @option params [String] action_url
+    # @option params [String] check_command
+    # @option params [Integer] check_interval
+    # @option params [String] check_period
+    # @option params [Integer] check_timeout
+    # @option params [String] command_endpoint
+    # @option params [Bool] enable_active_checks
+    # @option params [Bool] enable_event_handler
+    # @option params [Bool] enable_flapping
+    # @option params [Bool] enable_passive_checks
+    # @option params [Bool] enable_perfdata
+    # @option params [String] event_command
+    # @option params [Integer] flapping_threshold
+    # @option params [Integer] flapping_threshold_high
+    # @option params [Integer] flapping_threshold_low
+    # @option params [String] icon_image
+    # @option params [String] icon_image_alt
+    # @option params [Integer] retry_interval
+    # @option params [Bool] volatile
+    # @option params [Hash] vars ({})
     #
     # @example
     #    param = {
@@ -57,7 +57,6 @@ module Icinga2
     #        }
     #      }
     #    }
-    #
     #    @icinga.add_host(param)
     #
     # @return [Hash]
@@ -149,10 +148,13 @@ module Icinga2
     # delete a host
     #
     # @param [Hash] params
-    # @option params [String] :name host to delete
+    # @option params [String] name host to delete
+    # @option params [Bool] cascade (false) delete host also when other objects depend on it
     #
     # @example
     #   @icinga.delete_host(name: 'foo')
+    #   @icinga.delete_host(name: 'foo', cascade: true)
+    #
     #
     # @return [Hash] result
     #
@@ -161,12 +163,13 @@ module Icinga2
       raise ArgumentError.new('only Hash are allowed') unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      host = params.dig(:name)
+      name    = validate( params, required: true, var: 'name', type: String )
+      cascade = validate( params, required: false, var: 'cascade', type: Boolean ) || false
 
-      raise ArgumentError.new('Missing name') if( host.nil? )
+      url = format( '%s/objects/hosts/%s%s', @icinga_api_url_base, name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
 
       delete(
-        url: format( '%s/objects/hosts/%s?cascade=1', @icinga_api_url_base, host ),
+        url: url,
         headers: @headers,
         options: @options
       )
@@ -175,38 +178,38 @@ module Icinga2
     # modify a host
     #
     # @param [Hash] params
-    # @option params [String] :name
-    # @option params [String] :name
-    # @option params [String] :address
-    # @option params [String] :address6
-    # @option params [String] :display_name
-    # @option params [Bool] :enable_notifications
-    # @option params [Integer] :max_check_attempts
-    # @option params [Integer] :check_interval
-    # @option params [Integer] :retry_interval
-    # @option params [String] :notes
-    # @option params [String] :notes_url
-    # @option params [String] :action_url
-    # @option params [String] :check_command
-    # @option params [Integer] :check_interval
-    # @option params [String] :check_period
-    # @option params [Integer] :check_timeout
-    # @option params [String] :command_endpoint
-    # @option params [Bool] :enable_active_checks
-    # @option params [Bool] :enable_event_handler
-    # @option params [Bool] :enable_flapping
-    # @option params [Bool] :enable_passive_checks
-    # @option params [Bool] :enable_perfdata
-    # @option params [String] :event_command
-    # @option params [Integer] :flapping_threshold
-    # @option params [Integer] :flapping_threshold_high
-    # @option params [Integer] :flapping_threshold_low
-    # @option params [String] :icon_image
-    # @option params [String] :icon_image_alt
-    # @option params [Integer] :retry_interval
-    # @option params [Bool] :volatile
-    # @option params [Hash] :vars ({})
-    # @option params [Bool] :merge_vars (false)
+    # @option params [String] name
+    # @option params [String] name
+    # @option params [String] address
+    # @option params [String] address6
+    # @option params [String] display_name
+    # @option params [Bool] enable_notifications
+    # @option params [Integer] max_check_attempts
+    # @option params [Integer] check_interval
+    # @option params [Integer] retry_interval
+    # @option params [String] notes
+    # @option params [String] notes_url
+    # @option params [String] action_url
+    # @option params [String] check_command
+    # @option params [Integer] check_interval
+    # @option params [String] check_period
+    # @option params [Integer] check_timeout
+    # @option params [String] command_endpoint
+    # @option params [Bool] enable_active_checks
+    # @option params [Bool] enable_event_handler
+    # @option params [Bool] enable_flapping
+    # @option params [Bool] enable_passive_checks
+    # @option params [Bool] enable_perfdata
+    # @option params [String] event_command
+    # @option params [Integer] flapping_threshold
+    # @option params [Integer] flapping_threshold_high
+    # @option params [Integer] flapping_threshold_low
+    # @option params [String] icon_image
+    # @option params [String] icon_image_alt
+    # @option params [Integer] retry_interval
+    # @option params [Bool] volatile
+    # @option params [Hash] vars ({})
+    # @option params [Bool] merge_vars (false)
     #
     # @example
     #    param = {
@@ -344,10 +347,10 @@ module Icinga2
     # return hosts
     #
     # @param [Hash] params
-    # @option params [String] :name
-    # @option params [String] :attrs
-    # @option params [String] :filter
-    # @option params [String] :joins
+    # @option params [String] name
+    # @option params [String] attrs
+    # @option params [String] filter
+    # @option params [String] joins
     #
     # @example to get all hosts
     #    @icinga.hosts
@@ -404,9 +407,9 @@ module Icinga2
     # returns host objects
     #
     # @param [Hash] params
-    # @option params [Array] :attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
-    # @option params [Array] :filter ([])
-    # @option params [Array] :joins ([])
+    # @option params [Array] attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
+    # @option params [Array] filter ([])
+    # @option params [Array] joins ([])
     #
     # @example with default attrs and joins
     #    @icinga.host_objects
