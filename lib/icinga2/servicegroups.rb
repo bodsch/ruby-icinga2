@@ -54,22 +54,29 @@ module Icinga2
 
     # delete a servicegroup
     #
-    # @param [String] service_group servicegroup to delete
+    # @param [Hash] params
+    # @option params [String] name servicegroup to delete
+    # @option params [Bool] cascade (false) delete servicegroup also when other objects depend on it
     #
     # @example
     #   @icinga.delete_servicegroup('foo')
     #
     # @return [Array] result
     #
-    def delete_servicegroup( service_group )
+    def delete_servicegroup( params )
 
-      raise ArgumentError.new(format('wrong type. \'service_group\' must be an String, given \'%s\'', service_group.class.to_s)) unless( service_group.is_a?(String) )
-      raise ArgumentError.new('missing \'service_group\'') if( service_group.size.zero? )
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_servicegroup?( service_group ) == false )
+      name = validate( params, required: true, var: 'name', type: String )
+      cascade = validate( params, required: false, var: 'cascade', type: Boolean ) || false
+
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_servicegroup?( name ) == false )
+
+      url = format( '%s/objects/servicegroups/%s%s', @icinga_api_url_base, name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
 
       delete(
-        url: format( '%s/objects/servicegroups/%s?cascade=1', @icinga_api_url_base, service_group ),
+        url: url,
         headers: @headers,
         options: @options
       )

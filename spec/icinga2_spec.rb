@@ -16,8 +16,7 @@ describe Icinga2 do
       icinga: {
         host: ENV.fetch( 'ICINGA_HOST', 'localhost' ),
         api: {
-          port: 5665,
-          user: 'root',
+          username: 'root',
           password: 'icinga'
         }
       }
@@ -201,7 +200,19 @@ describe Icinga2 do
     end
 
     it 'list host \'foo\'' do
-      h = @icinga2.hosts( name: 'foo' )
+      h = @icinga2.hosts( name: 'foo')
+      expect(h).to be_a(Array)
+      name = h.first['attrs']['name']
+      expect(name).to be_a(String)
+      expect(name).to be == 'foo'
+      expect(h.count).to be == 1
+    end
+
+    it 'list host \'foo\'' do
+      h = @icinga2.hosts(
+        name: 'foo',
+        attrs: %w[display_name name address]
+      )
       expect(h).to be_a(Array)
       name = h.first['attrs']['name']
       expect(name).to be_a(String)
@@ -303,6 +314,15 @@ describe Icinga2 do
       expect(c).to be >= 1
     end
 
+    it 'count of all hosts with filter' do
+      @icinga2.host_objects(
+        filter: '"linux-servers" in host.groups'
+      )
+      c = @icinga2.hosts_all
+      expect(c).to be_a(Integer)
+      expect(c).to be >= 1
+    end
+
     it 'count_hosts_with_problems' do
       expect(@icinga2.count_hosts_with_problems).to be_a(Integer)
     end
@@ -337,7 +357,7 @@ describe Icinga2 do
   describe 'Module Hostgroups' do
 
     it 'list hostgroup \'linux-servers\'' do
-      h = @icinga2.hostgroups(host_group: 'linux-servers')
+      h = @icinga2.hostgroups('linux-servers')
       name = h.first.dig('attrs','__name')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
@@ -388,7 +408,20 @@ describe Icinga2 do
     end
 
     it 'count of all services with \'attr\' and \'joins\' as parameter' do
-      c = @icinga2.service_objects( attrs: %w[name state], joins: ['host.name','host.state'] )
+      c = @icinga2.service_objects(
+        attrs: %w[name state],
+        joins: ['host.name','host.state']
+      )
+      expect(c).to be_a(Array)
+      expect(c.count).to be >= 1
+    end
+
+    it 'count of all services with \'attrs\', \'filter\' and \'joins\' as parameter' do
+      c = @icinga2.service_objects(
+        attrs: %w[display_name check_command enable_active_checks],
+        filter: 'service.state == 1' ,
+        joins: ['host.name', 'host.address']
+      )
       expect(c).to be_a(Array)
       expect(c.count).to be >= 1
     end
@@ -550,7 +583,7 @@ describe Icinga2 do
     end
 
     it 'delete Servicegroup \'foo\'' do
-      s = @icinga2.delete_servicegroup('foo')
+      s = @icinga2.delete_servicegroup(name: 'foo', cascade: true)
       expect(s).to be_a(Hash)
 
       status_code = s['code']
@@ -559,7 +592,7 @@ describe Icinga2 do
     end
 
     it 'delete Servicegroup \'foo\' (again)' do
-      s = @icinga2.delete_servicegroup('foo')
+      s = @icinga2.delete_servicegroup(name: 'foo')
       expect(s).to be_a(Hash)
 
       status_code = s['code']

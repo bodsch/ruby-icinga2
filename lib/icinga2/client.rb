@@ -63,39 +63,35 @@ module Icinga2
     # Returns a new instance of Client
     #
     # @param [Hash, #read] settings the settings for Icinga2
-    # @option settings [String] :host ('localhost') the Icinga2 Hostname
+    # @option settings [String] :host  the Icinga2 Hostname
     # @option settings [Integer] :port (5665) the Icinga2 API Port
-    # @option settings [String] :user the Icinga2 API User
+    # @option settings [String] :username the Icinga2 API User
     # @option settings [String] :password the Icinga2 API Password
     # @option settings [Integer] :version (1) the Icinga2 API Version
-    # @option settings [Bool] :cluster Icinga2 Cluster Mode
-    # @option settings [Bool] :notifications (false) enable Icinga2 Host Notifications
     #
     # @example to create an new Instance
     #    config = {
     #      icinga: {
     #        host: '192.168.33.5',
     #        api: {
-    #          port: 5665,
-    #          user: 'root',
+    #          username: 'root',
     #          password: 'icinga',
     #          version: 1
     #        }
     #      }
     #    }
-    #
     #    @icinga = Icinga2::Client.new(config)
     #
     # @return [instance, #read]
     #
     def initialize( settings )
 
-      raise ArgumentError.new('only Hash are allowed') unless( settings.is_a?(Hash) )
+      raise ArgumentError.new(format('wrong type. \'settings\' must be an Hash, given \'%s\'', settings.class.to_s)) unless( settings.is_a?(Hash) )
       raise ArgumentError.new('missing settings') if( settings.size.zero? )
 
-      icinga_host           = settings.dig(:icinga, :host)           || 'localhost'
+      icinga_host           = settings.dig(:icinga, :host)
       icinga_api_port       = settings.dig(:icinga, :api, :port)     || 5665
-      icinga_api_user       = settings.dig(:icinga, :api, :user)
+      icinga_api_user       = settings.dig(:icinga, :api, :username)
       icinga_api_pass       = settings.dig(:icinga, :api, :password)
       icinga_api_version    = settings.dig(:icinga, :api, :version)  || 1
       icinga_api_pki_path   = settings.dig(:icinga, :api, :pki_path)
@@ -113,7 +109,7 @@ module Icinga2
       _has_cert, @options = cert?(
         pki_path: icinga_api_pki_path,
         node_name: icinga_api_node_name,
-        user: icinga_api_user,
+        username: icinga_api_user,
         password: icinga_api_pass
       )
 
@@ -132,9 +128,9 @@ module Icinga2
     #    @icinga.cert?(pki_path: '/etc/icinga2', node_name: 'icinga2-dashing')
     #
     # @example with User
-    #    @icinga.cert?(user: 'root', password: 'icinga')
+    #    @icinga.cert?(username: 'root', password: 'icinga')
     #
-    # @return [Bool, #read]
+    # @return [Array]
     #
     def cert?( params )
 
@@ -143,7 +139,7 @@ module Icinga2
 
       pki_path     = params.dig(:pki_path)
       node_name    = params.dig(:node_name)
-      user         = params.dig(:user)
+      username     = params.dig(:username)
       password     = params.dig(:password)
 
       if( node_name.nil? )
@@ -151,7 +147,6 @@ module Icinga2
           node_name = Socket.gethostbyname(Socket.gethostname).first
           logger.debug(format('node name: %s', node_name))
         rescue SocketError => e
-
           raise format("can't resolve hostname (%s)", e)
         end
       end
@@ -179,19 +174,17 @@ module Icinga2
         } ]
 
       else
-
         logger.debug( 'PKI not found, using basic auth for connection to Icinga 2 API' )
 
-        raise ArgumentError.new('Missing user_name') if( user.nil? )
-        raise ArgumentError.new('Missing password')  if( password.nil? )
+        raise ArgumentError.new('Missing \'username\'') if( username.nil? )
+        raise ArgumentError.new('Missing \'password\'') if( password.nil? )
 
         [false, {
-          user: user,
+          user: username,
           password: password,
           verify_ssl: OpenSSL::SSL::VERIFY_NONE
         } ]
       end
-
     end
 
     # return Icinga2 Application data

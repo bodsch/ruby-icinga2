@@ -3,7 +3,7 @@
 module Icinga2
 
   # namespace for network handling
-  module Network extend Validator
+  module Network
 
     # static function for GET Requests
     #

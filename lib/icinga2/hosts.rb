@@ -293,7 +293,6 @@ module Icinga2
         current_host_vars = current_host.first
         current_host_vars = current_host_vars.dig('attrs','vars')
         current_host_vars = current_host_vars.deep_string_keys
-
         vars = vars.deep_string_keys unless( vars.empty? )
         vars = current_host_vars.merge( vars )
       end
@@ -348,9 +347,9 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [String] name
-    # @option params [String] attrs
+    # @option params [Array] attrs
     # @option params [String] filter
-    # @option params [String] joins
+    # @option params [Array] joins
     #
     # @example to get all hosts
     #    @icinga.hosts
@@ -366,7 +365,7 @@ module Icinga2
 
       name    = validate( params, required: false, var: 'name', type: String )
       attrs   = validate( params, required: false, var: 'attrs', type: Array )
-      filter  = validate( params, required: false, var: 'filter', type: Array )
+      filter  = validate( params, required: false, var: 'filter', type: String )
       joins   = validate( params, required: false, var: 'joins', type: Array )
 
       payload = {
@@ -411,7 +410,7 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [Array] attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
-    # @option params [Array] filter ([])
+    # @option params [String] filter ([])
     # @option params [Array] joins ([])
     #
     # @example with default attrs and joins
@@ -425,7 +424,7 @@ module Icinga2
     def host_objects( params = {} )
 
       attrs   = validate( params, required: false, var: 'attrs', type: Array ) || %w[name state acknowledgement downtime_depth last_check]
-      filter  = validate( params, required: false, var: 'filter', type: Array )
+      filter  = validate( params, required: false, var: 'filter', type: String )
       joins   = validate( params, required: false, var: 'joins', type: Array )
 
       payload = {

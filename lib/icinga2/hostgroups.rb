@@ -9,11 +9,12 @@ module Icinga2
     # add a hostgroup
     #
     # @param [Hash] params
-    # @option params [String] :host_group hostgroup to create
-    # @option params [String] :display_name the displayed name
-    # @option params [String] :notes
-    # @option params [String] :notes_url
-    # @option params [String] :action_url
+    # @option params [String] host_group hostgroup to create
+    # @option params [String] display_name the displayed name
+    # @option params [String] notes
+    # @option params [String] notes_url
+    # @option params [String] action_url
+    # @option params [Hash] vars ({})
     #
     # @example
     #   @icinga.add_hostgroup(host_group: 'foo', display_name: 'FOO')
@@ -25,25 +26,20 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      host_group   = params.dig(:host_group)
-      display_name = params.dig(:display_name)
-      notes        = params.dig(:notes)
-      notes_url    = params.dig(:notes_url)
-      action_url   = params.dig(:action_url)
-
-      raise ArgumentError.new('Missing \'host_group\'') if( host_group.nil? )
-      raise ArgumentError.new('Missing \'display_name\'') if( display_name.nil? )
-
-      raise ArgumentError.new(format('wrong type. \'notes\' must be an Hash, given \'%s\'', notes.class.to_s)) unless( notes.is_a?(String) || notes.nil? )
-      raise ArgumentError.new(format('wrong type. \'notes_url\' must be an Hash, given \'%s\'', notes_url.class.to_s)) unless( notes_url.is_a?(String) || notes_url.nil? )
-      raise ArgumentError.new(format('wrong type. \'action_url\' must be an Hash, given \'%s\'', action_url.class.to_s)) unless( action_url.is_a?(String) || action_url.nil? )
+      host_group = validate( params, required: true, var: 'host_group', type: String )
+      display_name = validate( params, required: false, var: 'display_name', type: String )
+      notes = validate( params, required: false, var: 'notes', type: String )
+      notes_url = validate( params, required: false, var: 'notes_url', type: String )
+      action_url = validate( params, required: false, var: 'action_url', type: String )
+      vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
 
       payload = {
         attrs: {
           display_name: display_name,
           notes: notes,
           notes_url: notes_url,
-          action_url: action_url
+          action_url: action_url,
+          vars: vars
         }
       }
 
@@ -62,10 +58,12 @@ module Icinga2
     # delete a hostgroup
     #
     # @param [Hash] params
-    # @option params [String] :name hostgroup to delete
+    # @option params [String] name hostgroup to delete
+    # @option params [Bool] cascade (false) delete hostgroup also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_hostgroup(host_group: 'foo')
+    #   @icinga.delete_hostgroup(name: 'foo')
+    #   @icinga.delete_hostgroup(name: 'foo', cascade: true)
     #
     # @return [Hash] result
     #
@@ -74,12 +72,15 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      host_group = params.dig(:host_group)
+      name = validate( params, required: true, var: 'name', type: String )
+      cascade = validate( params, required: false, var: 'cascade', type: Boolean ) || false
 
-      raise ArgumentError.new('Missing \'host_group\'') if( host_group.nil? )
+      return { 'code' => 404, 'status' => 'Object not Found' } if( exists_hostgroup?( name ) == false )
+
+      url = format( '%s/objects/hostgroups/%s%s', @icinga_api_url_base, name, cascade.is_a?(TrueClass) ? '?cascade=1' : nil )
 
       delete(
-        url: format('%s/objects/hostgroups/%s?cascade=1', @icinga_api_url_base, host_group),
+        url: url,
         headers: @headers,
         options: @options
       )
@@ -87,8 +88,7 @@ module Icinga2
 
     # returns all usersgroups
     #
-    # @param [Hash] params
-    # @option params [String] :host_group ('') optional for a single hostgroup
+    # @param [String] host_group (nil) optional for a single hostgroup
     #
     # @example to get all users
     #    @icinga.hostgroups
@@ -98,16 +98,12 @@ module Icinga2
     #
     # @return [Hash] returns a hash with all hostgroups
     #
-    def hostgroups( params = {} )
+    def hostgroups( host_group = nil )
 
-      host_group = params.dig(:host_group)
+      raise ArgumentError.new(format('wrong type. \'host_group\' must be an String, given \'%s\'', host_group.class.to_s)) unless( host_group.nil? || host_group.is_a?(String) )
 
-      url =
-      if( host_group.nil? )
-        format( '%s/objects/hostgroups'   , @icinga_api_url_base )
-      else
-        format( '%s/objects/hostgroups/%s', @icinga_api_url_base, host_group )
-      end
+      url = format( '%s/objects/hostgroups'   , @icinga_api_url_base )
+      url = format( '%s/objects/hostgroups/%s', @icinga_api_url_base, host_group ) unless( host_group.nil? )
 
       api_data(
         url: url,
@@ -130,7 +126,7 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'host_group\' must be an String, given \'%s\'', host_group.class.to_s)) unless( host_group.is_a?(String) )
       raise ArgumentError.new('Missing \'host_group\'') if( host_group.size.zero? )
 
-      result = hostgroups(host_group: host_group)
+      result = hostgroups(host_group)
       result = JSON.parse( result ) if( result.is_a?(String) )
       result = result.first if( result.is_a?(Array) )
 

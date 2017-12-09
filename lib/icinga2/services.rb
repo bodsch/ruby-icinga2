@@ -3,7 +3,7 @@
 module Icinga2
 
   # namespace for service handling
-  module Services extend Validator
+  module Services
 
     # add service
     #
@@ -364,7 +364,7 @@ module Icinga2
     #
     # @param [Hash] params
     # @option params [Array] attrs (['name', 'state', 'acknowledgement', 'downtime_depth', 'last_check'])
-    # @option params [Array] filter ([])
+    # @option params [String] filter ([])
     # @option params [Array] joins (['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check'])
     #
     # @example with default attrs and joins
@@ -378,7 +378,7 @@ module Icinga2
     def service_objects( params = {} )
 
       attrs   = validate( params, required: false, var: 'attrs', type: Array ) || %w[name state acknowledgement downtime_depth  last_check]
-      filter  = validate( params, required: false, var: 'filter', type: Array )
+      filter  = validate( params, required: false, var: 'filter', type: String )
       joins   = validate( params, required: false, var: 'joins', type: Array ) || ['host.name', 'host.state', 'host.acknowledgement', 'host.downtime_depth', 'host.last_check']
 
       payload = {
@@ -623,8 +623,6 @@ module Icinga2
         critical: problems_critical.to_i,
         unknown: problems_unknown.to_i
       }
-
-#      [problems_all,problems_critical,problems_warning,problems_unknown]
     end
 
     protected

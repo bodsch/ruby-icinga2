@@ -4,25 +4,28 @@
 module Icinga2
 
   # namespace for downtimes handling
+  #
+  # Schedule a downtime for hosts and services.
+  #
   module Downtimes
 
     # add downtime
     #
     # @param [Hash] params
-    # @option params [String] :host_name
-    # @option params [String] :host_group
-    # @option params [Integer] :start_time (Time.new.to_i)
-    # @option params [Integer] :end_time
-    # @option params [String] :author
-    # @option params [String] :comment
-    # @option params [String] :type 'host' or 'service' downtime
+    # @option params [String] host_name
+    # @option params [String] host_group
+    # @option params [String] type 'host' or 'service' downtime
+    # @option params [Integer] start_time (Time.new.to_i) Timestamp marking the beginning of the downtime. (required)
+    # @option params [Integer] end_time Timestamp marking the end of the downtime.  (required)
+    # @option params [String] author Name of the author. (required)
+    # @option params [String] comment Comment text. (required)
     # @option params [String] config_owner
-    # @option params [Integer] duration
+    # @option params [Integer] duration Duration of the downtime in seconds if fixed is set to false. (Required for flexible downtimes.)
     # @option params [Integer] entry_time
-    # @option params [Boolean] fixed
+    # @option params [Boolean] fixed (true) Defaults to true. If true, the downtime is fixed otherwise flexible. See downtimes for more information.
     # @option params [String] scheduled_by
     # @option params [String] service_name
-    # @option params [String] triggered_by
+    # @option params [String] triggered_by Sets the trigger for a triggered downtime. See downtimes for more information on triggered downtimes.
     #
     # @example
     #    param = {
@@ -51,7 +54,8 @@ module Icinga2
       comment         = validate( params, required: true, var: 'comment', type: String )
       type            = validate( params, required: false, var: 'type', type: String )
       fixed           = validate( params, required: false, var: 'fixed', type: Boolean ) || true
-      duration        = validate( params, required: false, var: 'duration', type: Integer ) || 30
+      duration_required = true if( fixed == false )
+      duration        = validate( params, required: duration_required, var: 'duration', type: Integer )
       entry_time      = validate( params, required: false, var: 'entry_time', type: Integer )
       scheduled_by    = validate( params, required: false, var: 'scheduled_by', type: String )
       service_name    = validate( params, required: false, var: 'service_name', type: String )
@@ -67,13 +71,12 @@ module Icinga2
       raise ArgumentError.new('Missing downtime \'end_time\'') if( end_time.nil? )
       raise ArgumentError.new('\'end_time\' are equal or smaller then \'start_time\'') if( end_time.to_i <= start_time )
 
-
       # TODO
       #  - more flexibility (e.g. support scheduled_by ...)
 
       unless( host_name.nil? )
         return { 'code' => 404, 'name' => host_name, 'status' => 'Object not Found' } unless( exists_host?( host_name ) )
-        filter = format( 'host.name=="%s"', host_name )
+        filter = format( 'host.name == "%s"', host_name )
       end
 
       unless( host_group.nil? )

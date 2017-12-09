@@ -136,6 +136,20 @@ unless( i.nil? )
     puts i.hosts(name: 'c1-mysql-1')
     puts ''
 
+    puts '= list named Hosts \'c1-mysql-1\' (with attrs and filter)'
+    puts i.hosts(
+      name: 'c1-mysql-1',
+      attrs: %w[display_name name address]
+    )
+    puts ''
+
+    puts '= host object with attrs and filter'
+    # Get host name, address of hosts belonging to a specific hostgroup
+    puts i.host_objects(
+      attrs: %w[display_name name address],
+      filter: '"linux-servers" in host.groups'
+    )
+
     puts ' ------------------------------------------------------------- '
     puts ''
 

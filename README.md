@@ -33,12 +33,12 @@ create an instance
     require 'icinga2'
 
     config = {
-      :icinga => {
-        :host      => icinga_host,
-        :api       => {
-          :port => icinga_api_port,
-          :user => icinga_api_user,
-          :pass => icinga_api_pass
+      icinga: {
+        host: icinga_host,
+        api: {
+          port: icinga_api_port,
+          username: icinga_api_user,
+          password: icinga_api_pass
         }
       }
     }
@@ -54,35 +54,37 @@ my own [Docker Container](https://hub.docker.com/r/bodsch/docker-icinga2/) as Da
 
 you can find many examples under the directory `examples`:
 
-    #$ export ICINGA_HOST=localhost ; export ICINGA_API_USER=root ; export ICINGA_API_PASSWORD=icinga
-    #$ ruby examples/informations.rb
-    #$ ruby examples/statistics.rb
-    #$ ruby examples/users.rb
+    $ export ICINGA_HOST=localhost ; export ICINGA_API_USER=root ; export ICINGA_API_PASSWORD=icinga
+    $ ruby examples/informations.rb
+    $ ruby examples/statistics.rb
+    $ ruby examples/users.rb
 
 and so on.
 
 ### Test via CLI
 
-    #$ irb
-    2.3.0 :001 > require 'icinga2'
+    $ irb
+    irb(main):001:0> require 'icinga2'
      => true
-    2.3.0 :002 > config = { :icinga => { :host => 'localhost', :api => { :user => 'root', :pass => 'icinga' } } }
-     => {:icinga=>{:host=>"localhost", :api=>{:user=>"root", :pass=>"icinga"}}}
-    2.3.0 :003 > i = Icinga2::Client.new( config )
-
+    irb(main):002:0> config = { icinga: { host: 'localhost', api: { username: 'root', password: 'icinga' } } }
+     => {:icinga=>{:host=>"localhost", :api=>{:username=>"root", :password=>"icinga"}}}
+    irb(main):003:0> i = Icinga2::Client.new( config )
+    irb(main):004:0> i.available?
+    => true
+    irb(main):005:0>
 
 ## Create a own gem file
 
-    #$ gem build icinga2.gemspec
+    $ gem build icinga2.gemspec
     Successfully built RubyGem
     Name: icinga2
-    Version: 0.9.0
-    File: icinga2-0.9.0.gem
+    Version: 0.9.2.7
+    File: icinga2-0.9.2.7.gem
 
 ## Install local gem
 
-    #$ gem install icinga2
-    Successfully installed icinga2-0.9.0
+    $ gem install icinga2
+    Successfully installed icinga2-0.9.2.7
     1 gem installed
 
 

@@ -34,7 +34,32 @@ unless( i.nil? )
     puts ''
 
     puts '= service objects with \'attrs\' and \'joins\''
-    puts i.service_objects( attrs: %w[name state], joins: ['host.name','host.state'] )
+    puts i.service_objects(
+      attrs: %w[name state],
+      joins: ['host.name','host.state']
+    )
+    puts ''
+
+    puts '= service objects with \'attrs\', \'filter\' and \'joins\''
+    puts '  match host.address = 1.2.3.4'
+    puts i.service_objects(
+      attrs: %w[display_name check_command],
+      filter: 'match("1.2.3.4", host.address)',
+      joins: ['host.name','host.address']
+    )
+    puts ''
+
+    # Get all services in critical state and filter out the ones for which active checks are disabled
+    # service.states - 0 = OK, 1 = WARNING, 2 = CRITICAL
+    #
+    # { "joins": ["host.name", "host.address"], "filter": "service.state==2", "attrs": ["display_name", "check_command", "enable_active_checks"] }
+    puts '= service objects with \'attrs\', \'filter\' and \'joins\''
+    puts '  filter service.sate == 1'
+    puts i.service_objects(
+      attrs: %w[display_name check_command enable_active_checks],
+      filter: 'service.state == 1' ,
+      joins: ['host.name', 'host.address']
+    )
     puts ''
 
     puts '= unhandled services'
@@ -87,11 +112,6 @@ unless( i.nil? )
 
     puts format( '  - problems: %s', problems )
     puts format( '  - problems and severity: %s', problems_and_severity )
-    puts ''
-
-
-    puts '= get service Objects'
-    puts i.service_objects
     puts ''
 
     puts '= add service'
