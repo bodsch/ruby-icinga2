@@ -423,7 +423,6 @@ describe Icinga2 do
         joins: ['host.name', 'host.address']
       )
       expect(c).to be_a(Array)
-      expect(c.count).to be >= 1
     end
 
     it 'count of services with problems' do
