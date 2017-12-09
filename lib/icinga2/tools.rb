@@ -67,7 +67,7 @@ module Icinga2
     def count_problems( objects, state = nil )
 
       raise ArgumentError.new(format('wrong type. \'objects\' must be an Array, given \'%s\'', objects.class.to_s)) unless( objects.is_a?(Array) )
-      raise ArgumentError.new('missing objects') if( objects.size.zero? )
+      #raise ArgumentError.new('missing objects') if( objects.size.zero? )
 
       raise ArgumentError.new(format('wrong type. \'state\' must be an Integer, given \'%s\'', state.class.to_s)) unless( state.nil? || state.is_a?(Integer) )
 
