@@ -362,22 +362,25 @@ module Icinga2
     #
     def hosts( params = {} )
 
-      name    = validate( params, required: false, var: 'name', type: String )
-      #name   = params.dig(:name)
-#       attrs  = params.dig(:attrs)
-#       filter = params.dig(:filter)
-#       joins  = params.dig(:joins)
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
 
-#       payload = {}
-#
-#       payload['attrs']  = attrs  unless attrs.nil?
-#       payload['filter'] = filter unless filter.nil?
-#       payload['joins']  = joins  unless joins.nil?
+      name    = validate( params, required: false, var: 'name', type: String )
+      attrs   = validate( params, required: false, var: 'attrs', type: Array )
+      filter  = validate( params, required: false, var: 'filter', type: Array )
+      joins   = validate( params, required: false, var: 'joins', type: Array )
+
+      payload = {
+        attrs: attrs,
+        filter: filter,
+        joins: joins
+      }
+      payload.reject!{ |_k, v| v.nil? }
 
       api_data(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
         headers: @headers,
-        options: @options
+        options: @options,
+        payload: payload
       )
     end
 

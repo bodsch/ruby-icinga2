@@ -3,7 +3,7 @@
 module Icinga2
 
   # namespace for network handling
-  module Network
+  module Network extend Validator
 
     # static function for GET Requests
     #
@@ -22,25 +22,16 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-      payload = params.dig(:payload)
-
-      raise ArgumentError.new('Missing url') if( url.nil? )
-      raise ArgumentError.new('Missing headers') if( headers.nil? )
-      raise ArgumentError.new('Missing options') if( options.nil? )
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
+      payload = validate( params, required: false, var: 'payload', type: Hash )
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
 
-      if( payload )
-        raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
-        headers['X-HTTP-Method-Override'] = 'GET'
-        method = 'POST'
-      else
-        headers['X-HTTP-Method-Override'] = 'GET'
-        method = 'GET'
-      end
+      headers['X-HTTP-Method-Override'] = 'GET'
+      method = 'GET'
+      method = 'POST' if( payload )
 
       begin
         data = request( rest_client, method, headers, payload )
@@ -50,9 +41,7 @@ module Icinga2
         data = data.dig('results') if( data.is_a?(Hash) )
 
         return data
-
       rescue => e
-
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
 
@@ -77,22 +66,16 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-
-      raise ArgumentError.new('Missing url') if( url.nil? )
-      raise ArgumentError.new('Missing headers') if( headers.nil? )
-      raise ArgumentError.new('Missing options') if( options.nil? )
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
 
       begin
-
         data = api_data( url: url, headers: headers, options: options )
         data = data.first if( data.is_a?(Array) )
-        # data
+
         return data.dig('status') unless( data.nil? )
       rescue => e
-
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
 
@@ -117,17 +100,13 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-      payload = params.dig(:payload)
-
-      raise ArgumentError.new('Missing url') if( url.nil? )
-      raise ArgumentError.new('Missing headers') if( headers.nil? )
-      raise ArgumentError.new('Missing options') if( options.nil? )
-      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
+      payload = validate( params, required: false, var: 'payload', type: Hash )
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
+
       headers['X-HTTP-Method-Override'] = 'POST'
 
       begin
@@ -138,9 +117,7 @@ module Icinga2
         data = data.dig('results').first if( data.is_a?(Hash) )
 
         return { 'code' => data.dig('code').to_i, 'name' => data.dig('name'), 'status' => data.dig('status') } unless( data.nil? )
-
       rescue => e
-
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
 
@@ -165,21 +142,16 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-      payload = params.dig(:payload)
-
-      raise ArgumentError.new('Missing url') if( url.nil? )
-      raise ArgumentError.new('Missing headers') if( headers.nil? )
-      raise ArgumentError.new('Missing options') if( options.nil? )
-      raise ArgumentError.new('only Hash for payload are allowed') unless( payload.is_a?(Hash) )
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
+      payload = validate( params, required: false, var: 'payload', type: Hash )
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
+
       headers['X-HTTP-Method-Override'] = 'PUT'
 
       begin
-
         data = request( rest_client, 'PUT', headers, payload )
         data = JSON.parse( data ) if( data.is_a?(String) )
         data = data.deep_string_keys
@@ -192,9 +164,7 @@ module Icinga2
         end
 
         return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
-
       rescue => e
-
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
 
@@ -217,15 +187,12 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
-      url     = params.dig(:url)
-      headers = params.dig(:headers)
-      options = params.dig(:options)
-
-      raise ArgumentError.new('Missing url') if( url.nil? )
-      raise ArgumentError.new('Missing headers') if( headers.nil? )
-      raise ArgumentError.new('Missing options') if( options.nil? )
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
 
       rest_client = RestClient::Resource.new( URI.encode( url ), options )
+
       headers['X-HTTP-Method-Override'] = 'DELETE'
 
       begin
@@ -242,7 +209,6 @@ module Icinga2
         end
 
         return { 'code' => results.dig('code').to_i, 'name' => results.dig('name'), 'status' => results.dig('status') } unless( results.nil? )
-
       rescue => e
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
@@ -261,10 +227,7 @@ module Icinga2
 
       raise ArgumentError.new('client must be an RestClient::Resource') unless( client.is_a?(RestClient::Resource) )
       raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w[GET POST PUT DELETE].include?(method) )
-
-      unless( data.nil? )
-        raise ArgumentError.new(format('data must be an Hash (%s)', data.class.to_s)) unless( data.is_a?(Hash) )
-      end
+      raise ArgumentError.new(format('data must be an Hash (%s)', data.class.to_s)) unless( data.nil? || data.is_a?(Hash) )
 
       max_retries = 3
       retried     = 0
@@ -303,7 +266,6 @@ module Icinga2
         when 'DELETE'
           response = client.delete( @headers )
         else
-          @logger.error( "Error: #{__method__} is not a valid request method." )
           return false
         end
 

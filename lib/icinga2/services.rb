@@ -196,7 +196,6 @@ module Icinga2
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
       name    = validate( params, required: true, var: 'name', type: String )
-#       host_name    = validate( params, required: false, var: 'host_name', type: String )
       display_name   = validate( params, required: false, var: 'display_name', type: String )
       groups   = validate( params, required: false, var: 'groups', type: Array )
       check_command = validate( params, required: false, var: 'check_command', type: String )
@@ -223,7 +222,6 @@ module Icinga2
       icon_image_alt   = validate( params, required: false, var: 'icon_image_alt', type: String )
       templates   = validate( params, required: false, var: 'templates', type: Array ) || ['generic-service']
       vars   = validate( params, required: false, var: 'vars', type: Hash ) || {}
-      merge_vars = validate( params, required: false, var: 'merge_vars', type: Boolean ) || false
 
       # check if service exists
 #       return { 'code' => 404, 'name' => name, 'status' => 'Object not Found' } unless( exists_service?( host_name: host_name, service_name: name ) )
