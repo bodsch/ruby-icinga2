@@ -38,18 +38,11 @@ module Icinga2
       type     = options.dig(:type)
 
       params   = params.deep_symbolize_keys
-
       variable = params.dig(var.to_sym)
-
-#       puts params
-#       puts options
 
       clazz = Object.const_get(type.to_s)
 
-      if(required == true )
-        raise ArgumentError.new(format('\'%s\' is requiered and missing!', var)) if(variable.nil?)
-      end
-
+      raise ArgumentError.new(format('\'%s\' is requiered and missing!', var)) if(variable.nil?) if(required == true )
       raise ArgumentError.new(format('wrong type. \'%s\' must be an %s, given \'%s\'', var, type, variable.class.to_s)) unless( variable.nil? || variable.is_a?(clazz) )
 
       variable

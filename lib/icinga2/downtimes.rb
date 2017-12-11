@@ -65,7 +65,7 @@ module Icinga2
 
       # sanitychecks
       #
-      raise ArgumentError.new(format('wrong downtype type. only \'host\' os \'service\' allowed, given \%s\'', type)) if( %w[host service].include?(type.downcase) == false )
+      raise ArgumentError.new(format('wrong downtype type. only \'host\' or \'service\' allowed, given \%s\'', type)) if( %w[host service].include?(type.downcase) == false )
       raise ArgumentError.new('choose \'host_name\' or \'host_group\', not both') unless( host_group.nil? || host_name.nil? )
       raise ArgumentError.new(format('these \'author\' are not exists: \'%s\'', author)) unless( exists_user?( author ) )
       raise ArgumentError.new('Missing downtime \'end_time\'') if( end_time.nil? )
