@@ -14,6 +14,7 @@ require_relative 'servicegroups'
 require_relative 'users'
 require_relative 'usergroups'
 require_relative 'configuration_management'
+require_relative 'actions'
 
 # -------------------------------------------------------------------------------------------------------------------
 #
@@ -61,6 +62,7 @@ module Icinga2
     include Icinga2::Users
     include Icinga2::Usergroups
     include Icinga2::ConfigurationManagement
+    include Icinga2::Actions
 
     # Returns a new instance of Client
     #

@@ -956,4 +956,25 @@ describe Icinga2 do
     end
   end
 
+  describe 'Actions' do
+
+    it 'restart process' do
+      r = @icinga2.restart_process
+      expect(r).to be_a(Hash)
+      code = r['code']
+      expect(code).to be == 200
+    end
+
+
+
+
+    it 'shutdown process' do
+      r = @icinga2.shutdown_process
+      expect(r).to be_a(Hash)
+      code = r['code']
+      expect(code).to be == 200
+    end
+  end
+
+
 end
