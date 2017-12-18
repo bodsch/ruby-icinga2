@@ -13,6 +13,7 @@ require_relative 'services'
 require_relative 'servicegroups'
 require_relative 'users'
 require_relative 'usergroups'
+require_relative 'configuration_management'
 
 # -------------------------------------------------------------------------------------------------------------------
 #
@@ -59,6 +60,7 @@ module Icinga2
     include Icinga2::Servicegroups
     include Icinga2::Users
     include Icinga2::Usergroups
+    include Icinga2::ConfigurationManagement
 
     # Returns a new instance of Client
     #

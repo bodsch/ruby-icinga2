@@ -27,12 +27,10 @@ describe Icinga2 do
   end
 
   describe 'Available' do
-
     it 'available' do
       expect(@icinga2.available?).to be_truthy
     end
   end
-
 
   describe 'Converts' do
 
@@ -62,9 +60,7 @@ describe Icinga2 do
       expect(@icinga2.state_to_color(3, false)).to be == 'purple'
       expect(@icinga2.state_to_color(5, false)).to be == 'blue'
     end
-
   end
-
 
   describe 'Information' do
 
@@ -575,7 +571,6 @@ describe Icinga2 do
     it 'add Servicegroup \'foo\' (again)' do
       s = @icinga2.add_servicegroup( service_group: 'foo', display_name: 'FOO' )
       expect(s).to be_a(Hash)
-
       status_code = s['code']
       expect(status_code).to be_a(Integer)
       expect(status_code).to be == 500
@@ -815,6 +810,149 @@ describe Icinga2 do
       h = @icinga2.downtimes
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
+    end
+  end
+
+  describe 'Configuration Management' do
+
+    it 'create config package \'cfg_spec-test\' - (successful)' do
+      r = @icinga2.create_config_package('cfg_spec-test')
+      expect(r).to be_a(Hash)
+      status_code = r['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 200
+    end
+
+    it 'create config package \'cfg_spec-test\' - (failed)' do
+      r = @icinga2.create_config_package('_cfg_spec-test')
+      expect(r).to be_a(Hash)
+      status_code = r['code']
+      expect(status_code).to be_a(Integer)
+      expect(status_code).to be == 404
+    end
+
+    it 'list config package' do
+      r = @icinga2.list_config_packages
+
+      expect(r).to be_a(Hash)
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
+      expect(results).to be_a(Array)
+      expect(results.count).to be >= 1
+    end
+
+    it 'upload local config package' do
+
+      params = {
+        package: 'cfg_spec-test',
+        name: 'host1',
+        cluster: false,
+        vars:  'object Host "cmdb-host" { chec_command = "dummy" }',
+        reload: false
+      }
+
+      r = @icinga2.upload_config_package(params)
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
+    end
+
+    it 'fetch local config stages' do
+
+      packages = @icinga2.list_config_packages
+      stages = packages['results']
+      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      stages = data.first['stages']
+
+      params = {
+        package: 'cfg_spec-test',
+        stage: stages.last,
+        name: 'host1',
+        cluster: false
+      }
+      r = @icinga2.fetch_config_stages(params)
+      expect(r).to be_a(String)
+    end
+
+    it 'upload cluser config package' do
+
+      params = {
+        package: 'cfg_spec-test',
+        name: 'host2',
+        cluster: true,
+        vars:  'object Host "satellite-host" { address = "192.168.1.100", check_command = "hostalive" }',
+        reload: false
+      }
+
+      r = @icinga2.upload_config_package(params)
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
+    end
+
+    it 'package stage errors' do
+      packages = @icinga2.list_config_packages
+      stages = packages['results']
+      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      stages = data.first['stages']
+
+      params = {
+        package: 'cfg_spec-test',
+        stage: stages.first,
+        cluster: true
+      }
+
+      r = @icinga2.package_stage_errors(params)
+      expect(r).to be_a(String)
+    end
+
+    it 'fetch cluster config stages' do
+
+      packages = @icinga2.list_config_packages
+      stages = packages['results']
+      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      stages = data.first['stages']
+
+      params = {
+        package: 'cfg_spec-test',
+        stage: stages.last,
+        name: 'host2',
+        cluster: true
+      }
+
+      r = @icinga2.fetch_config_stages(params)
+      expect(r).to be_a(String)
+    end
+
+    it 'remove config stage' do
+
+      packages = @icinga2.list_config_packages
+      stages = packages['results']
+      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      stages = data.first['stages']
+
+      params = {
+        package: 'cfg_spec-test',
+        stage: stages.last
+      }
+
+      r = @icinga2.remove_config_stage(params)
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
+    end
+
+    it 'remove config package' do
+      r = @icinga2.remove_config_package( 'cfg_spec-test' )
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
     end
   end
 

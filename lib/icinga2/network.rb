@@ -112,6 +112,8 @@ module Icinga2
       begin
         data = request( rest_client, 'POST', headers, payload )
 
+#         puts data
+
         data = JSON.parse( data ) if( data.is_a?(String) )
         data = data.deep_string_keys
         data = data.dig('results').first if( data.is_a?(Hash) )
@@ -120,6 +122,9 @@ module Icinga2
       rescue => e
         logger.error(e)
         logger.error(e.backtrace.join("\n"))
+
+        puts e
+        puts e.backtrace.join("\n")
 
         return nil
       end
@@ -217,13 +222,56 @@ module Icinga2
       end
     end
 
+    # static function for GET Requests
+    #
+    # @param [Hash] params
+    # @option params [String] url
+    # @option params [String] headers
+    # @option params [String] options
+    #
+    #
+    # @return [Hash]
+    #
+    def get(params)
+
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing params') if( params.size.zero? )
+
+      url     = validate( params, required: true, var: 'url', type: String )
+      headers = validate( params, required: true, var: 'headers', type: Hash )
+      options = validate( params, required: true, var: 'options', type: Hash ).deep_symbolize_keys
+
+      rest_client = RestClient::Resource.new( URI.encode( url ), options )
+
+      begin
+        data = request( rest_client, 'GET', headers )
+
+#         puts "data: #{data}"
+
+        begin
+          data = JSON.parse( data ) if( data.is_a?(String) )
+          data = data.deep_string_keys
+          data['code'] = 200
+        rescue
+          data
+        end
+
+        return data
+      rescue => e
+        logger.error(e)
+        logger.error(e.backtrace.join("\n"))
+
+        return nil
+      end
+    end
+
     private
     #
     # internal functionfor the Rest-Client Request
     #
     def request( client, method, headers, data = {} )
 
-      # logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{options}, #{data} )" )
+      logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{data} )" )
 
       raise ArgumentError.new('client must be an RestClient::Resource') unless( client.is_a?(RestClient::Resource) )
       raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w[GET POST PUT DELETE].include?(method) )
@@ -271,9 +319,12 @@ module Icinga2
 
         response_body    = response.body
         response_headers = response.headers
-        response_body    = JSON.parse( response_body )
 
-        return response_body
+        begin
+          return JSON.parse( response_body ) if( response_body.is_a?(String) )
+        rescue
+          return response_body
+        end
 
       rescue RestClient::BadRequest
 
@@ -289,9 +340,24 @@ module Icinga2
 
         return { 'results' => [{ 'code' => 404, 'status' => 'Object not Found' }] }
 
-      rescue RestClient::InternalServerError
+      rescue RestClient::InternalServerError => error
 
         response_body = JSON.parse(@response_body) if @response_body.is_a?(String)
+
+#         begin
+#         puts '-------------------------------------'
+#         puts response
+#         puts response.class.to_s
+#
+#         puts response.code.to_i
+#         puts response_body
+#         puts response_body.class.to_s
+#         puts '-------------------------------------'
+#         rescue
+#
+#         end
+
+        return { 'results' => [{ 'code' => 500, 'status' => error }] } if( response_body.nil? )
 
         results = response_body.dig('results')
         results = results.first if( results.is_a?(Array) )
@@ -315,10 +381,34 @@ module Icinga2
 
       rescue RestClient::ExceptionWithResponse => e
 
+        response = e.response
+        response_body = response.body
+        response_code = response.code
+
+        if( response_body =~ /{(.*)}{(.*)}/ )
+          parts     = response_body.match( /^{(?<regular>(.+))}{(.*)}/ )
+          response_body = parts['regular'].to_s.strip
+          response_body = format('{%s}', response_body )
+        end
+
+        begin
+          response_body = JSON.parse(response_body) if response_body.is_a?(String)
+          code   = response.code.to_i
+          status = response_body.dig('status')
+
+          result = { 'results' => [{ 'code' => code, 'status' => status }] }
+
+        rescue => error
+          puts(e)
+          puts(e.backtrace.join("\n"))
+        end
+
+      rescue RestClient::ExceptionWithResponse => e
+
         @logger.error( "Error: #{__method__} #{method_type.upcase} on #{endpoint} error: '#{e}'" )
         @logger.error( data )
-        @logger.error( @headers )
-        @logger.error( JSON.pretty_generate( response_headers ) )
+#         @logger.error( @headers )
+#         @logger.error( JSON.pretty_generate( response_headers ) )
 
         return { 'results' => [{ 'code' => 500, 'status' => e }] }
       end

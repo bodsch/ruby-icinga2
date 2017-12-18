@@ -91,5 +91,24 @@ module Icinga2
       f.size
     end
 
+
+    # check, it an String a valid Json
+    #
+    # @param json [String] json
+    #
+    # @example
+    #   valid_json?( json )
+    #
+    # @return [Boolean]
+    #
+    def valid_json?( json )
+      begin
+        JSON.parse( json )
+        return true
+      rescue JSON::ParserError => e
+        @logger.error("json parse error: #{e}") if @debug
+        return false
+      end
+    end
   end
 end
