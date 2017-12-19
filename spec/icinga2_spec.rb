@@ -894,6 +894,29 @@ describe Icinga2 do
       expect(code).to be == 200
     end
 
+    it 'list config stages' do
+
+      packages = @icinga2.list_config_packages
+      stages = packages['results']
+      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      stages = data.first['stages']
+
+      params = {
+        package: 'cfg_spec-test',
+        stage: stages.last
+      }
+
+      r = @icinga2.list_config_stages(params)
+
+      expect(r).to be_a(Hash)
+      code = r['code']
+      results = r['results']
+      expect(code).to be_a(Integer)
+      expect(code).to be == 200
+      expect(results).to be_a(Array)
+      expect(results.count).to be >= 1
+    end
+
     it 'package stage errors' do
       packages = @icinga2.list_config_packages
       stages = packages['results']
@@ -941,6 +964,7 @@ describe Icinga2 do
       }
 
       r = @icinga2.remove_config_stage(params)
+      expect(r).to be_a(Hash)
       code = r['code']
       results = r['results']
       expect(code).to be_a(Integer)
@@ -949,6 +973,7 @@ describe Icinga2 do
 
     it 'remove config package' do
       r = @icinga2.remove_config_package( 'cfg_spec-test' )
+      expect(r).to be_a(Hash)
       code = r['code']
       results = r['results']
       expect(code).to be_a(Integer)

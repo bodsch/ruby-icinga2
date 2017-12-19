@@ -6,13 +6,26 @@ module Icinga2
   # namespace for config packages
   #
   # The main idea behind configuration management is to allow external applications creating configuration packages and stages based on configuration files and directory trees.
+  #
   # This replaces any additional SSH connection and whatnot to dump configuration files to Icinga 2 directly.
+  #
   # In case you are pushing a new configuration stage to a package, Icinga 2 will validate the configuration asynchronously and populate a status log which can be fetched in a separated request.
+  #
+  # original API Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#configuration-management
   #
   module ConfigurationManagement
 
-    # Send a POST request to a new config package called example-cmdb in this example. This will create a new empty configuration package.
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#creating-a-config-package
+    # create a new empty configuration package.
+    #
+    # Package names starting with an underscore are reserved for internal packages and can not be used.
+    #
+    # @param [String] name the name for the new package.
+    #
+    # @example
+    #    create_config_package('cfg-package')
+    #
+    # @return [Hash]
+    #
     def create_config_package(name)
 
       raise ArgumentError.new(format('wrong type. \'name\' must be an String, given \'%s\'', name.class.to_s)) unless( name.is_a?(String) )
@@ -27,9 +40,8 @@ module Icinga2
       )
     end
 
-    #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#uploading-configuration-for-a-config-package
-    #
+    # Configuration files in packages are managed in stages.
+    # Stages provide a way to maintain multiple configuration versions for a package.
     #
     # @param [Hash] params
     # @option params [String] package name of the package
@@ -38,7 +50,17 @@ module Icinga2
     # @option params [Bool] reload (true) reload icinga2 after upload
     # @option params [String] vars
     #
+    # @example
+    #    params = {
+    #      package: 'cfg-package',
+    #      name: 'host1',
+    #      cluster: false,
+    #      vars:  'object Host "cmdb-host" { chec_command = "dummy" }',
+    #      reload: false
+    #    }
+    #    upload_config_package(params)
     #
+    # @return [Hash]
     #
     def upload_config_package(params)
 
@@ -73,11 +95,12 @@ module Icinga2
       )
     end
 
+    # A list of packages.
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#list-configuration-packages-and-their-stages
+    # @example
+    #    list_config_packages
     #
     # @return [Hash]
-    # {"active-stage"=>"icinga2-master.matrix.lan-1513500648-0", "name"=>"_api", "stages"=>["icinga2-master.matrix.lan-1513500648-0"]}
     #
     def list_config_packages
 
@@ -88,8 +111,20 @@ module Icinga2
       )
     end
 
-
+    # A list of packages and their stages.
     #
+    # @param [Hash] params
+    # @option params [String] package
+    # @option params [String] stage
+    #
+    # @example
+    #    params = {
+    #      package: 'cfg-package',
+    #      stage: 'example.localdomain-1441625839-0'
+    #    }
+    #    list_config_stages(params)
+    #
+    # @return [Hash]
     #
     def list_config_stages(params)
 
@@ -107,8 +142,25 @@ module Icinga2
     end
 
 
+    # fetched the whole config package and return them as a String.
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#fetch-configuration-package-stage-files
+    # @param [Hash] params
+    # @option params [String] package
+    # @option params [String] stage
+    # @option params [Bool] cluser (false) package for an satellite
+    # @option params [String] name
+    #
+    # @example
+    #    params = {
+    #      package: 'cfg-package',
+    #      stage: 'example.localdomain-1441625839-0',
+    #      name: 'host1',
+    #      cluster: false
+    #    }
+    #    fetch_config_stages(params)
+    #
+    # @return [String]
+    #
     def fetch_config_stages(params)
 
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
@@ -132,8 +184,23 @@ module Icinga2
       )
     end
 
+    # fetch the startup.log from the named packe / stage combination to see possible errors.
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#configuration-package-stage-errors
+    # @param [Hash] params
+    # @option params [String] package
+    # @option params [String] stage
+    # @option params [Bool] cluser (false) package for an satellite
+    #
+    # @example
+    #    params = {
+    #      package: 'cfg-package',
+    #      stage: 'example.localdomain-1441625839-0',
+    #      cluster: false
+    #    }
+    #    package_stage_errors(params)
+    #
+    # @return [String]
+    #
     def package_stage_errors(params)
 
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
@@ -155,7 +222,21 @@ module Icinga2
     end
 
     # Deleting Configuration Package Stage
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#deleting-configuration-package-stage
+    #
+    # @param [Hash] params
+    # @option params [String] package
+    # @option params [String] stage
+    #
+    # @example
+    #    params = {
+    #      package: 'cfg-package',
+    #      stage: 'example.localdomain-1441625839-0',
+    #      cluster: false
+    #    }
+    #    remove_config_stage(params)
+    #
+    # @return [Hash]
+    #
     def remove_config_stage(params)
 
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
@@ -175,7 +256,14 @@ module Icinga2
     end
 
     # Deleting Configuration Package
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#deleting-configuration-package
+    #
+    # @param [String] name the name for the package.
+    #
+    # @example
+    #    remove_config_package('cfg-package')
+    #
+    # @return [Hash]
+    #
     def remove_config_package(name)
 
       raise ArgumentError.new(format('wrong type. \'name\' must be an String, given \'%s\'', name.class.to_s)) unless( name.is_a?(String) )
@@ -191,7 +279,15 @@ module Icinga2
       )
     end
 
-
+    # check if a package exists
+    #
+    # @param [String] name the name for the package.
+    #
+    # @example
+    #    package_exists?('cfg-package')
+    #
+    # @return [Boolean]
+    #
     def package_exists?(name)
 
       raise ArgumentError.new(format('wrong type. \'name\' must be an String, given \'%s\'', name.class.to_s)) unless( name.is_a?(String) )
