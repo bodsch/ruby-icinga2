@@ -13,7 +13,7 @@ module Icinga2
     # @option params [String] display_name the displayed name
     #
     # @example
-    #   @icinga.add_usergroup(user_group: 'foo', display_name: 'FOO')
+    #   add_usergroup(user_group: 'foo', display_name: 'FOO')
     #
     # @return [Hash] result
     #
@@ -48,7 +48,7 @@ module Icinga2
     # @param [String] user_group usergroup to delete
     #
     # @example
-    #   @icinga.delete_usergroup('foo')
+    #   delete_usergroup('foo')
     #
     # @return [Hash] result
     #
@@ -69,10 +69,10 @@ module Icinga2
     # @param [String] user_group (nil) optional for a single usergroup
     #
     # @example to get all users
-    #    @icinga.usergroups
+    #    usergroups
     #
     # @example to get one user
-    #    @icinga.usergroups('icingaadmins')
+    #    usergroups('icingaadmins')
     #
     # @return [Hash] returns a hash with all usergroups
     #
@@ -93,7 +93,7 @@ module Icinga2
     # @param [String] user_group the name of the usergroups
     #
     # @example
-    #    @icinga.exists_usergroup?('icingaadmins')
+    #    exists_usergroup?('icingaadmins')
     #
     # @return [Bool] returns true if the usergroup exists
     #

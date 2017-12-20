@@ -11,7 +11,6 @@ end
 describe Icinga2 do
 
   before do
-
     config = {
       icinga: {
         host: ENV.fetch( 'ICINGA_HOST', 'localhost' ),
@@ -21,8 +20,6 @@ describe Icinga2 do
         }
       }
     }
-
-    @test_host = 'icinga2-default'
     @icinga2   = Icinga2::Client.new( config )
   end
 
@@ -847,7 +844,7 @@ describe Icinga2 do
 
       params = {
         package: 'cfg_spec-test',
-        name: 'host1',
+        name: 'host1.conf',
         cluster: false,
         vars:  'object Host "cmdb-host" { chec_command = "dummy" }',
         reload: false

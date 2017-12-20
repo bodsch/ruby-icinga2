@@ -16,7 +16,7 @@ module Icinga2
     # @option params [String] action_url
     #
     # @example
-    #   @icinga.add_servicegroup(service_group: 'foo', display_name: 'FOO')
+    #   add_servicegroup(service_group: 'foo', display_name: 'FOO')
     #
     # @return [Hash] result
     #
@@ -59,7 +59,7 @@ module Icinga2
     # @option params [Bool] cascade (false) delete servicegroup also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_servicegroup('foo')
+    #   delete_servicegroup('foo')
     #
     # @return [Array] result
     #
@@ -87,10 +87,10 @@ module Icinga2
     # @param [String] service_group (nil) optional for a single servicegroup
     #
     # @example to get all users
-    #    @icinga.servicegroups
+    #    servicegroups
     #
     # @example to get one user
-    #    @icinga.servicegroups(service_group: 'disk')
+    #    servicegroups(service_group: 'disk')
     #
     # @return [Array] returns a hash with all servicegroups
     #
@@ -113,7 +113,7 @@ module Icinga2
     # @param [String] service_group the name of the servicegroup
     #
     # @example
-    #    @icinga.exists_servicegroup?('disk')
+    #    exists_servicegroup?('disk')
     #
     # @return [Bool] returns true if the servicegroup exists
     #

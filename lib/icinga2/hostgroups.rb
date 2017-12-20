@@ -17,7 +17,7 @@ module Icinga2
     # @option params [Hash] vars ({})
     #
     # @example
-    #   @icinga.add_hostgroup(host_group: 'foo', display_name: 'FOO')
+    #   add_hostgroup(host_group: 'foo', display_name: 'FOO')
     #
     # @return [Hash] result
     #
@@ -62,8 +62,8 @@ module Icinga2
     # @option params [Bool] cascade (false) delete hostgroup also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_hostgroup(name: 'foo')
-    #   @icinga.delete_hostgroup(name: 'foo', cascade: true)
+    #   delete_hostgroup(name: 'foo')
+    #   delete_hostgroup(name: 'foo', cascade: true)
     #
     # @return [Hash] result
     #
@@ -91,10 +91,10 @@ module Icinga2
     # @param [String] host_group (nil) optional for a single hostgroup
     #
     # @example to get all users
-    #    @icinga.hostgroups
+    #    hostgroups
     #
     # @example to get one user
-    #    @icinga.hostgroups(host_group: 'linux-servers')
+    #    hostgroups(host_group: 'linux-servers')
     #
     # @return [Hash] returns a hash with all hostgroups
     #
@@ -117,7 +117,7 @@ module Icinga2
     # @param [String] host_group the name of the hostgroup
     #
     # @example
-    #    @icinga.exists_hostgroup?('linux-servers')
+    #    exists_hostgroup?('linux-servers')
     #
     # @return [Bool] returns true if the hostgroup exists
     #

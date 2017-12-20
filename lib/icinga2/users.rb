@@ -28,7 +28,7 @@ module Icinga2
     #      pager: '0000',
     #      groups: ['icingaadmins']
     #    }
-    #    @icinga.add_user(param)
+    #    add_user(param)
     #
     # @return [Hash] result
     #    * code [Integer]
@@ -96,7 +96,7 @@ module Icinga2
     # @param [String] user_name user to delete
     #
     # @example
-    #   @icinga.delete_user('foo')
+    #   delete_user('foo')
     #
     # @return [Hash] result
     #
@@ -117,10 +117,10 @@ module Icinga2
     # @param [String] user_name ('') optional for a single user
     #
     # @example to get all users
-    #    @icinga.users
+    #    users
     #
     # @example to get one user
-    #    @icinga.users('icingaadmin')
+    #    users('icingaadmin')
     #
     # @return [Array]
     #
@@ -141,7 +141,7 @@ module Icinga2
     # @param [String] user_name the name of the user
     #
     # @example
-    #    @icinga.exists_user?('icingaadmin')
+    #    exists_user?('icingaadmin')
     #
     # @return [Bool] returns true if the user exists
     #

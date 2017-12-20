@@ -57,7 +57,7 @@ module Icinga2
     #        }
     #      }
     #    }
-    #    @icinga.add_host(param)
+    #    add_host(param)
     #
     # @return [Hash]
     #
@@ -152,8 +152,8 @@ module Icinga2
     # @option params [Bool] cascade (false) delete host also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_host(name: 'foo')
-    #   @icinga.delete_host(name: 'foo', cascade: true)
+    #   delete_host(name: 'foo')
+    #   delete_host(name: 'foo', cascade: true)
     #
     #
     # @return [Hash] result
@@ -244,7 +244,7 @@ module Icinga2
     #      }
     #    }
     #
-    #    @icinga.add_host(param)
+    #    add_host(param)
     #
     # @return [Hash]
     #
@@ -352,10 +352,10 @@ module Icinga2
     # @option params [Array] joins
     #
     # @example to get all hosts
-    #    @icinga.hosts
+    #    hosts
     #
     # @example to get one host
-    #    @icinga.hosts( name: 'icinga2')
+    #    hosts( name: 'icinga2')
     #
     # @return [Array]
     #
@@ -388,7 +388,7 @@ module Icinga2
     # @param [String] host_name
     #
     # @example
-    #    @icinga.exists_host?('icinga2')
+    #    exists_host?('icinga2')
     #
     # @return [Bool]
     #
@@ -414,10 +414,10 @@ module Icinga2
     # @option params [Array] joins ([])
     #
     # @example with default attrs and joins
-    #    @icinga.host_objects
+    #    host_objects
     #
     # @example
-    #    @icinga.host_objects(attrs: ['name', 'state'])
+    #    host_objects(attrs: ['name', 'state'])
     #
     # @return [Hash]
     #
@@ -464,9 +464,9 @@ module Icinga2
     # OBSOLETE
     #
     # @example
-    #    handled, down = @icinga.hosts_adjusted.values
+    #    handled, down = hosts_adjusted.values
     #
-    #    h = @icinga.hosts_adjusted
+    #    h = hosts_adjusted
     #    down = h.dig(:down_adjusted)
     #
     # @return [Hash]
@@ -500,7 +500,7 @@ module Icinga2
     # return count of hosts with problems
     #
     # @example
-    #    @icinga.count_hosts_with_problems
+    #    count_hosts_with_problems
     #
     # @return [Integer]
     #
@@ -519,7 +519,7 @@ module Icinga2
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    @icinga.list_hosts_with_problems
+    #    list_hosts_with_problems
     #
     # @return [Hash]
     #
@@ -554,7 +554,7 @@ module Icinga2
     # returns a counter of all hosts
     #
     # @example
-    #    @icinga.hosts_all
+    #    hosts_all
     #
     # @return [Integer]
     #
@@ -566,10 +566,10 @@ module Icinga2
     # returns data with host problems
     #
     # @example
-    #    @icinga.host_objects
-    #    all, down, critical, unknown, handled, adjusted = @icinga.host_problems.values
+    #    host_objects
+    #    all, down, critical, unknown, handled, adjusted = host_problems.values
     #
-    #    p = @icinga.host_problems
+    #    p = host_problems
     #    down = h.dig(:down)
     #
     # @return [Hash]

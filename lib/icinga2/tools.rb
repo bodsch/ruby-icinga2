@@ -49,18 +49,18 @@ module Icinga2
     # @param [Integer] state (nil)
     #
     # @example for host objects
-    #    h_objects = @icinga.host_objects
-    #    all = @icinga.count_problems(h_objects)
-    #    down = @icinga.count_problems(h_objects, Icinga2::HOSTS_DOWN)
-    #    critical = @icinga.count_problems(h_objects, Icinga2::HOSTS_CRITICAL)
-    #    unknown = @icinga.count_problems(h_objects, Icinga2::HOSTS_UNKNOWN)
+    #    h_objects = host_objects
+    #    all = count_problems(h_objects)
+    #    down = count_problems(h_objects, Icinga2::HOSTS_DOWN)
+    #    critical = count_problems(h_objects, Icinga2::HOSTS_CRITICAL)
+    #    unknown = count_problems(h_objects, Icinga2::HOSTS_UNKNOWN)
     #
     # @example for service objects
-    #    s_objects = @icinga.service_objects
-    #    all = @icinga.count_problems(s_objects)
-    #    warning = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
-    #    critical = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
-    #    unknown = @icinga.count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
+    #    s_objects = service_objects
+    #    all = count_problems(s_objects)
+    #    warning = count_problems(s_objects, Icinga2::SERVICE_STATE_WARNING)
+    #    critical = count_problems(s_objects, Icinga2::SERVICE_STATE_CRITICAL)
+    #    unknown = count_problems(s_objects, Icinga2::SERVICE_STATE_UNKNOWN)
     #
     # @return [Integer]
     #
@@ -99,7 +99,7 @@ module Icinga2
     # @example
     #   valid_json?( json )
     #
-    # @return [Boolean]
+    # @return [Bool]
     #
     def valid_json?( json )
       begin

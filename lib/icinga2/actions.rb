@@ -71,7 +71,7 @@ module Icinga2
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#reschedule-check
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#reschedule-check
     def reschedule_check(params)
 
       # $ curl -k -s -u root:icinga -H 'Accept: application/json' -X POST 'https://localhost:5665/v1/actions/reschedule-check' \
@@ -79,42 +79,42 @@ module Icinga2
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#send-custom-notification
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#send-custom-notification
     def send_custom_notification
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#delay-notification
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#delay-notification
     def delay_notification
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#acknowledge-problem
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#acknowledge-problem
     def acknowledge_problem
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-acknowledgement
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-acknowledgement
     def remove_acknowledgement
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#add-comment
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#add-comment
     def add_comment
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-comment
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-comment
     def remove_comment
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#schedule-downtime
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#schedule-downtime
     def schedule_downtime
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-downtime
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-downtime
     def remove_downtime
     end
 
@@ -149,7 +149,7 @@ module Icinga2
     end
 
     #
-    # https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#generate-ticket
+    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#generate-ticket
     def generate_ticket
     end
 

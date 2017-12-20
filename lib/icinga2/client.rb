@@ -129,10 +129,10 @@ module Icinga2
     # @option params [String] :password the Icinga2 API Password
     #
     # @example with Certificate
-    #    @icinga.cert?(pki_path: '/etc/icinga2', node_name: 'icinga2-dashing')
+    #    cert?(pki_path: '/etc/icinga2', node_name: 'icinga2-dashing')
     #
     # @example with User
-    #    @icinga.cert?(username: 'root', password: 'icinga')
+    #    cert?(username: 'root', password: 'icinga')
     #
     # @return [Array]
     #
@@ -194,7 +194,7 @@ module Icinga2
     # return Icinga2 Application data
     #
     # @example
-    #    @icinga.application_data
+    #    application_data
     #
     # @return [Hash]
     #
@@ -223,7 +223,7 @@ module Icinga2
     # return Icinga2 CIB
     #
     # @example
-    #    @icinga.cib_data
+    #    cib_data
     #
     # @return [Hash]
     #
@@ -282,7 +282,7 @@ module Icinga2
     # return Icinga2 Status Data
     #
     # @example
-    #    @icinga.status_data
+    #    status_data
     #
     # @return [Hash]
     #
@@ -300,7 +300,7 @@ module Icinga2
     # return Icinga2 API Listener
     #
     # @example
-    #    @icinga.api_listener
+    #    api_listener
     #
     # @return [Hash]
     #
@@ -318,7 +318,7 @@ module Icinga2
     # check the availability of a Icinga network connect
     #
     # @example
-    #    @icinga.available?
+    #    available?
     #
     # @return [Bool]
     #
@@ -334,9 +334,9 @@ module Icinga2
     # return Icinga2 version and revision
     #
     # @example
-    #    @icinga.version.values
+    #    version.values
     #
-    #    v = @icinga.version
+    #    v = version
     #    version = v.dig(:version)
     #
     # @return [Hash]
@@ -359,7 +359,7 @@ module Icinga2
     # return Icinga2 node_name
     #
     # @example
-    #    @icinga.node_name
+    #    node_name
     #
     # @return [String]
     #
@@ -375,7 +375,7 @@ module Icinga2
     # return Icinga2 start time
     #
     # @example
-    #    @icinga.start_time
+    #    start_time
     #
     # @return [String]
     #
@@ -391,8 +391,8 @@ module Icinga2
     # return Icinga2 uptime
     #
     # @example
-    #    @icinga.cib_data
-    #    @icinga.uptime
+    #    cib_data
+    #    uptime
     #
     # @return [String]
     #

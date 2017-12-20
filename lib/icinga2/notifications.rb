@@ -11,7 +11,7 @@ module Icinga2
     # @param [String] host
     #
     # @example
-    #    @icinga.enable_host_notification('icinga')
+    #    enable_host_notification('icinga')
     #
     # @return [Hash]
     #
@@ -30,7 +30,7 @@ module Icinga2
     # @param [String] host
     #
     # @example
-    #    @icinga.disable_host_notification('icinga')
+    #    disable_host_notification('icinga')
     #
     # @return [Hash]
     #
@@ -49,7 +49,7 @@ module Icinga2
     # @param [String] host
     #
     # @example
-    #    @icinga.enable_service_notification('icinga')
+    #    enable_service_notification('icinga')
     #
     # @return [Hash]
     #
@@ -68,7 +68,7 @@ module Icinga2
     # @param [String] host
     #
     # @example
-    #    @icinga.disable_service_notification('icinga')
+    #    disable_service_notification('icinga')
     #
     # @return [Hash]
     #
@@ -87,7 +87,7 @@ module Icinga2
     # @param [String] host_group
     #
     # @example
-    #    @icinga.enable_hostgroup_notification('linux-servers')
+    #    enable_hostgroup_notification('linux-servers')
     #
     # @return [Hash]
     #
@@ -106,7 +106,7 @@ module Icinga2
     # @param [String] host_group
     #
     # @example
-    #    @icinga.disable_hostgroup_notification('linux-servers')
+    #    disable_hostgroup_notification('linux-servers')
     #
     # @return [Hash]
     #
@@ -152,7 +152,11 @@ module Icinga2
       name = validate( params, required: true, var: 'name', type: String )
       notifications = validate( params, required: false, var: 'enable_notifications', type: Boolean ) || false
 
-      payload = { attrs: { enable_notifications: notifications } }
+      payload = {
+        attrs: {
+          enable_notifications: notifications
+        }
+      }
 
       post(
         url: format( '%s/objects/hosts/%s', @icinga_api_url_base, name ),
@@ -181,7 +185,9 @@ module Icinga2
 
       payload = {
         filter: format( '"%s" in host.groups', group ),
-        attrs: { enable_notifications: notifications }
+        attrs: {
+          enable_notifications: notifications
+        }
       }
 
       post(
@@ -211,7 +217,9 @@ module Icinga2
 
       payload = {
         filter: format( 'host.name=="%s"', name ),
-        attrs: { enable_notifications: notifications }
+        attrs: {
+          enable_notifications: notifications
+        }
       }
 
       post(

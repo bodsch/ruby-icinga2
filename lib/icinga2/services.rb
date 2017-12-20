@@ -21,12 +21,12 @@ module Icinga2
     # @option params [String] check_period
     # @option params [Integer] check_timeout
     # @option params [String] command_endpoint
-    # @option params [Boolean] enable_active_checks
-    # @option params [Boolean] enable_event_handler
-    # @option params [Boolean] enable_flapping
-    # @option params [Boolean] enable_notifications
-    # @option params [Boolean] enable_passive_checks
-    # @option params [Boolean] enable_perfdata
+    # @option params [Bool] enable_active_checks
+    # @option params [Bool] enable_event_handler
+    # @option params [Bool] enable_flapping
+    # @option params [Bool] enable_notifications
+    # @option params [Bool] enable_passive_checks
+    # @option params [Bool] enable_perfdata
     # @option params [String] event_command
     # @option params [Integer] flapping_threshold_high
     # @option params [Integer] flapping_threshold_low
@@ -35,11 +35,11 @@ module Icinga2
     # @option params [String] icon_image
     # @option params [Integer] max_check_attempts
     # @option params [Integer] retry_interval
-    # @option params [Boolean] volatile
+    # @option params [Bool] volatile
     # @option params [Hash] vars
     #
     # @example
-    #    @icinga.add_service(
+    #    add_service(
     #      name: 'http2',
     #      host_name: 'icinga2',
     #      check_command: 'http',
@@ -144,8 +144,8 @@ module Icinga2
     # @option params [Bool] cascade (false) delete service also when other objects depend on it
     #
     # @example
-    #   @icinga.delete_service(host_name: 'foo', name: 'http2')
-    #   @icinga.delete_service(host_name: 'foo', name: 'http2', cascade: true)
+    #   delete_service(host_name: 'foo', name: 'http2')
+    #   delete_service(host_name: 'foo', name: 'http2', cascade: true)
     #
     # @return [Hash] result
     #
@@ -176,7 +176,7 @@ module Icinga2
     # @option params [Hash] vars
     #
     # @example
-    #    @icinga.modify_service(
+    #    modify_service(
     #      name: 'http2',
     #      check_interval: 60,
     #      retry_interval: 10,
@@ -275,7 +275,7 @@ module Icinga2
     # return all unhandled services
     #
     # @example
-    #    @icinga.unhandled_services
+    #    unhandled_services
     #
     # @return [Hash]
     #
@@ -308,10 +308,10 @@ module Icinga2
     # @option params [String] name
     #
     # @example to get all services
-    #    @icinga.services
+    #    services
     #
     # @example to get one service for host
-    #    @icinga.services( host_name: 'icinga2', name: 'ping4' )
+    #    services( host_name: 'icinga2', name: 'ping4' )
     #
     # @return [Hash]
     #
@@ -339,7 +339,7 @@ module Icinga2
     # @option params [String] name
     #
     # @example
-    #    @icinga.exists_service?(host_name: 'icinga2', name: 'users')
+    #    exists_service?(host_name: 'icinga2', name: 'users')
     #
     # @return [Bool]
     #
@@ -368,10 +368,10 @@ module Icinga2
     # @option params [Array] joins (['host.name','host.state','host.acknowledgement','host.downtime_depth','host.last_check'])
     #
     # @example with default attrs and joins
-    #    @icinga.service_objects
+    #    service_objects
     #
     # @example
-    #    @icinga.service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
+    #    service_objects(attrs: ['name', 'state'], joins: ['host.name','host.state'])
     #
     # @return [Array]
     #
@@ -415,9 +415,9 @@ module Icinga2
     # returns adjusted service state
     #
     # @example
-    #    warning, critical, unknown = @icinga.services_adjusted.values
+    #    warning, critical, unknown = services_adjusted.values
     #
-    #    s = @icinga.services_adjusted
+    #    s = services_adjusted
     #    unknown = s.dig(:unknown)
     #
     # @return [Hash]
@@ -455,7 +455,7 @@ module Icinga2
     # return count of services with problems
     #
     # @example
-    #    @icinga.count_services_with_problems
+    #    count_services_with_problems
     #
     # @return [Integer]
     #
@@ -476,9 +476,9 @@ module Icinga2
     # @param [Integer] max_items numbers of list entries
     #
     # @example
-    #    problems, problems_and_severity = @icinga.list_services_with_problems.values
+    #    problems, problems_and_severity = list_services_with_problems.values
     #
-    #    l = @icinga.list_services_with_problems
+    #    l = list_services_with_problems
     #    problems_and_severity = l.dig(:services_with_problems_and_severity)
     #
     # @return [Hash]
@@ -521,7 +521,7 @@ module Icinga2
     # returns a counter of all services
     #
     # @example
-    #    @icinga.services_all
+    #    services_all
     #
     # @return [Integer]
     #
@@ -536,9 +536,9 @@ module Icinga2
     # returns data with service problems
     #
     # @example
-    #    all, warning, critical, unknown, pending, in_downtime, acknowledged, adjusted_warning, adjusted_critical, adjusted_unknown = @icinga.service_problems.values
+    #    all, warning, critical, unknown, pending, in_downtime, acknowledged, adjusted_warning, adjusted_critical, adjusted_unknown = service_problems.values
     #
-    #    p = @icinga.service_problems
+    #    p = service_problems
     #    warning = p.dig(:warning)
     #
     # @return [Hash]
@@ -593,10 +593,10 @@ module Icinga2
     # returns data with service problems they be handled (acknowledged or in downtime)
     #
     # @example
-    #    @icinga.service_objects
-    #    all, warning, critical, unknown = @icinga.service_problems_handled.values
+    #    service_objects
+    #    all, warning, critical, unknown = service_problems_handled.values
     #
-    #    p = @icinga.service_problems_handled
+    #    p = service_problems_handled
     #    warning = p.dig(:warning)
     #
     # @return [Hash]

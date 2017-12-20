@@ -10,9 +10,9 @@ module Icinga2
     # return statistic data for latency and execution_time
     #
     # @example
-    #    latency, execution_time = @icinga.average_statistics.values
+    #    latency, execution_time = average_statistics.values
     #
-    #    h = @icinga.average_statistics
+    #    h = average_statistics
     #    latency = h.dig(:latency)
     #
     # @return [Hash]
@@ -35,9 +35,9 @@ module Icinga2
     # return statistic data for intervall data
     #
     # @example
-    #    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = @icinga.interval_statistics.values
+    #    hosts_active_checks, hosts_passive_checks, services_active_checks, services_passive_checks = interval_statistics.values
     #
-    #    i = @icinga.interval_statistics
+    #    i = interval_statistics
     #    hosts_active_checks = i.dig(:hosts_active_checks)
     #
     # @return [Hash]
@@ -68,9 +68,9 @@ module Icinga2
     # return statistic data for services
     #
     # @example
-    #    ok, warning, critical, unknown, pending, in_downtime, ack = @icinga.service_statistics.values
+    #    ok, warning, critical, unknown, pending, in_downtime, ack = service_statistics.values
     #
-    #    s = @icinga.service_statistics
+    #    s = service_statistics
     #    critical = s.dig(:critical)
     #
     # @return [Hash]
@@ -108,9 +108,9 @@ module Icinga2
     # return statistic data for hosts
     #
     # @example
-    #    up, down, pending, unreachable, in_downtime, ack = @icinga.host_statistics.values
+    #    up, down, pending, unreachable, in_downtime, ack = host_statistics.values
     #
-    #    h = @icinga.host_statistics
+    #    h = host_statistics
     #    pending = h.dig(:pending)
     #
     # @return [Hash]
@@ -146,7 +146,7 @@ module Icinga2
     # return queue statistics from the api
     #
     # @example
-    #    @icinga.work_queue_statistics
+    #    work_queue_statistics
     #
     # @return [Hash]
     #
@@ -171,14 +171,17 @@ module Icinga2
         graphite_data  = graphite_data.dig('status', 'graphitewriter', 'graphite')       unless( graphite_data.nil? )
         ido_mysql_data = ido_mysql_data.dig('status', 'idomysqlconnection', 'ido-mysql') unless( ido_mysql_data.nil? )
 
-        a = {}
-        a['json_rpc']  = json_rpc_data  if(json_rpc_data.is_a?(Hash))
-        a['graphite']  = graphite_data  if(graphite_data.is_a?(Hash))
-        a['ido-mysql'] = ido_mysql_data if(ido_mysql_data.is_a?(Hash))
+        payload = {
+          json_rpc: json_rpc_data,
+          graphite: graphite_data,
+          ido_mysql: ido_mysql_data
+        }
+
+        payload.reject!{ |_k, v| v.nil? }
 
         key_list = %w[work_queue_item_rate query_queue_item_rate]
 
-        a.each do |k,v|
+        payload.each do |k,v|
           key_list.each do |key|
             if( v.include?( key ))
               attr_name = format('%s queue rate', k)

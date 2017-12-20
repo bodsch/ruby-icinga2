@@ -68,11 +68,11 @@ module Icinga2
       raise ArgumentError.new('missing params') if( params.size.zero? )
 
       package = validate( params, required: true, var: 'package', type: String )
-#       stage   = validate( params, required: true, var: 'stage', type: String )
       name    = validate( params, required: true, var: 'name', type: String )
       cluster = validate( params, required: false, var: 'cluster', type: Boolean ) || false
       vars    = validate( params, required: false, var: 'vars', type: String )
       reload  = validate( params, required: false, var: 'reload', type: Boolean ) || true
+      name    = name.gsub('.conf','')
 
       return { 'code' => 404, 'status' => format('no package \'%s\' exists', package) } unless(package_exists?(package))
 
@@ -170,6 +170,7 @@ module Icinga2
       stage   = validate( params, required: true, var: 'stage', type: String )
       name    = validate( params, required: true, var: 'name', type: String )
       cluster = validate( params, required: false, var: 'cluster', type: Boolean ) || false
+      name    = name.gsub('.conf','')
 
       return { 'code' => 404, 'status' => format('no package \'%s\' exists', package) } unless(package_exists?(package))
 
@@ -286,7 +287,7 @@ module Icinga2
     # @example
     #    package_exists?('cfg-package')
     #
-    # @return [Boolean]
+    # @return [Bool]
     #
     def package_exists?(name)
 

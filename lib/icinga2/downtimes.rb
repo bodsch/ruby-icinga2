@@ -22,7 +22,7 @@ module Icinga2
     # @option params [String] config_owner
     # @option params [Integer] duration Duration of the downtime in seconds if fixed is set to false. (Required for flexible downtimes.)
     # @option params [Integer] entry_time
-    # @option params [Boolean] fixed (true) Defaults to true. If true, the downtime is fixed otherwise flexible. See downtimes for more information.
+    # @option params [Bool] fixed (true) Defaults to true. If true, the downtime is fixed otherwise flexible. See downtimes for more information.
     # @option params [String] scheduled_by
     # @option params [String] service_name
     # @option params [String] triggered_by Sets the trigger for a triggered downtime. See downtimes for more information on triggered downtimes.
@@ -37,7 +37,7 @@ module Icinga2
     #      start_time: Time.now.to_i,
     #      end_time: Time.now.to_i + 20
     #    }
-    #    @icinga.add_downtime(param)
+    #    add_downtime(param)
     #
     # @return [Hash]
     #
@@ -116,7 +116,7 @@ module Icinga2
     # return downtimes
     #
     # @example
-    #    @icinga.downtimes
+    #    downtimes
     #
     # @return [Array]
     #
