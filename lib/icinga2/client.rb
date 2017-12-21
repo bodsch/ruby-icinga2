@@ -67,11 +67,13 @@ module Icinga2
     # Returns a new instance of Client
     #
     # @param [Hash, #read] settings the settings for Icinga2
-    # @option settings [String] :host  the Icinga2 Hostname
-    # @option settings [Integer] :port (5665) the Icinga2 API Port
-    # @option settings [String] :username the Icinga2 API User
-    # @option settings [String] :password the Icinga2 API Password
-    # @option settings [Integer] :version (1) the Icinga2 API Version
+    # @option settings [String] host  the Icinga2 Hostname
+    # @option settings [Integer] port (5665) the Icinga2 API Port
+    # @option settings [String] username the Icinga2 API User
+    # @option settings [String] password the Icinga2 API Password
+    # @option settings [Integer] version (1) the Icinga2 API Version
+    # @option settings [String] pki_path the location of the Certificate Files
+    # @option settings [String] node_name overwrite the Icnag2 hostname for the PKI. if the node_name no set, we try to resolve with gethostbyname()
     #
     # @example to create an new Instance
     #    config = {
@@ -123,10 +125,10 @@ module Icinga2
     # create a HTTP Header based on a Icinga2 Certificate or an User API Login
     #
     # @param [Hash, #read] params
-    # @option params [String] :pki_path the location of the Certificate Files
-    # @option params [String] :node_name the Icinga2 Hostname
-    # @option params [String] :user the Icinga2 API User
-    # @option params [String] :password the Icinga2 API Password
+    # @option params [String] pki_path the location of the Certificate Files
+    # @option params [String] node_name the Icinga2 Hostname
+    # @option params [String] user the Icinga2 API User
+    # @option params [String] password the Icinga2 API Password
     #
     # @example with Certificate
     #    cert?(pki_path: '/etc/icinga2', node_name: 'icinga2-dashing')
@@ -207,6 +209,7 @@ module Icinga2
       )
 
       return nil if( data.nil? )
+      return nil unless(data.is_a?(Hash))
 
       app_data = data.dig('icingaapplication','app')
 
