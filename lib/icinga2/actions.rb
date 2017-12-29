@@ -113,11 +113,6 @@ module Icinga2
     def schedule_downtime
     end
 
-    #
-    # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-downtime
-    def remove_downtime
-    end
-
     # Shuts down Icinga2.
     #
     # @example

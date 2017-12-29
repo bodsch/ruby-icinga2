@@ -144,6 +144,7 @@ supports the following API Calls:
 
   - [Downtimes](doc/downtimes.md)
     * [add downtime](doc/downtimes.md#add-downtime)
+    * [remove downtime](doc/downtimes.md#remove-downtime)
     * [list downtimes](doc/downtimes.md#list-downtimes)
 
   - [Notifications](doc/notifications.md)

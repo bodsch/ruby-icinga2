@@ -17,6 +17,15 @@
     }
     @icinga.add_downtime( param )
 
+## <a name="remove-downtime"></a>remove a downtime
+    remove_downtime( params )
+
+### Example
+
+    param = {
+      downtime_name: 'test',
+    }
+    @icinga.remove_downtime( param )
 
 ## <a name="list-downtimes"></a>list all downtimes
     downtimes
