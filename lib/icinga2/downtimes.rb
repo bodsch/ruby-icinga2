@@ -113,6 +113,46 @@ module Icinga2
       )
     end
 
+    # remove downtime
+    #
+    # @param [Hash] params
+    # @option params [String] downtime_name
+    #
+    # @example
+    #    param = {
+    #      downtime_name: 'test',
+    #    }
+    #    remove_downtime(param)
+    #
+    # @return [Hash]
+    #
+    def remove_downtime( params )
+
+      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
+
+      downtime_name   = validate( params, required: true, var: 'downtime_name', type: String )
+
+      # sanitychecks
+      #
+      raise ArgumentError.new('Missing downtime \'downtime_name\'') if( downtime_name.nil? )
+      raise ArgumentError.new('the \'downtime_name\' does not exist') if ( ! downtimes.find { |downtime| downtime['attrs']['__name'] == downtime_name } )
+
+      payload = {
+        downtime: downtime_name
+      }
+
+      # remove all empty attrs
+      payload.reject!{ |_k, v| v.nil? }
+
+      post(
+        url: format( '%s/actions/remove-downtime', @icinga_api_url_base ),
+        headers: @headers,
+        options: @options,
+        payload: payload
+      )
+    end
+
     # return downtimes
     #
     # @example
