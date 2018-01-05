@@ -111,14 +111,27 @@ module Icinga2
 
       begin
         data = request( rest_client, 'POST', headers, payload )
-
-#         puts data
-
         data = JSON.parse( data ) if( data.is_a?(String) )
         data = data.deep_string_keys
-        data = data.dig('results').first if( data.is_a?(Hash) )
+        data = data.dig('results') if( data.is_a?(Hash) )
 
-        return { 'code' => data.dig('code').to_i, 'name' => data.dig('name'), 'status' => data.dig('status') } unless( data.nil? )
+        if( data.count == 0 )
+          code   = 404
+          name   = nil
+          status = 'Object not found.'
+        elsif( data.count == 1 )
+          data   = data.first
+          code   = data.dig('code').to_i
+          name   = data.dig('name')
+          status = data.dig('status')
+        else
+          code = data.max_by{|k| k['code'] }.dig('code')
+          status = data.map do |hash|
+            hash['status']
+          end
+        end
+
+        return { 'code' => code, 'name' => name, 'status' => status }
       rescue => e
         logger.error(e)
         logger.error(e.backtrace.join("\n"))

@@ -116,11 +116,31 @@ module Icinga2
     # remove downtime
     #
     # @param [Hash] params
-    # @option params [String] downtime_name
+    # @option params [String] host_name
+    # @option params [String] host_group
+    # @option params [String] author Name of the author. (required)
+    # @option params [String] comment Comment text. (required)
+    # @option params [String] service_name
+    # @option params [String] filter
+    # @option params [Hash] filter_vars
+    #
     #
     # @example
     #    param = {
-    #      downtime_name: 'test',
+    #      comment: 'test downtime',
+    #      author: 'icingaadmin'
+    #    }
+    #    remove_downtime(param)
+    #
+    #    param = {
+    #      filter: '"host.name == filterHost && !service && downtime.author == filterAuthor"',
+    #      filter_vars: { filterHost: 'c1-mysql-1', filterAuthor: 'icingaadmin' }
+    #    )
+    #    remove_downtime(param)
+    #
+    #    param = {
+    #      host_name: 'c1-mysql-1',
+    #      service_name: 'ping4'
     #    }
     #    remove_downtime(param)
     #
@@ -131,15 +151,23 @@ module Icinga2
       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
 
-      downtime_name   = validate( params, required: true, var: 'downtime_name', type: String )
-
-      # sanitychecks
-      #
-      raise ArgumentError.new('Missing downtime \'downtime_name\'') if( downtime_name.nil? )
-      raise ArgumentError.new('the \'downtime_name\' does not exist') if ( ! downtimes.find { |downtime| downtime['attrs']['__name'] == downtime_name } )
+      host_name       = validate( params, required: false, var: 'host_name', type: String )
+      host_group      = validate( params, required: false, var: 'host_group', type: String )
+      author          = validate( params, required: false, var: 'author', type: String )
+      comment         = validate( params, required: false, var: 'comment', type: String )
+      service_name    = validate( params, required: false, var: 'service_name', type: String )
+      filter          = validate( params, required: false, var: 'filter', type: String )
+      filter_vars     = validate( params, required: false, var: 'filter_vars', type: Hash )
 
       payload = {
-        downtime: downtime_name
+        type: 'Downtime',
+        host_name: host_name,
+        service_name: service_name,
+        host_group: host_group,
+        comment: comment,
+        author: author,
+        filter: filter,
+        filter_vars: filter_vars
       }
 
       # remove all empty attrs

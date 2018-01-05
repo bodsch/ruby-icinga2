@@ -782,8 +782,6 @@ describe Icinga2 do
       status_code = h['code']
       expect(status_code).to be == 404
     end
-
-
   end
 
   describe 'Module Downtimes' do
@@ -796,7 +794,7 @@ describe Icinga2 do
         comment: 'test downtime',
         author: 'icingaadmin',
         start_time: Time.now.to_i,
-        end_time: Time.now.to_i + 120
+        end_time: Time.now.to_i + 240
       )
       status_code = h['code']
       expect(h).to be_a(Hash)
@@ -808,6 +806,18 @@ describe Icinga2 do
       expect(h).to be_a(Array)
       expect(h.count).to be >= 1
     end
+
+    it 'remove_downtime' do
+      h = @icinga2.remove_downtime(
+        filter: '"host.name == filterHost && !service && downtime.author == filterAuthor"',
+        filter_vars: { filterHost: 'c1-mysql-1', filterAuthor: 'icingaadmin' }
+      )
+      expect(h).to be_a(Hash)
+      status_code = h['code']
+      expect(status_code).to be == 200
+    end
+
+
   end
 
   describe 'Configuration Management' do

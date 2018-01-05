@@ -166,12 +166,3 @@ supports the following API Calls:
     * [statistic data for hosts](doc/statistics.md#stats-hosts)
     * [queue statistics from the api](doc/statistics.md#stats-work-queue)
 
-
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
