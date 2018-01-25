@@ -501,9 +501,9 @@ module Icinga2
           name  = s.dig('name')
           state = s.dig('attrs','state')
 
-          next if  state.zero?
+          next if( state.zero? )
 
-          services_with_problems[name] = service_severity(s)
+          services_with_problems[name] = state # service_severity(s)
         end
 
         if( services_with_problems.count != 0 )
