@@ -447,9 +447,9 @@ module Icinga2
         all_hosts = data.clone
         unless( all_hosts.nil? )
           # global var for count of all hosts
-          @hosts_all           = all_hosts.size
+          @hosts_all               = all_hosts.size
           # global var for count of all host with a problem
-          @hosts_problems      = count_problems(all_hosts)
+          @hosts_problems          = count_problems(all_hosts)
           # global var for count of all gost with state HOSTS_DOWN
           @hosts_problems_down     = count_problems(all_hosts, Icinga2::HOSTS_DOWN)
           @hosts_problems_critical = count_problems(all_hosts, Icinga2::HOSTS_CRITICAL)
