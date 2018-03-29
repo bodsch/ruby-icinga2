@@ -55,63 +55,63 @@ module Icinga2
     #
     # @return [Hash] result
     #
-    def process_check_result(params)
-
-      raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
-      raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
-
-      exit_status      = validate( params, required: true, var: 'exit_status', type: Integer )
-      plugin_output    = validate( params, required: true, var: 'plugin_output', type: String )
-      performance_data = validate( params, required: false, var: 'performance_data', type: Array )
-      check_command    = validate( params, required: false, var: 'check_command', type: Array )
-      check_source     = validate( params, required: false, var: 'check_source', type: String )
-      execution_start  = validate( params, required: false, var: 'execution_start', type: Integer )
-      execution_end    = validate( params, required: false, var: 'execution_end', type: String )
-
-    end
+#     def process_check_result(params)
+#
+#       raise ArgumentError.new(format('wrong type. \'params\' must be an Hash, given \'%s\'', params.class.to_s)) unless( params.is_a?(Hash) )
+#       raise ArgumentError.new('missing \'params\'') if( params.size.zero? )
+#
+#       # exit_status      = validate( params, required: true, var: 'exit_status', type: Integer )
+#       # plugin_output    = validate( params, required: true, var: 'plugin_output', type: String )
+#       # performance_data = validate( params, required: false, var: 'performance_data', type: Array )
+#       # check_command    = validate( params, required: false, var: 'check_command', type: Array )
+#       # check_source     = validate( params, required: false, var: 'check_source', type: String )
+#       # execution_start  = validate( params, required: false, var: 'execution_start', type: Integer )
+#       # execution_end    = validate( params, required: false, var: 'execution_end', type: String )
+#
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#reschedule-check
-    def reschedule_check(params)
-
-      # $ curl -k -s -u root:icinga -H 'Accept: application/json' -X POST 'https://localhost:5665/v1/actions/reschedule-check' \
-      # -d '{ "type": "Service", "filter": "service.name==\"ping6\"" }' | python -m json.tool
-    end
+#     def reschedule_check(params)
+#
+#       # $ curl -k -s -u root:icinga -H 'Accept: application/json' -X POST 'https://localhost:5665/v1/actions/reschedule-check' \
+#       # -d '{ "type": "Service", "filter": "service.name==\"ping6\"" }' | python -m json.tool
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#send-custom-notification
-    def send_custom_notification
-    end
+#     def send_custom_notification
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#delay-notification
-    def delay_notification
-    end
+#     def delay_notification
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#acknowledge-problem
-    def acknowledge_problem
-    end
+#     def acknowledge_problem
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-acknowledgement
-    def remove_acknowledgement
-    end
+#     def remove_acknowledgement
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#add-comment
-    def add_comment
-    end
+#     def add_comment
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#remove-comment
-    def remove_comment
-    end
+#     def remove_comment
+#     end
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#schedule-downtime
-    def schedule_downtime
-    end
+#     def schedule_downtime
+#     end
 
     # Shuts down Icinga2.
     #
@@ -145,8 +145,8 @@ module Icinga2
 
     #
     # original Documentation: https://www.icinga.com/docs/icinga2/latest/doc/12-icinga2-api/#generate-ticket
-    def generate_ticket
-    end
+#     def generate_ticket
+#     end
 
   end
 end

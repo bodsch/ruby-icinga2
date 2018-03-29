@@ -583,10 +583,10 @@ module Icinga2
       cib_data if((Time.now.to_i - @last_cib_data_called).to_i > @last_call_timeout)
       host_objects if((Time.now.to_i - @last_host_objects_called).to_i > @last_call_timeout)
 
-      raise ArgumentError.new(format('wrong type. \'@hosts_problems_down\' must be an Integer, given \'%s\'', @hosts_problems_down.class.to_s)) unless( @hosts_problems_down.is_a?(Integer) )
-      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer) )
-      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer) )
-      raise ArgumentError.new(format('wrong type. \'@hosts_down\' must be an Integer, given \'%s\'', @hosts_down.class.to_s)) unless( @hosts_down.is_a?(Integer) )
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_down\' must be an Integer, given \'%s\'', @hosts_problems_down.class.to_s)) unless( @hosts_problems_down.is_a?(Integer))
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer))
+      raise ArgumentError.new(format('wrong type. \'@hosts_problems_critical\' must be an Integer, given \'%s\'', @hosts_problems_critical.class.to_s)) unless( @hosts_problems_critical.is_a?(Integer))
+      raise ArgumentError.new(format('wrong type. \'@hosts_down\' must be an Integer, given \'%s\'', @hosts_down.class.to_s)) unless( @hosts_down.is_a?(Integer))
 
       problems_all      = @hosts_problems.nil?           ? 0 : @hosts_problems
       problems_down     = @hosts_problems_down.nil?      ? 0 : @hosts_problems_down

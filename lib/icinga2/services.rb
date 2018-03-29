@@ -503,6 +503,8 @@ module Icinga2
 
           next if( state.zero? )
 
+          # TODO
+          # change spec tests!
           services_with_problems[name] = state # service_severity(s)
         end
 

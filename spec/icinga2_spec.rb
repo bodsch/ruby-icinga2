@@ -309,7 +309,7 @@ describe Icinga2 do
 
     it 'count of all hosts with filter' do
       @icinga2.host_objects(
-        filter: '"linux-servers" in host.groups'
+        filter: '"icinga-satellites" in host.groups'
       )
       c = @icinga2.hosts_all
       expect(c).to be_a(Integer)
@@ -349,12 +349,12 @@ describe Icinga2 do
 
   describe 'Module Hostgroups' do
 
-    it 'list hostgroup \'linux-servers\'' do
-      h = @icinga2.hostgroups('linux-servers')
+    it 'list hostgroup \'icinga-satellites\'' do
+      h = @icinga2.hostgroups('icinga-satellites')
       name = h.first.dig('attrs','__name')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
-      expect(name).to be == 'linux-servers'
+      expect(name).to be == 'icinga-satellites'
     end
 
     it 'list all hostgroups' do
@@ -363,8 +363,8 @@ describe Icinga2 do
       expect(h.count).to be >= 1
     end
 
-    it 'exists hostgroup \'linux-servers\'' do
-      expect(@icinga2.exists_hostgroup?('linux-servers')).to be_truthy
+    it 'exists hostgroup \'icinga-satellites\'' do
+      expect(@icinga2.exists_hostgroup?('icinga-satellites')).to be_truthy
     end
 
     it 'exists hostgroup \'test\'' do
@@ -542,14 +542,14 @@ describe Icinga2 do
       expect(h.count).to be >= 1
     end
 
-    it 'list servicegroup \'disk\'' do
-      h = @icinga2.servicegroups('disk')
+    it 'list servicegroup \'icinga\'' do
+      h = @icinga2.servicegroups('icinga')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
     end
 
-    it 'exists servicegroup \'disk\'' do
-      expect(@icinga2.exists_servicegroup?('disk')).to be_truthy
+    it 'exists servicegroup \'icinga\'' do
+      expect(@icinga2.exists_servicegroup?('icinga')).to be_truthy
     end
 
     it 'exists servicegroup \'test\'' do
@@ -626,14 +626,14 @@ describe Icinga2 do
     end
 
     it 'enable Notifications for hostgroup' do
-      h = @icinga2.enable_hostgroup_notification('linux-servers')
+      h = @icinga2.enable_hostgroup_notification('icinga-satellites')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200
     end
 
     it 'disable Notifications for hostgroup' do
-      h = @icinga2.disable_hostgroup_notification('linux-servers')
+      h = @icinga2.disable_hostgroup_notification('icinga-satellites')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200
@@ -861,17 +861,18 @@ describe Icinga2 do
       }
 
       r = @icinga2.upload_config_package(params)
-      code = r['code']
-      results = r['results']
+      code    = r['code']
+      status  = r['status']
       expect(code).to be_a(Integer)
       expect(code).to be == 200
+      expect(status).to be_a(String)
     end
 
     it 'fetch local config stages' do
 
       packages = @icinga2.list_config_packages
       stages = packages['results']
-      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      data   = stages.select { |k,_v| k['name'] == 'cfg_spec-test' }
       stages = data.first['stages']
 
       params = {
@@ -895,17 +896,18 @@ describe Icinga2 do
       }
 
       r = @icinga2.upload_config_package(params)
-      code = r['code']
-      results = r['results']
+      code    = r['code']
+      status  = r['status']
       expect(code).to be_a(Integer)
       expect(code).to be == 200
+      expect(status).to be_a(String)
     end
 
     it 'list config stages' do
 
       packages = @icinga2.list_config_packages
       stages = packages['results']
-      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      data = stages.select { |k,_v| k['name'] == 'cfg_spec-test' }
       stages = data.first['stages']
 
       params = {
@@ -916,18 +918,17 @@ describe Icinga2 do
       r = @icinga2.list_config_stages(params)
 
       expect(r).to be_a(Hash)
-      code = r['code']
+      code    = r['code']
       results = r['results']
       expect(code).to be_a(Integer)
       expect(code).to be == 200
       expect(results).to be_a(Array)
-      expect(results.count).to be >= 1
     end
 
     it 'package stage errors' do
       packages = @icinga2.list_config_packages
       stages = packages['results']
-      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      data = stages.select { |k,_v| k['name'] == 'cfg_spec-test' }
       stages = data.first['stages']
 
       params = {
@@ -944,7 +945,7 @@ describe Icinga2 do
 
       packages = @icinga2.list_config_packages
       stages = packages['results']
-      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      data = stages.select { |k,_v| k['name'] == 'cfg_spec-test' }
       stages = data.first['stages']
 
       params = {
@@ -962,7 +963,7 @@ describe Icinga2 do
 
       packages = @icinga2.list_config_packages
       stages = packages['results']
-      data = stages.select { |k,v| k['name'] == 'cfg_spec-test' }
+      data = stages.select { |k,_v| k['name'] == 'cfg_spec-test' }
       stages = data.first['stages']
 
       params = {
@@ -972,21 +973,24 @@ describe Icinga2 do
 
       r = @icinga2.remove_config_stage(params)
       expect(r).to be_a(Hash)
-      code = r['code']
-      results = r['results']
+      code    = r['code']
+      status  = r['status']
       expect(code).to be_a(Integer)
       expect(code).to be == 200
+      expect(status).to be_a(String)
     end
 
     it 'remove config package' do
       r = @icinga2.remove_config_package( 'cfg_spec-test' )
       expect(r).to be_a(Hash)
-      code = r['code']
-      results = r['results']
+      code    = r['code']
+      status  = r['status']
       expect(code).to be_a(Integer)
       expect(code).to be == 200
+      expect(status).to be_a(String)
     end
   end
+
 
   describe 'Actions' do
 
@@ -996,9 +1000,6 @@ describe Icinga2 do
       code = r['code']
       expect(code).to be == 200
     end
-
-
-
 
     it 'shutdown process' do
       r = @icinga2.shutdown_process

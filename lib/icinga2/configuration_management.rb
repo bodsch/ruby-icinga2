@@ -209,7 +209,7 @@ module Icinga2
 
       package = validate( params, required: true, var: 'package', type: String )
       stage   = validate( params, required: true, var: 'stage', type: String )
-      cluster = validate( params, required: false, var: 'cluster', type: Boolean ) || false
+      # cluster = validate( params, required: false, var: 'cluster', type: Boolean ) || false
 
       return { 'code' => 404, 'status' => format('no package \'%s\' exists', package) } unless(package_exists?(package))
 
@@ -300,7 +300,7 @@ module Icinga2
 
       current_packages = current_packages.dig('results')
 
-      data = current_packages.select { |k,v| k['name'] == name }
+      data = current_packages.select { |k,_| k['name'] == name }
       data = data.first if( data )
 
       return false unless(data)

@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
 
   s.name        = 'icinga2'
   s.version     = Icinga2::VERSION
-  s.date        = '2018-01-05'
+  s.date        = '2018-03-29'
   s.summary     = 'Ruby SDK for easly access to the Icinga2 API'
   s.description = 'An enhanced ruby gem to communicate with Icinga2 API.' +
                   'It\'s allowed create small applications to connect to Icinga2 to add Hosts, Services,' +

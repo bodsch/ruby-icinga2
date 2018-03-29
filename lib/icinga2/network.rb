@@ -115,7 +115,7 @@ module Icinga2
         data = data.deep_string_keys
         data = data.dig('results') if( data.is_a?(Hash) )
 
-        if( data.count == 0 )
+        if( data.count.zero? )
           code   = 404
           name   = nil
           status = 'Object not found.'
@@ -284,7 +284,7 @@ module Icinga2
     #
     def request( client, method, headers, data = {} )
 
-      logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{data} )" )
+      # logger.debug( "request( #{client.to_s}, #{method}, #{headers}, #{data} )" )
 
       raise ArgumentError.new('client must be an RestClient::Resource') unless( client.is_a?(RestClient::Resource) )
       raise ArgumentError.new('method must be an \'GET\', \'POST\', \'PUT\' or \'DELETE\'') unless( %w[GET POST PUT DELETE].include?(method) )
@@ -331,7 +331,7 @@ module Icinga2
         end
 
         response_body    = response.body
-        response_headers = response.headers
+        # response_headers = response.headers
 
         begin
           return JSON.parse( response_body ) if( response_body.is_a?(String) )
@@ -396,7 +396,7 @@ module Icinga2
 
         response = e.response
         response_body = response.body
-        response_code = response.code
+        # response_code = response.code
 
         if( response_body =~ /{(.*)}{(.*)}/ )
           parts     = response_body.match( /^{(?<regular>(.+))}{(.*)}/ )
@@ -409,11 +409,13 @@ module Icinga2
           code   = response.code.to_i
           status = response_body.dig('status')
 
-          result = { 'results' => [{ 'code' => code, 'status' => status }] }
+          return { 'results' => [{ 'code' => code, 'status' => status }] }
 
         rescue => error
-          puts(e)
-          puts(e.backtrace.join("\n"))
+          puts(error)
+          puts(error.backtrace.join("\n"))
+
+          return { 'results' => [{ 'code' => 500, 'status' => error }] }
         end
 
       rescue RestClient::ExceptionWithResponse => e

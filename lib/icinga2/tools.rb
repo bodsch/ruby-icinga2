@@ -102,6 +102,7 @@ module Icinga2
     # @return [Bool]
     #
     def valid_json?( json )
+
       begin
         JSON.parse( json )
         return true
@@ -109,6 +110,7 @@ module Icinga2
         @logger.error("json parse error: #{e}") if @debug
         return false
       end
+
     end
   end
 end
