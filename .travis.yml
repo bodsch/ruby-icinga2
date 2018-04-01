@@ -18,7 +18,7 @@ services:
 before_install:
   - gem install bundler
   - gem update bundler
-  - docker pull bodsch/docker-icinga2:2.8.1-master-r2
+  - docker pull bodsch/docker-icinga2:2.8.2-master-r2
   - |
     docker run \
     --rm \
@@ -29,7 +29,7 @@ before_install:
     --env ICINGA_API_USERS=root:icinga \
     --env DEMO_DATA=true \
     --hostname=icinga2 \
-    bodsch/docker-icinga2:2.8.1-master-r2
+    bodsch/docker-icinga2:2.8.2-master-r2
   - docker ps
   - sleep 25s
 
