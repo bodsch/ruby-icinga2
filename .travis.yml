@@ -24,9 +24,8 @@ before_install:
     --rm \
     --detach \
     --publish=5665:5665 \
-    --env ICINGA_MASTER=icinga2 \
-    --env ICINGA_CLUSTER=true \
-    --env ICINGA_API_USERS=root:icinga \
+    --env ICINGA2_MASTER=icinga2 \
+    --env ICINGA2_API_USERS=root:icinga \
     --env DEMO_DATA=true \
     --hostname=icinga2 \
     bodsch/docker-icinga2:2.8.1-master-r3

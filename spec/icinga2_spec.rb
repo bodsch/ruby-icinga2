@@ -309,7 +309,7 @@ describe Icinga2 do
 
     it 'count of all hosts with filter' do
       @icinga2.host_objects(
-        filter: '"icinga-satellites" in host.groups'
+        filter: '"bp-hosts-web" in host.groups'
       )
       c = @icinga2.hosts_all
       expect(c).to be_a(Integer)
@@ -349,12 +349,12 @@ describe Icinga2 do
 
   describe 'Module Hostgroups' do
 
-    it 'list hostgroup \'icinga-satellites\'' do
-      h = @icinga2.hostgroups('icinga-satellites')
+    it 'list hostgroup \'bp-hosts-web\'' do
+      h = @icinga2.hostgroups('bp-hosts-web')
       name = h.first.dig('attrs','__name')
       expect(h).to be_a(Array)
       expect(h.count).to be == 1
-      expect(name).to be == 'icinga-satellites'
+      expect(name).to be == 'bp-hosts-web'
     end
 
     it 'list all hostgroups' do
@@ -363,8 +363,8 @@ describe Icinga2 do
       expect(h.count).to be >= 1
     end
 
-    it 'exists hostgroup \'icinga-satellites\'' do
-      expect(@icinga2.exists_hostgroup?('icinga-satellites')).to be_truthy
+    it 'exists hostgroup \'bp-hosts-web\'' do
+      expect(@icinga2.exists_hostgroup?('bp-hosts-web')).to be_truthy
     end
 
     it 'exists hostgroup \'test\'' do
@@ -626,14 +626,14 @@ describe Icinga2 do
     end
 
     it 'enable Notifications for hostgroup' do
-      h = @icinga2.enable_hostgroup_notification('icinga-satellites')
+      h = @icinga2.enable_hostgroup_notification('bp-hosts-web')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200
     end
 
     it 'disable Notifications for hostgroup' do
-      h = @icinga2.disable_hostgroup_notification('icinga-satellites')
+      h = @icinga2.disable_hostgroup_notification('bp-hosts-web')
       expect(h).to be_a(Hash)
       status_code = h['code']
       expect(status_code).to be == 200
