@@ -15,24 +15,47 @@ rvm:
 services:
   - docker
 
-before_install:
-  - gem install bundler
-  - gem update bundler
-  - docker pull bodsch/docker-icinga2:2.8.1-master-r3
-  - |
-    docker run \
-    --rm \
-    --detach \
-    --publish=5665:5665 \
-    --env ICINGA2_MASTER=icinga2 \
-    --env ICINGA2_API_USERS=root:icinga \
-    --env DEMO_DATA=true \
-    --hostname=icinga2 \
-    bodsch/docker-icinga2:2.8.1-master-r3
-  - docker ps
-  - sleep 25s
+env:
+  global:
+    - ICINGA2_VERSION=${ICINGA2_VERSION:-2.8.1}
+    - ICINGA2_VCS_REF=r3
+    - BUILD_DATE=$(date +"%Y-%m-%d")
 
-script: bundle exec rspec spec
+jobs:
+  include:
+    - stage: build docker image
+      script:
+        - gem install bundler
+        - gem update bundler
+        - |
+          docker run \
+          --rm \
+          --detach \
+          --publish=5665:5665 \
+          --env ICINGA2_MASTER=icinga2 \
+          --env ICINGA2_API_USERS=root:icinga \
+          --env DEMO_DATA=true \
+          --hostname=icinga2 \
+          bodsch/docker-icinga2:2.8.1-master-r3
+        - sleep 10s
+        - |
+          docker run \
+          --rm \
+          --detach \
+          --env ICINGA2_MASTER=icinga2 \
+          --env ICINGA2_PARENT=icinga2 \
+          --env CERT_SERVICE_BA_USER=admin \
+          --env CERT_SERVICE_BA_PASSWORD=admin \
+          --env CERT_SERVICE_API_USER=root \
+          --env CERT_SERVICE_API_PASSWORD=icinga \
+          --env CERT_SERVICE_SERVER=icinga2 \
+          --env CERT_SERVICE_PORT=8080 \
+          --env CERT_SERVICE_PATH=/ \
+          --hostname=icinga2-satellite \
+          bodsch/docker-icinga2:2.8.1-satellite-r3
+        - sleep 25s
+        - docker ps
+        - bundle exec rspec spec
 
 fast_finish: true
 
