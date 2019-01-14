@@ -32,7 +32,7 @@
 
 
 ## <a name="modify-host"></a>modify a host
-    modify-host( params )
+    modify_host( params )
 
 ### Example
 
@@ -73,7 +73,7 @@ or
       }
     }
 
-    @icinga.modify-host( name: 'foo')
+    @icinga.modify_host( name: 'foo')
 
 
 ## <a name="list-hosts"></a>list hosts
