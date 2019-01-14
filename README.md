@@ -43,7 +43,7 @@ create an instance
       }
     }
 
-    @icinga = Icinga::Client.new( config )
+    @icinga = Icinga2::Client.new( config )
 
 ### Use the examples
 
